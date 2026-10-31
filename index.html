@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preload" as="image" href="hero-bg.jpg">
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -21,22 +22,60 @@
   --good:#248A3D; --good-bg:rgba(52,199,89,.16); --warn:#B25000; --warn-bg:rgba(255,149,0,.18); --danger:#D70015;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
   --r-lg:22px; --r-md:14px; --r-sm:10px;
+  --ph-op:1; --ph-op-l:1; --ph-blur:0px;
+  --veil-top:rgba(238,241,246,.30); --veil-mid:rgba(238,241,246,.42); --veil-bot:rgba(238,241,246,.55);
+  --veil-l1:rgba(255,250,240,0); --veil-l2:rgba(240,244,246,.12); --veil-l3:rgba(238,241,246,.5);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --base:#0B0C10; --ink:#F2F2F7; --ink2:#AEB1B8; --ink3:#7C808A;
   --glass:rgba(38,40,48,.52); --glass-strong:rgba(44,46,54,.82); --glass-edge:rgba(255,255,255,.12);
   --hair:rgba(255,255,255,.10); --field:rgba(118,118,128,.24); --shadow:0 8px 32px rgba(0,0,0,.35);
-  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; color-scheme:dark}}
+  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; --ph-op:1; --ph-op-l:1; --veil-top:rgba(11,12,16,.45); --veil-mid:rgba(11,12,16,.58); --veil-bot:rgba(11,12,16,.75);
+  --veil-l1:rgba(11,12,16,.2); --veil-l2:rgba(11,12,16,.35); --veil-l3:rgba(11,12,16,.7); color-scheme:dark}}
 :root[data-theme="dark"]{
   --base:#0B0C10; --ink:#F2F2F7; --ink2:#AEB1B8; --ink3:#7C808A;
   --glass:rgba(38,40,48,.52); --glass-strong:rgba(44,46,54,.82); --glass-edge:rgba(255,255,255,.12);
   --hair:rgba(255,255,255,.10); --field:rgba(118,118,128,.24); --shadow:0 8px 32px rgba(0,0,0,.35);
-  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; color-scheme:dark}
+  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; --ph-op:1; --ph-op-l:1; --veil-top:rgba(11,12,16,.45); --veil-mid:rgba(11,12,16,.58); --veil-bot:rgba(11,12,16,.75);
+  --veil-l1:rgba(11,12,16,.2); --veil-l2:rgba(11,12,16,.35); --veil-l3:rgba(11,12,16,.7); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{background:var(--base);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.photo-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.photo-bg .ph{position:absolute;inset:-3%;image-rendering:auto;will-change:transform;background:url("bg.jpg") center 40%/cover no-repeat;opacity:var(--ph-op);filter:saturate(1.08) blur(var(--ph-blur));animation:kenburns 48s ease-in-out infinite alternate}
+.photo-bg .veil{position:absolute;inset:0;background:linear-gradient(180deg,var(--veil-top) 0%,var(--veil-mid) 45%,var(--veil-bot) 100%)}
+body.landing .photo-bg .ph{--ph-blur:0px;opacity:var(--ph-op-l)}
+body.landing .photo-bg .veil{background:linear-gradient(180deg,var(--veil-l1) 0%,var(--veil-l2) 55%,var(--veil-l3) 100%)}
+.photo-bg .sunglow{position:absolute;left:-10%;top:-20%;width:70%;height:70%;background:radial-gradient(closest-side,rgba(255,214,140,.55),rgba(255,214,140,0));mix-blend-mode:screen;animation:sunpulse 7s ease-in-out infinite alternate}
+@keyframes sunpulse{from{opacity:.45;transform:scale(1)}to{opacity:.95;transform:scale(1.08)}}
+.photo-bg .fog{position:absolute;left:-60%;width:220%;height:34%;background:radial-gradient(50% 50% at 25% 50%,rgba(255,255,255,.55),transparent 70%),radial-gradient(40% 50% at 70% 45%,rgba(255,255,255,.45),transparent 70%);filter:blur(10px);pointer-events:none}
+.photo-bg .f1{top:28%;animation:fogmove 70s linear infinite}
+.photo-bg .f2{top:44%;opacity:.7;animation:fogmove 110s linear infinite reverse}
+@keyframes fogmove{from{transform:translateX(0)}to{transform:translateX(27%)}}
+.photo-bg .rays{position:absolute;left:-30%;top:-60%;width:120%;height:160%;background:repeating-conic-gradient(from 200deg at 18% 14%,rgba(255,226,160,0) 0deg 6deg,rgba(255,226,160,.2) 8deg 11deg,rgba(255,226,160,0) 13deg 20deg);mix-blend-mode:screen;transform-origin:18% 14%;animation:rays 12s ease-in-out infinite alternate}
+@keyframes rays{from{transform:rotate(-3deg);opacity:.55}to{transform:rotate(3deg);opacity:1}}
+.photo-bg #birds{position:absolute;inset:0;width:100%;height:100%}
+.photo-bg .motes i{position:absolute;bottom:-10px;width:var(--sz);height:var(--sz);border-radius:50%;background:radial-gradient(circle,rgba(255,240,200,.95),rgba(255,240,200,0) 70%);animation:mote var(--d) linear infinite;animation-delay:var(--dl);opacity:0}
+@keyframes mote{0%{transform:translate(0,0);opacity:0}10%{opacity:.9}90%{opacity:.8}100%{transform:translate(var(--dx),-105vh);opacity:0}}
+/* vào trang */
+.lhero h1 .ln{display:block;opacity:0;transform:translateY(26px);animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.lhero h1 .ln:nth-child(2){animation-delay:.12s}.lhero h1 .ln:nth-child(3){animation-delay:.24s}
+.lhero p,.lhero .cta{opacity:0;animation:rise .8s .38s cubic-bezier(.2,.8,.2,1) forwards}.lhero .cta{animation-delay:.5s}
+.lart .photo-frame{animation:frameIn 1.1s .15s cubic-bezier(.2,.8,.2,1) both}
+.lart .fcard{animation-name:float,popin;animation-duration:6s,.6s;animation-timing-function:ease-in-out,cubic-bezier(.2,.9,.3,1.4);animation-iteration-count:infinite,1;animation-fill-mode:none,both}
+.fc1{animation-delay:0s,.7s!important}.fc2{animation-delay:-2s,.85s!important}.fc3{animation-delay:-4s,1s!important}
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes frameIn{from{opacity:0;transform:scale(.92) rotate(-1.5deg)}to{opacity:1;transform:none}}
+@keyframes popin{from{opacity:0;scale:.6}to{opacity:1;scale:1}}
+.photo-frame{transition:transform .25s ease-out;transform-style:preserve-3d}
+.photo-frame .shine{position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);transform:translateX(-120%);animation:frameShine 6s 1.6s ease-in-out infinite}
+@keyframes frameShine{0%,70%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.photo-bg *,.lhero *,.lart *{animation:none!important;opacity:1!important;transform:none!important}}
+@keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.07) translate(-1.5%,-1%)}}
 .wash{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+body:not(.landing) .photo-bg{display:none}
+body.landing .wash{display:none}
 .wash i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;transition:background .6s}
 .wash i:nth-child(1){width:55vw;height:55vw;left:-12vw;top:-18vw;background:var(--accent)}
 .wash i:nth-child(2){width:45vw;height:45vw;right:-10vw;top:10vh;background:color-mix(in oklab,var(--accent) 45%,#FF9F0A)}
@@ -54,7 +93,8 @@ button{cursor:pointer}
 
 /* sidebar */
 .side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);padding:16px;display:flex;flex-direction:column;gap:12px}
-.side-h{display:flex;align-items:center;justify-content:space-between;padding:2px 4px}
+.side-h{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:2px 4px}
+.side .brand span{font-size:15px;white-space:nowrap}
 .side-h h2{font-size:22px;font-weight:700}
 .list{display:flex;flex-direction:column;gap:4px}
 .trip-btn{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:0;background:transparent;padding:10px;border-radius:var(--r-md);min-width:0}
@@ -329,6 +369,168 @@ td input.n{text-align:right}
   .edit-stop .row2{grid-template-columns:1fr}
   .stop{grid-template-columns:46px 1fr;gap:10px}
 }
+/* logo */
+.logo{display:block;flex:none}
+.logo .lg-route{stroke-dasharray:3.2 3.2;animation:lgdash 2.4s linear infinite}
+.logo .lg-pin{transform-origin:46px 26px;animation:lgbob 2.6s ease-in-out infinite}
+.logo .lg-sun{transform-origin:16px 16px;animation:lgspin 14s linear infinite}
+.logo .lg-shine{animation:lgshine 4.5s ease-in-out infinite}
+@keyframes lgdash{to{stroke-dashoffset:-12.8}}
+@keyframes lgbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lgspin{to{transform:rotate(360deg)}}
+@keyframes lgshine{0%,60%{transform:translateX(-80px)}85%,100%{transform:translateX(90px)}}
+.float{animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.01em;border:0;background:transparent;padding:0;color:var(--ink);cursor:pointer}
+/* cảnh đèo dã quỳ */
+.scene{position:relative;width:100%;overflow:hidden;border-radius:18px;background:#e9e3d2}
+.scene svg{display:block;width:100%;height:100%}
+.scene .mist{animation:mist 40s ease-in-out infinite alternate}
+@keyframes mist{to{transform:translateX(-60px)}}
+.scene .sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 5s ease-in-out infinite alternate}
+.scene .sway.s2{animation-duration:6.5s;animation-delay:-2s}.scene .sway.s3{animation-duration:4.2s;animation-delay:-1s}
+@keyframes sway{from{transform:rotate(-.6deg)}to{transform:rotate(.8deg)}}
+.scene .petal{animation:petal 13s linear infinite;opacity:0}
+@keyframes petal{0%{transform:translate(0,0) rotate(0);opacity:0}10%{opacity:.95}85%{opacity:.9}100%{transform:translate(-120px,190px) rotate(260deg);opacity:0}}
+.scene .hair{transform-box:fill-box;transform-origin:70% 10%;animation:hair 4.5s ease-in-out infinite alternate}
+@keyframes hair{to{transform:rotate(2.5deg)}}
+.scene .bq{transform-box:fill-box;transform-origin:50% 100%;animation:sway 3.6s ease-in-out infinite alternate}
+.scene .glow{animation:glow 8s ease-in-out infinite alternate}
+@keyframes glow{to{opacity:.55}}
+.lscene{position:absolute;inset:0;border-radius:22px;box-shadow:var(--shadow)}
+.photo-frame{position:absolute;inset:0;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(20,30,40,.25);border:1px solid var(--glass-edge)}
+.photo-frame .pimg,.photo-strip .pimg{position:absolute;inset:-4%;background:url("bg.jpg") 62% 70%/cover no-repeat;animation:kenburns 30s ease-in-out infinite alternate}
+.photo-strip{position:relative;flex-basis:100%;height:170px;border-radius:18px;overflow:hidden;border:1px solid var(--glass-edge)}
+.photo-strip .pimg{background-position:60% 72%}
+.login .lr2{height:170px;margin:-6px 0 2px;border-radius:16px}
+.homescene{height:170px;flex-basis:100%}
+@media (prefers-reduced-motion:reduce){.scene *{animation:none!important}}
+/* xe máy chạy */
+.ride{position:relative;width:100%;overflow:hidden;border-radius:18px}
+.ride svg{display:block;width:100%;height:100%}
+.ride .loopA{animation:rideL 60s linear infinite}
+.ride .loopB{animation:rideL 30s linear infinite}
+.ride .loopC{animation:rideL 9s linear infinite}
+@keyframes rideL{to{transform:translateX(-600px)}}
+.ride .bike{animation:bikeBob 1.4s ease-in-out infinite alternate}
+@keyframes bikeBob{from{transform:translate(236px,69px) scale(.85)}to{transform:translate(236px,70.5px) scale(.85)}}
+.ride .scarf{transform-box:fill-box;transform-origin:right center;animation:scarf 1.6s ease-in-out infinite alternate}
+@keyframes scarf{to{transform:skewY(8deg) scaleX(.9)}}
+.ride .wh{transform-box:fill-box;transform-origin:center;animation:wheel 2.2s linear infinite}
+@keyframes wheel{to{transform:rotate(360deg)}}
+.ride .puff{transform-box:fill-box;transform-origin:center;animation:puff 3s ease-out infinite}
+.ride .puff.p2{animation-delay:1s}.ride .puff.p3{animation-delay:2s}
+@keyframes puff{0%{opacity:.45;transform:translate(0,0) scale(.4)}100%{opacity:0;transform:translate(-30px,-8px) scale(1.5)}}
+.ride .sky-sun{transform-box:fill-box;transform-origin:center;animation:lgspin 20s linear infinite}
+.lride{height:190px;margin-top:6px}
+.login .lr{height:96px;margin:-4px 0 4px}
+.homeride{height:140px}
+@media (max-width:760px){.lart{height:280px!important}.fc1,.fc3{display:none}.fc2{right:10px!important;top:10px!important;min-width:0;transform-origin:top right}.lride{height:120px;order:-2;margin:0}.lnav .brand span{font-size:15px;white-space:nowrap}.lnav .btn.primary{padding:8px 14px}.lart{height:250px}}
+@media (prefers-reduced-motion:reduce){.ride *{animation:none!important}}
+/* landing */
+body.landing .side{display:none}
+body.landing .app{grid-template-columns:1fr;max-width:1120px}
+.lnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:12}
+.lnav .actions{display:flex;gap:8px;flex-wrap:nowrap;flex:none}
+.lhero{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding:34px 30px}
+body.landing .glass{background:color-mix(in oklab,var(--glass) 75%,transparent)}
+body.landing .lhero h1,body.landing .sectitle{text-shadow:0 1px 18px color-mix(in oklab,var(--base) 70%,transparent)}
+.lhero h1{font-size:clamp(38px,6vw,64px);line-height:1.04;letter-spacing:-.035em;font-weight:800}
+.lhero h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),#30B0C7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lhero p{font-size:18px;color:var(--ink2);margin:16px 0 22px;max-width:46ch}
+.lhero .cta{display:flex;gap:10px;flex-wrap:wrap}
+.btn.lg{padding:13px 24px;font-size:16px}
+.lart{position:relative;height:400px}
+.lart .bigLogo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.fcard{position:absolute;padding:12px 14px;border-radius:16px;font-size:13px;min-width:170px;background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.fcard b{display:block;font-size:14px}
+.fcard small{color:var(--ink2)}
+.fcard .bar2{height:6px;border-radius:3px;background:var(--field);margin-top:8px;overflow:hidden}.fcard .bar2 i{display:block;height:100%;width:70%;background:var(--good)}
+.fc1{left:-14px;top:22px;animation:float 6s ease-in-out infinite}
+.fc2{right:-14px;top:150px;animation:float 7s ease-in-out -2s infinite}
+.fc3{left:-10px;bottom:22px;animation:float 6.5s ease-in-out -4s infinite}
+.lfeat{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.lfeat .glass{padding:20px;display:flex;flex-direction:column;gap:8px}
+.lfeat .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:color-mix(in oklab,var(--accent) 16%,transparent);color:var(--accent)}
+.lfeat .ic svg{width:24px;height:24px}
+.lfeat h3{font-size:17px}
+.lfeat p{margin:0;color:var(--ink2);font-size:14px}
+.lsteps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:22px}
+.lsteps div{display:flex;gap:12px;align-items:flex-start}
+.lsteps b.n{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none;font-size:14px}
+.lsteps p{margin:2px 0 0;color:var(--ink2);font-size:14px}
+.lfoot{text-align:center;color:var(--ink3);font-size:13px;padding:10px 0 20px}
+.sectitle{font-size:26px;letter-spacing:-.02em;margin:10px 4px 0}
+/* login */
+.login{min-height:calc(100vh - 80px);display:grid;place-items:center;padding:20px 0}
+.login .card{width:min(420px,100%);padding:30px 26px;display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.login .head{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;margin-bottom:6px}
+.login h2{font-size:26px;letter-spacing:-.02em}
+.login .sub{margin:0}
+.pwrap{position:relative}
+.pwrap .f{padding-right:64px}
+.pwrap button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--accent);font-weight:600;font-size:13px;padding:6px 8px}
+.login .f{padding:12px 14px;font-size:16px}
+.login .btn.primary{padding:13px;font-size:16px;justify-content:center}
+.login .back{align-self:center;border:0;background:transparent;color:var(--ink2);font-size:14px;cursor:pointer}
+.shakeX{animation:shakeX .4s}
+@keyframes shakeX{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+/* home dashboard */
+.homeh{padding:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.homeh h1{font-size:clamp(26px,4vw,36px);letter-spacing:-.02em;flex:1;min-width:200px}
+.homeh p{margin:4px 0 0;color:var(--ink2)}
+.next{padding:22px;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;cursor:pointer;border:1px solid var(--glass-edge);text-align:left;color:var(--ink);width:100%}
+.next .cd{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums;text-align:center}
+.next .cd small{display:block;font-size:12px;font-weight:600;color:var(--ink2);letter-spacing:.06em;text-transform:uppercase}
+.next h2{font-size:22px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.tcard{border:0;padding:0;text-align:left;cursor:pointer;color:var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.tcover{height:96px;position:relative;padding:14px 16px;color:#fff;display:flex;align-items:flex-end;font-weight:700;font-size:20px;letter-spacing:-.01em}
+.tcover span{position:relative;z-index:1;text-shadow:0 1px 8px rgba(0,0,0,.25)}
+.tbody{padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--ink2)}
+.tmeter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.tmeter .tr{height:6px;border-radius:3px;background:var(--field);overflow:hidden}.tmeter .tr i{display:block;height:100%;background:var(--accent)}
+.tnew{display:grid;place-items:center;min-height:200px;border:2px dashed var(--hair);background:transparent;color:var(--ink2);font-weight:600;font-size:15px;border-radius:var(--r-lg);cursor:pointer}
+.trip-btn.home .dot{background:var(--field)!important;color:var(--accent)}
+@media (max-width:760px){
+  .lhero{grid-template-columns:1fr;padding:22px 18px;gap:10px}
+  .lart{height:300px;order:-1}
+  .lfeat,.lsteps{grid-template-columns:1fr}
+  .lnav .hide-m{display:none}
+  .fc2{right:-6px}
+  .next{grid-template-columns:auto 1fr;padding:18px}
+  .next .go{display:none}
+  .homeh{padding:18px}
+  body.landing{padding-bottom:0}
+}
+@media (prefers-reduced-motion:reduce){.logo *,.float,.fcard,.photo-bg .ph,.pimg{animation:none!important}}
+/* lịch trình gọn */
+.dayswitch{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.dayswitch::-webkit-scrollbar{display:none}
+.dpill{flex:none;border:1px solid var(--glass-edge);background:var(--glass);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:16px;padding:8px 14px;text-align:left;color:var(--ink);cursor:pointer;min-width:118px}
+.dpill b{display:block;font-size:14px}.dpill small{color:var(--ink2);font-size:12px;white-space:nowrap}
+.dpill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}.dpill[aria-pressed="true"] small{color:rgba(255,255,255,.85)}
+.dayhead2{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:2px 4px 10px}
+.dayhead2 h3{font-size:20px;margin:0}.dayhead2 p{margin:0;color:var(--ink2);font-size:14px;flex-basis:100%}
+.slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.srow{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;padding:8px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--hair);cursor:pointer;position:relative}
+.srow .th{width:72px;height:72px;border-radius:12px;overflow:hidden;background:color-mix(in oklab,var(--accent) 14%,var(--field));display:grid;place-items:center;color:var(--accent);position:relative}
+.srow .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.srow .th svg{width:30px;height:30px}
+.cr{position:absolute;right:4px;bottom:2px;font-size:8px;color:#fff;text-shadow:0 0 3px #000;opacity:.85}
+.srow .tx{min-width:0}
+.srow .tm{font-size:12px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.srow h4{margin:1px 0 2px;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow p{margin:0;color:var(--ink2);font-size:13px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.srow.open p{-webkit-line-clamp:unset}.srow.open h4{white-space:normal}
+.srow .mini{display:flex;gap:6px;align-items:center;margin-top:4px;font-size:12px;color:var(--ink3)}
+.srow .go{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--field);color:var(--accent);text-decoration:none}
+.srow:not(:last-child)::after{content:"";position:absolute;left:44px;bottom:-9px;width:2px;height:10px;background:var(--hair)}
+.daynav{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
+.gitem .gthumb{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;margin-bottom:6px;background:var(--field);position:relative}
+.gitem .gthumb:not(:has(img)){display:none}
+.gitem .gthumb img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:760px){.srow{grid-template-columns:60px 1fr auto;gap:10px}.srow .th{width:60px;height:60px}.srow:not(:last-child)::after{left:38px}}
 /* person picker */
 .pp-grid{display:flex;flex-wrap:wrap;gap:6px}
 .pp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);background:var(--glass-strong);border-radius:999px;padding:3px 10px 3px 3px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;min-height:30px}
@@ -396,12 +598,133 @@ td input.n{text-align:right}
   .sheet{border-radius:20px}
 }
 @media (prefers-reduced-motion:reduce){.wash i{transition:none}}
+
+/* === v19: nền ảnh thật làm mờ + khung kính minh hoạ (theo mockup) === */
+:root{--ph-blur:5px}
+.photo-bg .veil{background:linear-gradient(180deg,rgba(238,241,246,.10),rgba(238,241,246,.20) 50%,rgba(238,241,246,.35))}
+:root[data-theme="dark"] .photo-bg .veil{background:linear-gradient(180deg,rgba(11,12,16,.30),rgba(11,12,16,.42) 50%,rgba(11,12,16,.6))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .photo-bg .veil{background:linear-gradient(180deg,rgba(11,12,16,.30),rgba(11,12,16,.42) 50%,rgba(11,12,16,.6))}}
+.photo-bg .ph{inset:-8%;filter:saturate(1.15) brightness(1.04) blur(var(--ph-blur))}
+body.landing .photo-bg .ph{--ph-blur:9px}
+body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06) 50%,var(--veil-l3))}
+:root[data-theme="dark"] body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(11,12,16,.35),rgba(11,12,16,.45) 50%,rgba(11,12,16,.75))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(11,12,16,.35),rgba(11,12,16,.45) 50%,rgba(11,12,16,.75))}}
+body.landing .lhero{grid-template-columns:1fr;justify-items:center;text-align:center;background:transparent;border-color:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:28px 10px 10px;gap:26px}
+body.landing .lhero h1 .ln{display:inline-block}
+body.landing .lhero h1 .ln+.ln{margin-left:.25em}
+body.landing .lhero p{margin:14px auto 20px}
+body.landing .lhero .cta{justify-content:center}
+body.landing .lhero > div:first-child{order:0;max-width:760px}
+.lart:has(.hero-glass){width:min(820px,100%);height:auto!important;aspect-ratio:780/570;order:1}
+.hero-glass{padding:10px;border-radius:30px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.65);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:0 30px 80px rgba(20,30,40,.28),inset 0 1px 0 rgba(255,255,255,.7)}
+.hero-glass .hin{position:relative;width:100%;height:100%;border-radius:21px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.hero-glass .hin img{width:100%;height:100%;object-fit:cover;display:block;animation:heroZoom 26s ease-in-out infinite alternate}
+@keyframes heroZoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+.hero-glass .shine{border-radius:30px}
+.lart:has(.hero-glass) .fc1{left:-34px;top:12%}.lart:has(.hero-glass) .fc2{right:-34px;top:38%}.lart:has(.hero-glass) .fc3{left:-24px;bottom:9%;top:auto}
+.login .card{padding-top:12px}
+.lbanner{margin:0 -14px 4px;border-radius:18px;overflow:hidden;aspect-ratio:780/400;border:1px solid var(--glass-edge);box-shadow:0 10px 30px rgba(20,30,40,.18)}
+.lbanner img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block}
+.photo-strip .pimg{background-image:url("hero.jpg");background-position:50% 72%}
+@media (max-width:760px){
+  body.landing .lhero{padding:14px 0 4px;gap:16px}
+  .lart:has(.hero-glass){order:1}
+  .hero-glass{padding:6px;border-radius:22px}.hero-glass .hin{border-radius:17px}
+  .lart:has(.hero-glass) .fcard{display:none}
+  .lbanner{margin:0 -8px 2px}
+}
+.photo-bg .rays{left:-60%;top:-80%;width:220%;height:240%;filter:blur(3px)}
+body.landing .lhero h1{font-size:clamp(34px,4.6vw,56px)}
+body.landing .lhero > div:first-child{position:relative}
+body.landing .lhero > div:first-child::before{content:"";position:absolute;inset:-30px -60px;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,color-mix(in oklab,var(--base) 62%,transparent),transparent);filter:blur(10px)}
+body.landing .lhero p{color:color-mix(in oklab,var(--ink) 82%,transparent);font-weight:500}
+body.landing .lhero .btn.lg:not(.primary){background:var(--glass-strong);border:1px solid var(--glass-edge);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+@media (prefers-reduced-motion:reduce){.hero-glass .hin img{animation:none}}
+
+/* nút sửa nhỏ theo ngữ cảnh */
+.more{position:relative}
+.more summary{list-style:none;cursor:pointer;font-size:12px;letter-spacing:1px;width:36px;height:36px;padding:0;display:grid;place-items:center}
+.more summary::-webkit-details-marker{display:none}
+.more .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:220px;padding:6px;border-radius:14px;display:flex;flex-direction:column;background:var(--base);border:1px solid var(--hair);box-shadow:0 14px 40px rgba(20,30,40,.22)}
+.more .menu button{white-space:nowrap;display:flex;gap:8px;align-items:center;border:0;background:transparent;color:var(--ink);text-align:left;padding:10px 12px;border-radius:10px;font-size:15px;cursor:pointer}
+.more .menu button:hover{background:var(--field)}.more .menu button.danger{color:var(--danger)}
+.more[open] summary{background:var(--field)}
+.pen{margin-left:auto;display:inline-flex;align-items:center;gap:4px;border:0;border-radius:999px;padding:5px 10px;background:var(--field);color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;align-self:center}
+.pen:hover{background:color-mix(in oklab,var(--accent) 16%,transparent)}
+.dayhead2{position:relative;padding-right:74px}.dayhead2 .pen{position:absolute;right:0;top:0;margin:0}
+.hero{overflow:visible!important;position:relative;z-index:6}
+.donebar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:8px;align-items:center;padding:6px 6px 6px 16px;border-radius:999px;background:var(--glass-strong);border:1px solid var(--glass-edge);box-shadow:0 10px 30px rgba(20,30,40,.22);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-size:14px;color:var(--ink2);white-space:nowrap}
+@media (min-width:761px){.donebar{bottom:24px}}
+section.day,section.gsec,.hero{scroll-margin-top:96px}
+.edit-flash{animation:editFlash 1.4s ease-out}
+@keyframes editFlash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* === v23: màn ngoài kiểu hero toàn màn hình (tham khảo Streamflow) === */
+body.landing .photo-bg .ph{--ph-blur:0px;inset:-2%;background-position:62% 100%;filter:saturate(1.05)}
+body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(246,248,251,.88) 0%,rgba(246,248,251,.72) 26%,rgba(246,248,251,.38) 46%,rgba(246,248,251,0) 62%,rgba(246,248,251,0) 85%,rgba(246,248,251,.2) 100%)}
+:root[data-theme="dark"] body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(10,12,18,.8) 0%,rgba(10,12,18,.5) 30%,rgba(10,12,18,.15) 55%,rgba(10,12,18,.35) 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(10,12,18,.8) 0%,rgba(10,12,18,.5) 30%,rgba(10,12,18,.15) 55%,rgba(10,12,18,.35) 100%)}}
+.lnav2{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 8px 0;position:relative;z-index:5}
+.brand2{white-space:nowrap;display:flex;align-items:center;gap:10px;border:0;background:none;cursor:pointer;color:#1d4f86;font-weight:800;font-size:20px;letter-spacing:.06em;padding:0}
+.brand2 b{color:#2f86c9;font-weight:800}
+:root[data-theme="dark"] .brand2{color:#e8f0ff}:root[data-theme="dark"] .brand2 b{color:#7cc3ff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .brand2{color:#e8f0ff}:root:not([data-theme="light"]) .brand2 b{color:#7cc3ff}}
+.lnav2 .links{display:flex;align-items:center;gap:22px}
+.lnav2 .links a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.lnav2 .links a.on,.lnav2 .links a:hover{opacity:1}
+.tbtn{border:0;background:none;color:var(--ink);cursor:pointer;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;opacity:.8}
+.tbtn:hover{background:var(--field)}
+.obtn{white-space:nowrap;border:1px solid color-mix(in oklab,var(--ink) 35%,transparent);background:color-mix(in oklab,var(--base) 35%,transparent);color:var(--ink);border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.obtn:hover,.obtn.on{background:var(--ink);color:var(--base)}
+.hero2{min-height:calc(100svh - 96px);display:flex;flex-direction:column;align-items:center;text-align:center;padding:9vh 8px 0;position:relative}
+.hero2 h1{font-size:clamp(28px,4.2vw,52px);font-weight:800;letter-spacing:.01em;text-transform:uppercase;line-height:1.12;margin:0;color:var(--ink)}
+.hero2 h1 .ln{display:inline-block;animation:riseIn .8s cubic-bezier(.2,.8,.2,1) both}.hero2 h1 .ln:nth-child(2){animation-delay:.12s}.hero2 h1 .ln:nth-child(3){animation-delay:.24s}
+@keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero2 .sub2{margin:12px 0 26px;font-size:clamp(15px,1.6vw,19px);color:color-mix(in oklab,var(--ink) 80%,transparent);font-weight:500;max-width:620px}
+.pillcta{border:0;border-radius:999px;padding:12px 34px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(180deg,#3a8ee6,#1f6fd1);box-shadow:0 8px 22px rgba(31,111,209,.35);transition:transform .15s,box-shadow .15s;animation:riseIn .8s .6s cubic-bezier(.2,.8,.2,1) both}
+.pillcta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(31,111,209,.45)}
+.pillcta.wide{width:100%;padding:13px;animation:none}
+.hero2 .sub2{animation:riseIn .8s .45s cubic-bezier(.2,.8,.2,1) both}
+.scrolldown{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;text-decoration:none;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.scrolldown small{font-size:10px;font-weight:700;letter-spacing:.18em}
+.mouse{width:20px;height:32px;border:2px solid #fff;border-radius:12px;display:flex;justify-content:center;padding-top:5px;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+.mouse i{width:3px;height:7px;border-radius:2px;background:#fff;animation:wheel 1.6s ease-in-out infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(9px);opacity:0}100%{opacity:0}}
+.login2{min-height:calc(100svh - 70px);display:grid;place-items:center;padding:20px 0 40px}
+.card2{width:min(400px,100%);padding:28px 24px;display:flex;flex-direction:column;gap:14px;border-radius:24px;background:color-mix(in oklab,var(--base) 72%,transparent);border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 60px rgba(20,30,40,.25);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);animation:riseIn .6s cubic-bezier(.2,.8,.2,1) both}
+.card2 .head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;margin-bottom:4px}
+.card2 h2{font-size:24px;letter-spacing:-.01em;margin:0}.card2 .sub{margin:0;color:var(--ink2)}
+.card2 .f{padding:12px 14px;font-size:16px}
+.card2 .back{align-self:center;border:0;background:transparent;color:var(--ink2);font-size:14px;cursor:pointer}
+body.landing #features{margin-top:30px}
+@media (max-width:760px){
+  .lnav2{padding:12px 2px 0}.brand2{font-size:14px;gap:7px;letter-spacing:.04em}.lnav2 .links{gap:6px}.lnav2 .hide-m{display:none}.obtn{padding:7px 14px;font-size:12px}
+  .hero2{padding-top:7vh}
+  body.landing .photo-bg .ph{background-position:66% 100%}
+}
+
+/* v24: nền ảnh hoạt hình + khung kính cho câu giữa */
+body.landing .photo-bg .ph{background-image:url("hero-bg.jpg");background-position:60% 30%}
+body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(246,248,251,.35) 0%,rgba(246,248,251,0) 30%,rgba(246,248,251,0) 85%,rgba(246,248,251,.15) 100%)}
+:root[data-theme="dark"] body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(10,12,18,.55),rgba(10,12,18,.25) 40%,rgba(10,12,18,.4))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(10,12,18,.55),rgba(10,12,18,.25) 40%,rgba(10,12,18,.4))}}
+.hbox{display:flex;flex-direction:column;align-items:center;padding:24px 40px 26px;border-radius:28px;max-width:760px;
+  background:color-mix(in oklab,var(--base) 58%,transparent);border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 24px 60px rgba(20,30,40,.22),inset 0 1px 0 rgba(255,255,255,.7);
+  -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);animation:riseIn .8s cubic-bezier(.2,.8,.2,1) both}
+:root[data-theme="dark"] .hbox{border-color:rgba(255,255,255,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hbox{border-color:rgba(255,255,255,.18)}}
+.hbox h1{font-size:clamp(26px,3.4vw,44px);letter-spacing:.02em;line-height:1.15}
+body.landing .hero2{padding-top:3vh}
+.hbox .sub2{color:var(--ink2);margin:8px 0 18px;max-width:520px}
+@media (max-width:760px){.hbox{padding:20px 16px 22px;border-radius:22px}.hbox h1{font-size:25px}body.landing .hero2{padding-top:3vh}body.landing .photo-bg .ph{background-position:86% 60%}}
 </style>
 
+<div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
 <div class="wash" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="app">
   <aside class="side glass">
-    <div class="side-h"><h2>Chuyến đi</h2><div class="actions"><button class="btn icon" id="themeBtn" aria-label="Đổi giao diện sáng tối"></button><button class="btn primary sm" id="newBtn">+ Mới</button></div></div>
+    <div class="side-h"><button class="brand" id="brandBtn" data-act="home" aria-label="Trang chủ"></button><h2 style="display:none">Chuyến đi</h2><div class="actions"><button class="btn icon" id="themeBtn" aria-label="Đổi giao diện sáng tối"></button><button class="btn primary sm" id="newBtn">+ Mới</button></div></div>
     <div class="list" id="list"></div>
     <div class="status" id="status">Đang tải…</div>
     <div class="acct" id="acct"></div>
@@ -425,7 +748,7 @@ const vnd=n=>Math.round(n||0).toLocaleString("vi-VN")+" ₫";
 const uid=()=>"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db=null, mode="loading", canWrite=true;
-let trips={}, cur=null, editing=false, tab="plan";
+let trips={}, cur=null, editing=false, editInfo=false, editFocus=null, tab="plan";
 const pending={}; let deferRender=false;
 
 /* ---------- storage ---------- */
@@ -588,12 +911,12 @@ async function localLogin(u,p){
 }
 document.addEventListener("submit",async e=>{
   if(e.target.id!=="loginForm") return; e.preventDefault();
-  if(FB_ON){const btn=e.target.querySelector("button");btn.disabled=true;btn.textContent="Đang đăng nhập…";
+  if(FB_ON){const btn=e.target.querySelector("button.primary");btn.disabled=true;btn.textContent="Đang đăng nhập…";
     const err=await fbLogin($("#lg-user").value,$("#lg-pass").value);
-    if(err&&$("#lg-err")){$("#lg-err").textContent=err;$("#lg-err").hidden=false;btn.disabled=false;btn.textContent="Đăng nhập";$("#lg-pass").select()}
+    if(err&&$("#lg-err")){$("#lg-err").textContent=err;$("#lg-err").hidden=false;const fm=$("#loginForm");fm.classList.remove("shakeX");void fm.offsetWidth;fm.classList.add("shakeX");btn.disabled=false;btn.textContent="Đăng nhập";$("#lg-pass").select()}
     return}
   const ok=await localLogin($("#lg-user").value,$("#lg-pass").value);
-  if(!ok){$("#lg-err").hidden=false;$("#lg-pass").select()}
+  if(!ok){$("#lg-err").hidden=false;$("#lg-pass").select();const fm=$("#loginForm");fm.classList.remove("shakeX");void fm.offsetWidth;fm.classList.add("shakeX")}
 });
 
 async function init(){
@@ -616,9 +939,9 @@ async function init(){
 document.addEventListener("focusout",()=>setTimeout(()=>{if(deferRender&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"")){deferRender=false;render()}},0));
 
 /* ---------- routing ---------- */
-function pick(){const h=location.hash.slice(1);cur=trips[h]?h:(Object.keys(trips).sort(byRecent)[0]||null)}
+function pick(){const h=location.hash.slice(1);if(trips[h])homeView=false;cur=trips[h]?h:(Object.keys(trips).sort(byRecent)[0]||null)}
 function route(){try{history.replaceState(null,"",cur?"#"+cur:location.pathname)}catch{}}
-window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(trips[h]){cur=h;editing=false;render()}});
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(trips[h]){cur=h;homeView=false;editing=false;editInfo=false;render()}});
 
 /* ---------- helpers ---------- */
 function blankTrip(o){
@@ -660,13 +983,11 @@ function render(){
   const who=fbUser?.email||(localUser&&((window.LOCAL_NAMES||{})[localUser]||localUser));
   $("#acct").innerHTML=localUser?`<button class="who" data-act="account" title="Tài khoản">${avHTML(localUser)}<span>${esc(who)}</span></button><button class="btn sm" data-act="signout">Đăng xuất</button>`
     :who?`<span>${esc(who)}</span><button class="btn sm" data-act="signout">Đăng xuất</button>`:"";
+  document.body.classList.toggle("landing",mode==="login-local");
+  renderTabbar(null);
   if(mode==="login-local"){
-    m.innerHTML=`<form class="glass sheet" id="loginForm" style="margin:40px auto">
-      <h2>Đăng nhập Sổ Tay Chuyến Đi</h2>
-      <label class="lbl">Tài khoản<input class="f" id="lg-user" autocomplete="username" required></label>
-      <label class="lbl">Mật khẩu<input class="f" id="lg-pass" type="password" autocomplete="current-password" required></label>
-      <div class="badge over" id="lg-err" hidden>Sai tài khoản hoặc mật khẩu.</div>
-      <div class="foot"><button class="btn primary">Đăng nhập</button></div></form>`;
+    m.innerHTML=loginView?loginHTML():landingHTML();
+    if(loginView) setTimeout(()=>$("#lg-user")?.focus(),50);
     return;
   }
   if(mode==="login"){
@@ -677,6 +998,7 @@ function render(){
     m.innerHTML=`<div class="glass empty"><h2>Tài khoản chưa được cấp quyền</h2><p>${esc(fbUser?.email||"")} không nằm trong danh sách thành viên. Hãy đăng nhập bằng tài khoản khác hoặc nhờ chủ sổ tay thêm email của bạn.</p><button class="btn primary" data-act="signout">Đăng nhập tài khoản khác</button></div>`;
     return;
   }
+  if(homeView&&Object.keys(trips).length){ document.documentElement.style.setProperty("--accent",COLORS[0]); m.innerHTML=homeHTML(); return }
   if(!t){
     m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<div class="actions" style="justify-content:center"><button class="btn primary" data-act="new">+ Tạo chuyến mới</button>${fbUser?`<button class="btn" data-act="sample">Nạp chuyến mẫu Đà Lạt</button>${Object.keys(localLoad()).length?`<button class="btn" data-act="migrate">Đưa dữ liệu trên máy này lên</button>`:""}`:""}</div>`:""}</div>`;
     return;
@@ -687,11 +1009,226 @@ function render(){
   if(!Array.isArray(t.ledger)) t.ledger=[];
   if(!Array.isArray(t.members)) t.members=defaultMembers(t);
   m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):tab==="guide"?guideHTML(t):tab==="ledger"?ledgerHTML(t):costHTML(t));
-  if(tab==="album"||tab==="guide") hydrateMedia();
+  if(tab==="album"||tab==="guide"||tab==="plan") hydrateMedia();
+  if(tab==="plan"||tab==="guide") setTimeout(hydrateWikiImgs,50);
   renderTabbar(t);
   if(tab==="guide"&&!editing) drawRouteMap(t);
+  if((editing&&(tab==="plan"||tab==="guide"))||editInfo) m.insertAdjacentHTML("beforeend",`<div class="donebar" role="status"><span>Đang chỉnh sửa</span><button class="btn primary sm" data-act="editDone">Xong</button></div>`);
+  if(editFocus){const [f,i]=editFocus;editFocus=null;const el=m.querySelectorAll(f==="day"?"section.day":"section.gsec")[i];
+    if(el){requestAnimationFrame(()=>{el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.add("edit-flash")})}}
+  if(editInfo){const h=m.querySelector(".hero");h&&requestAnimationFrame(()=>h.scrollIntoView({behavior:"smooth",block:"start"}))}
+}
+document.addEventListener("click",e=>{document.querySelectorAll("details.more[open]").forEach(d=>{if(!d.contains(e.target)||e.target.closest(".menu button"))d.open=false})});
+
+
+/* ---------- Logo động ---------- */
+function logoSVG(size=36,anim=true){
+  const id="lg"+Math.random().toString(36).slice(2,7);
+  return `<svg class="logo ${anim?"":"still"}" width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true">
+    <defs><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34C759"/><stop offset="1" stop-color="#0A84FF"/></linearGradient>
+    <clipPath id="${id}c"><rect width="64" height="64" rx="16"/></clipPath>
+    <linearGradient id="${id}s" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g clip-path="url(#${id}c)">
+      <rect width="64" height="64" fill="url(#${id}g)"/>
+      <g class="lg-sun"><circle cx="16" cy="16" r="5" fill="#FFD60A"/><path d="M16 6v3M16 23v3M6 16h3M23 16h3M9 9l2 2M21 21l2 2M9 23l2-2M21 11l2-2" stroke="#FFD60A" stroke-width="2" stroke-linecap="round"/></g>
+      <path d="M8 50L20 44L32 50L44 44L56 50V58H8Z" fill="#fff" opacity=".22"/>
+      <path class="lg-route" d="M14 50C22 50 22 38 30 38S40 36 46 30" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="14" cy="50" r="3.2" fill="#fff"/>
+      <g class="lg-pin"><path d="M46 14c-5.5 0-9.5 4-9.5 9.2C36.5 30 46 38 46 38s9.5-8 9.5-14.8C55.5 18 51.5 14 46 14z" fill="#fff"/><circle cx="46" cy="23.5" r="3.6" fill="#0A84FF"/></g>
+      <rect class="lg-shine" x="-30" y="-10" width="26" height="90" fill="url(#${id}s)" transform="rotate(20)"/>
+    </g></svg>`;
 }
 
+/* ---------- Cảnh xe máy chạy trên đường đèo ---------- */
+function rideSVG(){
+  const hills='<path d="M0 104 C60 70 110 72 160 92 S260 60 330 88 S450 58 520 86 S580 80 600 92 V150 H0Z" fill="color-mix(in oklab,var(--accent) 22%,transparent)"/>';
+  const pines=x=>`<g transform="translate(${x} 0)"><path d="M0 116 L14 78 L28 116Z M20 116 L30 90 L40 116Z" fill="color-mix(in oklab,var(--accent) 55%,#0b3d2a)"/></g>`;
+  const pineRow=[30,120,210,300,380,470,550].map(pines).join("");
+  const dashes=Array.from({length:12},(_,k)=>`<rect x="${k*50}" y="134" width="26" height="4" rx="2" fill="#fff" opacity=".85"/>`).join("");
+  const wheel=(cx)=>`<g class="wh"><circle cx="${cx}" cy="62" r="12" fill="#1c1c1e"/><circle cx="${cx}" cy="62" r="6.5" fill="#d1d1d6"/><path d="M${cx-6} 62h12M${cx} 56v12" stroke="#8e8e93" stroke-width="1.6"/></g>`;
+  return `<svg viewBox="0 0 600 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <circle class="sky-sun" cx="520" cy="34" r="16" fill="#FFD60A" opacity=".85"/>
+    <g class="loopA">${hills}<g transform="translate(600 0)">${hills}</g></g>
+    <g class="loopB">${pineRow}<g transform="translate(600 0)">${pineRow}</g></g>
+    <rect x="0" y="122" width="600" height="28" fill="#2c2c2e"/>
+    <g class="loopC">${dashes}<g transform="translate(600 0)">${dashes}</g></g>
+    <g class="bike" transform="translate(236 70) scale(.85)">
+      <circle class="puff" cx="4" cy="56" r="4" fill="#c7c7cc"/><circle class="puff p2" cx="4" cy="56" r="4" fill="#c7c7cc"/><circle class="puff p3" cx="4" cy="56" r="4" fill="#c7c7cc"/>
+      <path d="M96 24 L132 14 L132 38 Z" fill="#FFE27A" opacity=".18"/>
+      ${wheel(28)}${wheel(94)}
+      <path d="M8 56 C6 44 14 35 30 33 C42 32 50 37 53 46 L56 57 L12 58 Z" fill="var(--accent)"/>
+      <path d="M14 44 C18 38 28 36 38 37" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="6" y="44" width="4" height="5" rx="1.5" fill="#FF453A"/>
+      <path d="M50 57 L80 57 L81 51 L52 51 Z" fill="color-mix(in oklab,var(--accent) 65%,#000)"/>
+      <path d="M77 57 C79 44 81 31 85 20 L91 20 C89 32 90 45 93 57 Z" fill="var(--accent)"/>
+      <path d="M83 57 C86 49 101 48 106 57 Z" fill="var(--accent)"/>
+      <path d="M18 34 C22 29 44 28 51 32 L49 37 L20 37 Z" fill="#2c2c2e"/>
+      <ellipse cx="92" cy="23" rx="3.2" ry="2.6" fill="#FFE27A"/>
+      <g class="rider">
+        <path d="M37 34 L58 37 L63 53" fill="none" stroke="#3A5A8C" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M60 52 L69 53" stroke="#1c1c1e" stroke-width="5" stroke-linecap="round"/>
+        <path class="scarf" d="M44 13 C38 12 34 15 30 13 C33 17 38 18 44 17 Z" fill="#FFD60A"/>
+        <path d="M30 35 C29 24 34 14 45 11 L53 14 C51 23 47 31 43 37 Z" fill="#E8604C"/>
+        <path d="M50 15 L66 18 L83 17" fill="none" stroke="#E8604C" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="83" cy="17" r="2.8" fill="#F2C8A0"/>
+        <path d="M80 18 L95 14" stroke="#1c1c1e" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="52" cy="5" r="8" fill="#F5F5F7"/>
+        <path d="M52 -3 A8 8 0 0 1 60 5 L52 5 Z" fill="var(--accent)"/>
+        <path d="M54 3 H61 A1 1 0 0 1 61 8 H54 Z" fill="#1c1c1e" opacity=".85"/>
+      </g>
+    </g></svg>`;
+}
+
+/* ---------- Cảnh đèo Đà Lạt mùa dã quỳ: cặp đôi bên xe máy ---------- */
+function rnd(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function sceneSVG(){
+  const R=rnd(11);
+  // bụi dã quỳ: các mảng lá + hoa vàng
+  let leaves="", flowers=["","",""];
+  const inHill=(x,y)=>{const nx=(x-430)/190, ny=(y-150)/120; return nx*nx+ny*ny<1 && y<285};
+  for(let k=0;k<70;k++){const x=230+R()*370,y=40+R()*240; if(!inHill(x,y))continue;
+    const r=18+R()*26; leaves+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${r.toFixed(1)}" ry="${(r*.75).toFixed(1)}" fill="${R()<.5?"#466b2f":"#3a5a28"}" opacity=".95"/>`}
+  for(let k=0;k<420;k++){const x=230+R()*370,y=35+R()*250; if(!inHill(x,y))continue;
+    const r=2.2+R()*3.6, c=R()<.7?"#F6C12B":"#F2A516";
+    flowers[k%3]+=`<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${c}"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r*.35).toFixed(1)}" fill="#B9661A"/></g>`}
+  let petals="";
+  for(let k=0;k<12;k++){const x=260+R()*330,y=30+R()*120,d=(R()*13).toFixed(1);
+    petals+=`<ellipse class="petal" style="animation-delay:-${d}s" cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="3" ry="1.6" fill="#F6C12B"/>`}
+  return `<svg viewBox="0 0 600 340" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Minh hoạ: đôi bạn đứng bên xe máy trên đèo Đà Lạt mùa hoa dã quỳ">
+  <defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dfe8e2"/><stop offset="1" stop-color="#f3ecdd"/></linearGradient>
+    <radialGradient id="sunG" cx=".85" cy=".1" r=".8"><stop offset="0" stop-color="#FFD37A" stop-opacity=".65"/><stop offset="1" stop-color="#FFD37A" stop-opacity="0"/></radialGradient>
+    <radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient>
+    <linearGradient id="roadG" x1="0" y1="1" x2=".3" y2="0"><stop offset="0" stop-color="#5d6166"/><stop offset="1" stop-color="#8d9095"/></linearGradient>
+  </defs>
+  <rect width="600" height="340" fill="url(#skyG)"/>
+  <path d="M0 150 C80 110 150 120 220 95 S360 70 430 90 S560 80 600 100 V240 H0Z" fill="#a9c0b0" opacity=".8"/>
+  <path d="M0 185 C70 150 130 165 200 140 S320 130 380 150 V260 H0Z" fill="#7da486"/>
+  <g class="mist"><ellipse cx="200" cy="170" rx="260" ry="26" fill="#fff" opacity=".45"/><ellipse cx="520" cy="130" rx="200" ry="18" fill="#fff" opacity=".35"/></g>
+  <path d="M0 120 C20 110 40 130 52 150 C70 140 90 170 96 200 L110 340 H0Z" fill="#2f4a2a"/>
+  <path d="M0 340 L0 292 C55 258 108 228 150 206 L172 206 C150 240 150 290 236 340 Z" fill="url(#roadG)"/>
+  <path d="M172 206 C150 240 150 290 236 340" fill="none" stroke="#f4f1ea" stroke-width="3" opacity=".9"/>
+  <path d="M8 330 C60 290 110 248 156 210" fill="none" stroke="#f4f1ea" stroke-width="1.6" stroke-dasharray="10 12" opacity=".6"/>
+  <g><rect x="118" y="214" width="2.5" height="18" fill="#555"/><path d="M119 202 L126 209 L119 216 L112 209 Z" fill="#F2A516" stroke="#7a4b0d" stroke-width=".8"/></g>
+  <path d="M168 206 C150 245 155 292 236 340 H600 V270 C480 262 330 250 230 236 C205 228 185 214 168 206Z" fill="#9b8a63"/>
+  <path d="M215 236 C320 252 470 262 600 268 V300 C460 294 320 284 228 262Z" fill="#6f8b45" opacity=".9"/>
+  <g class="sway">${leaves}</g>
+  <g class="sway">${flowers[0]}</g><g class="sway s2">${flowers[1]}</g><g class="sway s3">${flowers[2]}</g>
+  <!-- xe máy dựng bên đường -->
+  <g>
+    <circle cx="418" cy="304" r="13" fill="#1d1f24"/><circle cx="418" cy="304" r="6" fill="#9aa0a8"/>
+    <circle cx="476" cy="304" r="13" fill="#1d1f24"/><circle cx="476" cy="304" r="6" fill="#9aa0a8"/>
+    <path d="M404 296 C404 282 418 274 436 274 L458 276 L470 292 L488 296 L486 304 L404 304Z" fill="#1f2b48"/>
+    <path d="M440 276 L462 278 L470 292 L446 292Z" fill="#20a39e"/>
+    <path d="M470 292 L482 262 L490 262" fill="none" stroke="#2a2d33" stroke-width="4" stroke-linecap="round"/>
+    <path d="M412 274 C418 268 440 266 452 270 L450 276 L414 278Z" fill="#141518"/>
+    <circle cx="436" cy="262" r="11" fill="#f1f1f3"/><path d="M430 258 h12 v6 h-12z" fill="#30343c" rx="2"/>
+    <path d="M478 248 L494 252 L492 262 L480 262Z" fill="#f4f4f6" opacity=".9"/>
+  </g>
+  <!-- cô gái áo khoác đỏ cầm bó dã quỳ -->
+  <g>
+    <path d="M290 272 L288 320 L297 320 L300 278 L303 320 L312 320 L310 272Z" fill="#8f9bab"/>
+    <path d="M286 320 h12 v4 h-12z M301 320 h12 v4 h-12z" fill="#2a2a2e"/>
+    <path d="M283 228 C283 216 292 211 301 211 C311 211 318 217 318 228 L321 276 L281 276Z" fill="#d43f2e"/>
+    <path d="M300 214 L300 274" stroke="#9e2d20" stroke-width="1.6"/>
+    <path d="M287 214 C292 220 306 220 314 214 L312 222 C305 226 294 226 288 222Z" fill="#3b3b40"/>
+    <path d="M314 228 L332 240" stroke="#c63a2a" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="333" cy="241" r="3.6" fill="#f1c7a5"/>
+    <g class="bq"><path d="M333 242 L326 276 M336 241 L332 276 M331 243 L320 272" stroke="#4f7a2e" stroke-width="1.8"/>
+      <g fill="#F6C12B"><circle cx="333" cy="230" r="4.6"/><circle cx="341" cy="234" r="4.2"/><circle cx="327" cy="235" r="4"/><circle cx="337" cy="225" r="3.8"/><circle cx="345" cy="227" r="3.4"/><circle cx="329" cy="226" r="3.3"/></g>
+      <g fill="#B9661A"><circle cx="333" cy="230" r="1.6"/><circle cx="341" cy="234" r="1.5"/><circle cx="327" cy="235" r="1.4"/><circle cx="337" cy="225" r="1.3"/></g></g>
+    <circle cx="304" cy="198" r="10.5" fill="#f1c7a5"/>
+    <path class="hair" d="M293 197 C290 182 309 177 314 189 C309 187 303 189 299 195 C297 204 298 216 296 226 C290 222 285 222 283 218 C288 212 291 205 293 197Z" fill="#6b3a24"/>
+    <circle cx="309" cy="198" r="1.1" fill="#3a2a20"/><path d="M308 204 q2 1.4 4 0" stroke="#b5654a" stroke-width="1" fill="none"/>
+  </g>
+  <!-- chàng trai áo thun đỏ, khăn bandana -->
+  <g>
+    <path d="M352 274 L350 320 L359 320 L362 280 L365 320 L374 320 L372 274Z" fill="#7d8a99"/>
+    <path d="M348 320 h12 v4 h-12z M363 320 h12 v4 h-12z" fill="#2a2a2e"/>
+    <path d="M345 222 C347 213 355 209 364 209 C374 209 381 215 381 224 L379 276 L347 276Z" fill="#d23a35"/>
+    <path d="M349 224 L340 238" stroke="#d23a35" stroke-width="8" stroke-linecap="round"/>
+    <path d="M340 238 L336 242" stroke="#e8b896" stroke-width="6" stroke-linecap="round"/>
+    <path d="M379 226 L386 254" stroke="#e8b896" stroke-width="6.5" stroke-linecap="round"/>
+    <circle cx="390" cy="262" r="11" fill="#2b2f3a"/><path d="M381 258 h12 v6 h-12z" fill="#dfe3ea"/>
+    <circle cx="362" cy="196" r="10.5" fill="#e8b896"/>
+    <path d="M351 194 C351 181 373 180 373 194 C366 191 358 191 351 194Z" fill="#5b4b8a"/>
+    <path d="M372 192 L380 189 L378 197Z" fill="#5b4b8a"/>
+    <circle cx="356" cy="198" r="1.1" fill="#3a2a20"/>
+  </g>
+  ${petals}
+  <rect class="glow" width="600" height="340" fill="url(#sunG)" opacity=".85"/>
+  <rect width="600" height="340" fill="url(#vig)"/>
+  </svg>`;
+}
+let loginView=false, homeView=true;
+function landingHTML(){
+  const F=[["plan","Lịch trình từng ngày","Giờ giấc, quán ăn, ghi chú và nút chỉ đường Google Maps."],
+    ["guide","Gợi ý & lộ trình thông minh","Chọn quán, trang tự xếp đường đi 1-2-3 và vẽ bản đồ."],
+    ["todo","Việc cần làm","Đặt xe, book phòng… giao cho từng người, tích khi xong."],
+    ["album","Album chung","Ảnh từ điện thoại tự nén, xếp theo ngày, cả nhóm cùng xem."],
+    ["ledger","Thu chi & chia tiền","Ghi ai trả, cuối chuyến tự tính ai chuyển cho ai."],
+    ["cost","Dự toán","Ước chi phí theo người, đêm, ngày, so với ngân sách."]];
+  return `<div style="display:flex;flex-direction:column;gap:16px">
+  ${landNav()}
+  <section class="hero2">
+    <div class="hbox">
+      <h1><span class="ln">Freedom is a full tank</span><br><span class="ln">and good friends.</span></h1>
+      <p class="sub2">One shared notebook for your crew: itinerary, maps, to-dos, photos and expenses.</p>
+      <button class="pillcta" data-act="showLogin">Get started</button>
+    </div>
+    <a class="scrolldown" href="#features" data-act="none" aria-label="Scroll down"><span class="mouse"><i></i></span><small>SCROLL DOWN</small></a>
+  </section>
+  <h2 class="sectitle" id="features">Mọi thứ cho một chuyến đi</h2>
+  <div class="lfeat">${F.map(([k,h,d])=>`<div class="glass"><span class="ic">${TAB_ICONS[k]}</span><h3>${h}</h3><p>${d}</p></div>`).join("")}</div>
+  <div class="glass lsteps" id="howto">
+    <div><b class="n">1</b><div><b>Đăng nhập</b><p>Tài khoản do trưởng nhóm cấp cho từng người.</p></div></div>
+    <div><b class="n">2</b><div><b>Tạo chuyến đi</b><p>Nhập điểm đến, số đêm, số người. Có sẵn mẫu Đà Lạt.</p></div></div>
+    <div><b class="n">3</b><div><b>Cùng nhau cập nhật</b><p>Mỗi người một máy, dữ liệu luôn đồng bộ.</p></div></div>
+  </div>
+  <div class="lfoot">Sổ Tay Chuyến Đi · dành cho nhóm bạn đi du lịch</div></div>`;
+}
+function landNav(){
+  return `<nav class="lnav2"><button class="brand2" data-act="goLanding">${logoSVG(30)}<span>SỔ TAY <b>CHUYẾN ĐI</b></span></button>
+    <div class="links"><a href="#features" data-act="none" class="hide-m${loginView?"":" on"}">Trang chủ</a><a href="#features" data-act="none" class="hide-m">Tính năng</a><a href="#howto" data-act="none" class="hide-m">Cách dùng</a>
+      <button class="tbtn" data-act="theme" aria-label="Đổi giao diện sáng tối">${themeIcon()}</button>
+      <button class="obtn${loginView?" on":""}" data-act="showLogin">Đăng nhập</button></div></nav>`;
+}
+function loginHTML(){
+  return `<div style="display:flex;flex-direction:column">${landNav()}<div class="login2"><form class="card2" id="loginForm" novalidate>
+    <div class="head">${logoSVG(56)}<h2>Chào mừng trở lại</h2><p class="sub">Đăng nhập để mở sổ tay của nhóm</p></div>
+    <label class="lbl">Tài khoản<input class="f" id="lg-user" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="vd: tri" required></label>
+    <label class="lbl">Mật khẩu<span class="pwrap"><input class="f" id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••" required><button type="button" data-act="togglePw">Hiện</button></span></label>
+    <div class="badge over" id="lg-err" hidden>Sai tài khoản hoặc mật khẩu.</div>
+    <button class="pillcta wide">Đăng nhập</button>
+    <button type="button" class="back" data-act="goLanding">← Về trang chủ</button>
+  </form></div></div>`;
+}
+function themeIcon(){const v=themeGet();return v==="dark"?'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>':v==="light"?'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>'}
+function tripStats(t){
+  const tasks=t.tasks||[], done=tasks.filter(x=>x.done).length;
+  const spent=(t.ledger||[]).filter(r=>r.kind!=="thu").reduce((a,r)=>a+(+r.amount||0),0);
+  let days=null; if(t.start){const d=new Date(t.start+"T00:00:00"); if(!isNaN(d)) days=Math.ceil((d-new Date(new Date().toDateString()))/864e5)}
+  return {done,n:tasks.length,spent,est:calc(t).total,days,photos:(t.photos||[]).length};
+}
+function homeHTML(){
+  const ids=Object.keys(trips).sort(byRecent), name=localUser?nameOf(localUser):"";
+  const h=new Date().getHours(), hi=h<11?"Chào buổi sáng":h<14?"Chào buổi trưa":h<18?"Chào buổi chiều":"Chào buổi tối";
+  const up=ids.map(id=>[id,tripStats(trips[id])]).filter(([,s])=>s.days!=null&&s.days>=0).sort((a,b)=>a[1].days-b[1].days)[0];
+  return `<section class="glass homeh">${logoSVG(56)}<div style="flex:1;min-width:200px"><h1>${hi}${name?", "+esc(name):""}</h1><p>${ids.length?`Nhóm đang có ${ids.length} chuyến đi`:"Chưa có chuyến nào, tạo chuyến đầu tiên nhé"}</p></div>
+    ${canWrite?`<button class="btn primary" data-act="new">+ Chuyến mới</button>`:""}</section>
+  ${up?(()=>{const [id,s]=up,t=trips[id];return `<button class="glass next" data-trip="${id}" style="--accent:${esc(t.color)}">
+      <div class="cd">${s.days===0?"Hôm nay":s.days}<small>${s.days===0?"lên đường":"ngày nữa"}</small></div>
+      <div><small class="sub">Chuyến sắp tới</small><h2>${esc(t.name)}</h2><div class="sub">${esc(range(t))} · ${s.done}/${s.n} việc đã xong</div></div>
+      <span class="btn primary go">Mở</span></button>`})():""}
+  <div class="tgrid">${ids.map(id=>{const t=trips[id],s=tripStats(id&&t);const pct=s.n?Math.round(s.done/s.n*100):0;
+    return `<button class="glass tcard" data-trip="${id}">
+      <div class="tcover" style="background:linear-gradient(135deg,${esc(t.color)},color-mix(in oklab,${esc(t.color)} 55%,#0A84FF))"><span>${esc(t.name||"Chưa đặt tên")}</span></div>
+      <div class="tbody"><div>${esc(t.destination||"")}${t.destination?" · ":""}${esc(range(t))}</div>
+        <div class="tmeter"><span>Việc</span><span class="tr"><i style="width:${pct}%;background:${esc(t.color)}"></i></span><b>${s.done}/${s.n}</b></div>
+        <div class="tmeter"><span>Đã chi</span><span class="tr"><i style="width:${s.est?Math.min(100,s.spent/s.est*100):0}%;background:${esc(t.color)}"></i></span><b>${vnd(s.spent)}</b></div>
+        <div>${(t.days||[]).length} ngày · ${t.people||1} người${s.photos?` · ${s.photos} ảnh`:""}</div></div></button>`}).join("")}
+    ${canWrite?`<button class="tnew" data-act="new">+ Tạo chuyến đi mới</button>`:""}</div>`;
+}
 const TAB_ICONS={
  plan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
  guide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
@@ -707,15 +1244,16 @@ function renderTabbar(t){
   el.innerHTML=T.map(([k,l])=>`<button data-tab="${k}" aria-selected="${tab===k}">${TAB_ICONS[k]}<span>${l}</span></button>`).join("");
 }
 function renderList(){
+  const bb=$("#brandBtn"); if(bb&&!bb.dataset.ok){bb.innerHTML=logoSVG(32)+"<span>Sổ Tay Chuyến Đi</span>";bb.dataset.ok=1}
   const ids=Object.keys(trips).sort(byRecent);
-  $("#list").innerHTML=ids.map(id=>{const t=trips[id];return `<button class="trip-btn" data-trip="${id}" aria-current="${id===cur}">
+  $("#list").innerHTML=`<button class="trip-btn home" data-act="home" aria-current="${homeView}"><span class="dot">⌂</span><span><b>Trang chủ</b><small>Tất cả chuyến đi</small></span></button>`+ids.map(id=>{const t=trips[id];return `<button class="trip-btn" data-trip="${id}" aria-current="${!homeView&&id===cur}">
     <span class="dot" style="background:${esc(t.color)}">${esc((t.destination||t.name||"?").trim().charAt(0).toUpperCase())}</span>
     <span><b>${esc(t.name||"Chưa đặt tên")}</b><small>${esc(range(t))}</small></span></button>`}).join("")||`<div class="status">Chưa có chuyến nào</div>`;
   $("#newBtn").hidden=!canWrite;
 }
 function heroHTML(t){
   const c=calc(t);
-  const head = editing ? `
+  const head = editInfo ? `
     <div class="hero-edit">
       <label class="wide">Tên chuyến<input class="f title" data-k="name" value="${esc(t.name)}"></label>
       <label class="wide">Điểm đến<input class="f" data-k="destination" value="${esc(t.destination)}" placeholder="VD: Đà Lạt, Lâm Đồng"></label>
@@ -727,13 +1265,11 @@ function heroHTML(t){
     </div>` : `
     <div><h1>${esc(t.name||"Chưa đặt tên")}</h1><div class="dest">${esc(t.destination||"")}</div></div>`;
   return `<section class="glass hero">
-    <div class="hero-top">${editing?"":head}
-      <div class="actions">${canWrite?`
-        <button class="btn ${editing?"primary":""}" data-act="edit">${editing?"Xong":"Sửa"}</button>
-        <button class="btn" data-act="dup">Nhân bản</button>
-        <button class="btn danger" data-act="del">Xoá</button>`:""}
+    <div class="hero-top">${editInfo?"":head}
+      <div class="actions">${canWrite?(editInfo?`<button class="btn primary sm" data-act="editDone">Xong</button>`:`<details class="more"><summary class="btn icon" aria-label="Tuỳ chọn chuyến đi">•••</summary>
+        <div class="menu"><button data-act="editInfo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg> Sửa thông tin chuyến</button><button data-act="dup">Nhân bản chuyến</button><button class="danger" data-act="del">Xoá chuyến</button></div></details>`):""}
       </div></div>
-    ${editing?head:`<div class="chips">
+    ${editInfo?head:`<div class="chips">
       <span class="chip">${esc(range(t))}</span>
       <span class="chip"><b>${t.days.length}</b> ngày <b>${t.nights}</b> đêm</span>
       <span class="chip"><b>${c.p}</b> người</span>
@@ -748,7 +1284,67 @@ function heroHTML(t){
     </div></section>`;
 }
 const pin='<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
+
+/* ---------- Ảnh địa điểm tự động (ảnh minh hoạ từ Wikipedia, giấy phép mở) ---------- */
+const WIMG_KEY="sotay-wimg-v1"; let wimg={}; try{wimg=JSON.parse(localStorage.getItem(WIMG_KEY)||"{}")}catch{}
+let wimgBusy=false;
+function wkey(name,dest){return (String(name||"")+"|"+(dest||"")).toLowerCase().trim()}
+function cleanQ(n){return String(n||"").replace(/^(ăn sáng|ăn trưa|ăn tối|uống|ghé|dạo|đi|tham quan|chụp|săn mây|về|gửi đồ ở|trả phòng,?)\s+/i,"").replace(/\(.*?\)/g,"").split(/,| hoặc | và |·|→/)[0].trim()}
+async function wikiThumb(q,lang){
+  const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&gsrsearch=${encodeURIComponent(q)}&prop=pageimages&piprop=thumbnail&pithumbsize=480`;
+  const r=await fetch(u).then(r=>r.json()); const pg=r?.query?.pages&&Object.values(r.query.pages)[0];
+  return pg?.thumbnail?.source||"";
+}
+function paintWiki(k){const u=wimg[k];if(!u)return;
+  document.querySelectorAll("[data-wq]").forEach(x=>{if(x.dataset.wq===k&&!x.querySelector("img")){x.insertAdjacentHTML("afterbegin",`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.parentNode.querySelector('.cr')?.remove();this.remove()"><span class="cr">Wikipedia</span>`)}})}
+async function hydrateWikiImgs(){
+  document.querySelectorAll("[data-wq]").forEach(x=>{if(x.dataset.wq in wimg)paintWiki(x.dataset.wq)});
+  if(wimgBusy) return; wimgBusy=true;
+  try{
+    const keys=[...new Set([...document.querySelectorAll("[data-wq]")].map(x=>x.dataset.wq))].filter(k=>!(k in wimg));
+    for(const k of keys){
+      const i=k.lastIndexOf("|"), name=k.slice(0,i), dest=k.slice(i+1), q=cleanQ(name), city=(dest||"").split(",")[0].trim();
+      let url="";
+      try{url=await wikiThumb(q+(city?" "+city:""),"vi")||await wikiThumb(q,"vi")||await wikiThumb(q+(city?" "+city:""),"en")}catch{url=null}
+      if(url===null) break; // không gọi được (bị chặn) thì dừng, giữ biểu tượng
+      wimg[k]=url; try{localStorage.setItem(WIMG_KEY,JSON.stringify(wimg))}catch{}
+      paintWiki(k);
+    }
+  }finally{wimgBusy=false}
+}
+const TYPE_ICON={"Ăn uống":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M16 3c-2 1-3 4-3 7h3v11"/></svg>',
+ "Cà phê":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3"/></svg>',
+ "Di chuyển":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-7h5l3 7M10 10l-2-3H6"/></svg>',
+ "Lưu trú":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20V8l9-5 9 5v12M9 20v-6h6v6"/></svg>',
+ "Nghỉ":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>',
+ "Mua sắm":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0"/></svg>',
+ "Đi chơi đêm":'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3h8l-4 7zM12 10v8M8 21h8"/></svg>'};
+const ICON_DEFAULT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>';
+let planDay=0;
+function planView(t){
+  if(planDay>=t.days.length) planDay=0;
+  const d=t.days[planDay]||{title:"",note:"",stops:[]};
+  const pills=t.days.map((x,i)=>`<button class="dpill" data-act="pday" data-i="${i}" aria-pressed="${i===planDay}"><b>Ngày ${i+1}</b><small>${esc(dayDate(t,i)||(x.title||"").slice(0,22)||`${x.stops.length} điểm`)}</small></button>`).join("");
+  const rows=d.stops.map(s=>{const nm=s.place||s.title; const thumb=s.img
+      ?`<div class="th"><img data-ref="${esc(s.img)}" ${mediaSrc(s.img)?`src="${mediaSrc(s.img)}"`:""} alt=""></div>`
+      :`<div class="th" ${nm&&s.type!=="Nghỉ"?`data-wq="${esc(wkey(nm,t.destination))}"`:""}>${TYPE_ICON[s.type]||ICON_DEFAULT}</div>`;
+    return `<li class="srow">${thumb}
+      <div class="tx"><div class="tm">${esc(s.time||"—")}</div><h4>${esc(s.title||"Chưa đặt tên")}</h4>${s.note?`<p>${esc(s.note)}</p>`:""}
+        <div class="mini"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>${s.cost?`<span>${esc(s.cost)}</span>`:""}</div></div>
+      ${nm&&s.type!=="Nghỉ"?`<a class="go" href="${mapUrl(nm,t.destination)}" target="_blank" rel="noopener" aria-label="Chỉ đường tới ${esc(s.title)}">${pin.replace('width="12" height="12"','width="18" height="18"')}</a>`:"<span></span>"}</li>`}).join("");
+  return `<div class="dayswitch" role="tablist">${pills}</div>
+    <section class="glass day" id="dayCard">
+      <div class="dayhead2"><span class="day-n">Ngày ${planDay+1}</span>${canWrite?`<button class="pen" data-act="editAt" data-f="day" data-i="${planDay}" aria-label="Sửa ngày ${planDay+1}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}<h3>${esc(d.title||"Chưa đặt tiêu đề")}</h3>${d.note?`<p>${esc(d.note)}</p>`:""}</div>
+      ${d.stops.length?`<ol class="slist">${rows}</ol>`:`<div class="empty-day">Chưa có điểm nào${canWrite?". Bấm ✎ Sửa để thêm.":""}</div>`}
+      <div class="daynav">${planDay>0?`<button class="btn sm" data-act="pday" data-i="${planDay-1}">← Ngày ${planDay}</button>`:"<span></span>"}${planDay<t.days.length-1?`<button class="btn sm" data-act="pday" data-i="${planDay+1}">Ngày ${planDay+2} →</button>`:""}</div>
+    </section>`;
+}
+document.addEventListener("click",e=>{const r=e.target.closest(".srow");if(r&&!e.target.closest("a"))r.classList.toggle("open")});
+(function(){let x0=null,y0=0;document.addEventListener("touchstart",e=>{const c=e.target.closest("#dayCard");x0=c?e.touches[0].clientX:null;y0=e.touches[0].clientY},{passive:true});
+  document.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>60&&Math.abs(dy)<50){const t=trips[cur];if(!t)return;const n=planDay+(dx<0?1:-1);if(n>=0&&n<t.days.length){planDay=n;render()}}},{passive:true})})();
 function planHTML(t){
+  if(!editing) return planView(t);
   return t.days.map((d,i)=>{
     const date=dayDate(t,i);
     if(!editing) return `<section class="glass day">
@@ -759,7 +1355,7 @@ function planHTML(t){
         <div class="meta"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>
           ${s.cost?`<span class="cost-note">${esc(s.cost)}</span>`:""}
           ${(s.place||s.title)&&s.type!=="Nghỉ"?`<a class="maplink" href="${mapUrl(s.place||s.title,t.destination)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}
-        </div></div></li>`).join("")}</ol>`:`<div class="empty-day">Chưa có điểm nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}
+        </div></div></li>`).join("")}</ol>`:`<div class="empty-day">Chưa có điểm nào${canWrite?". Bấm ✎ Sửa để thêm.":""}</div>`}
     </section>`;
     return `<section class="glass day">
       <div class="day-h"><span class="day-n">Ngày ${i+1}</span>
@@ -1019,6 +1615,34 @@ async function drawRouteMap(t){
 }
 document.addEventListener("change",e=>{if(e.target.id==="routeDay"){routeDay=+e.target.value;setLocIdx=-1;render()}});
 
+
+/* ---------- Hiệu ứng nền: bụi nắng bay, parallax khi cuộn, nghiêng khung ảnh theo chuột ---------- */
+(function bgFx(){
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cv=document.getElementById("birds");
+  if(cv&&!reduce){const cx=cv.getContext("2d");let W=0,H=0;const R=(a,b)=>a+Math.random()*(b-a);
+    const size=()=>{const d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0)};size();addEventListener("resize",size);
+    const mk=init=>({x:init?R(-W*.3,W):R(-260,-40),y:R(H*.06,H*.32),s:R(6,11),v:R(22,40),ph:R(0,6.28),fl:R(5,8),dy:R(-3,3)});
+    let bs=[];const flock=(init)=>{const bx=init?R(0,W*.6):R(-300,-80),by=R(H*.08,H*.26),v=R(26,34);for(let k=0;k<6;k++)bs.push({x:bx-k*R(14,24),y:by+(k%2?1:-1)*k*R(4,7),s:R(6,9),v,ph:R(0,6.28),fl:R(5.5,7.5),dy:0})};
+    flock(true);for(let k=0;k<4;k++)bs.push(mk(true));
+    let last=performance.now();
+    (function tick(now){if(!document.body.classList.contains("landing")){last=now;setTimeout(()=>requestAnimationFrame(tick),500);return}
+      const dt=Math.min(.05,(now-last)/1000);last=now;cx.clearRect(0,0,W,H);const t=now/1000;
+      const dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+      cx.strokeStyle=dark?"rgba(230,232,240,.7)":"rgba(28,32,40,.72)";cx.lineWidth=1.7;cx.lineCap="round";
+      bs.forEach((p,k)=>{p.x+=p.v*dt;p.y+=Math.sin(t*.8+p.ph)*4*dt+p.dy*dt*.3;const w=Math.sin(t*p.fl+p.ph);
+        cx.beginPath();cx.moveTo(p.x-p.s,p.y-w*p.s*.6);cx.quadraticCurveTo(p.x-p.s*.4,p.y-w*p.s*.2-1,p.x,p.y);cx.quadraticCurveTo(p.x+p.s*.4,p.y-w*p.s*.2-1,p.x+p.s,p.y-w*p.s*.6);cx.stroke();
+        if(p.x>W+40) bs[k]=null});
+      bs=bs.filter(Boolean); if(bs.length<5){flock(false);bs.push(mk(false))}
+      requestAnimationFrame(tick)})(last);}
+  if(reduce) return;
+  const ph=document.getElementById("phLayer"); let ticking=false;
+  addEventListener("scroll",()=>{if(ticking)return;ticking=true;requestAnimationFrame(()=>{if(ph)ph.style.translate=`0 ${Math.min(80,scrollY*-.06)}px`;ticking=false})},{passive:true});
+  addEventListener("pointermove",e=>{const f=document.getElementById("pframe");if(!f||e.pointerType!=="mouse")return;
+    const r=f.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    if(Math.abs(x)>1.2||Math.abs(y)>1.2){f.style.transform="";return}
+    f.style.transform=`perspective(900px) rotateY(${x*6}deg) rotateX(${-y*6}deg)`},{passive:true});
+})();
 /* ---------- Giao diện sáng / tối ---------- */
 const THEMES=["auto","light","dark"];
 function themeGet(){try{return localStorage.getItem("sotay-theme")||"auto"}catch{return "auto"}}
@@ -1074,13 +1698,13 @@ document.addEventListener("change",e=>{if(e.target.matches("[data-gimg]")&&e.tar
 function guideHTML(t){
   const dest=t.destination||"";
   return `<div class="guide">${editing?"":routeHTML(t)}${t.guide.map((g,i)=>{
-    if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span></div>
-      ${g.items.length?`<div class="gitems">${g.items.map((x,j)=>{const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
+    if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span>${canWrite?`<button class="pen" data-act="editAt" data-f="gsec" data-i="${i}" aria-label="Sửa danh sách ${esc(g.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}</div>
+      ${g.items.length?`<div class="gitems">${g.items.map((x,j)=>{const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${!x.img&&g.kind!=="pose"&&x.name?`<div class="gthumb" data-wq="${esc(wkey(x.name,t.destination))}"></div>`:""}${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
         ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}
         ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}
         ${canWrite&&!x.img&&(g.kind==="pose"||g.kind==="photo")&&(!sharedMedia()||assets)?`<label class="btn mini upbtn" style="align-self:flex-start;margin-top:6px">+ Ảnh mẫu<input type="file" accept="image/*" data-gimg="${i},${j}"></label>`:""}</div>`}).join("")}</div>`
-      :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}</section>`;
+      :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm ✎ Sửa để thêm.":""}</div>`}</section>`;
     return `<section class="glass gsec"><div class="gsec-h">
         <input class="f title" style="flex:1" data-k="guide.${i}.title" value="${esc(g.title)}" aria-label="Tên danh sách">
         <button class="btn icon danger" data-act="gsecDel" data-i="${i}" aria-label="Xoá danh sách">✕</button></div>
@@ -1250,11 +1874,17 @@ document.addEventListener("input",e=>{
 document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(k&&(/\.unit$/.test(k)||/\.done$/.test(k)||k==="start"||k==="nights"))render()});
 document.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
-  if(b.dataset.trip){cur=b.dataset.trip;editing=false;route();render();window.scrollTo({top:0});return}
+  if(b.dataset.trip){cur=b.dataset.trip;homeView=false;editing=false;editInfo=false;route();render();window.scrollTo({top:0});return}
   if(b.dataset.tab){tab=b.dataset.tab;render();if(b.closest("#tabbar"))window.scrollTo({top:0});return}
   if(b.dataset.color){trips[cur].color=b.dataset.color;save(cur);render();return}
   const a=b.dataset.act; if(!a) return;
   if(a==="new"){openNew();return}
+  if(a==="home"){homeView=true;editing=false;editInfo=false;try{history.replaceState(null,"",location.pathname)}catch{};render();window.scrollTo({top:0});return}
+  if(a==="showLogin"){loginView=true;render();window.scrollTo({top:0});return}
+  if(a==="goLanding"){loginView=false;render();window.scrollTo({top:0});return}
+  if(a==="none"){return}
+  if(a==="togglePw"){const i=$("#lg-pass");i.type=i.type==="password"?"text":"password";b.textContent=i.type==="password"?"Hiện":"Ẩn";return}
+  if(a==="theme"){$("#themeBtn").click();render();return}
   if(a==="signout"){signOut();return}
   if(a==="account"){openAccount();return}
   if(a==="avDel"){if(FB_ON){db.collection("users").doc(localUser).set({avatar:""},{merge:true});fbAvatars[localUser]=""}else{try{localStorage.removeItem("sotay-avatar-"+localUser)}catch{}};openAccount();render();return}
@@ -1265,6 +1895,9 @@ document.addEventListener("click",e=>{
   const mut=()=>{save(cur);render()};
   switch(a){
     case "edit": editing=!editing; if(!editing) save(cur,true); render(); break;
+    case "editInfo": editInfo=true; render(); break;
+    case "editAt": editing=true; editFocus=[b.dataset.f,i]; render(); break;
+    case "editDone": editing=false; editInfo=false; save(cur,true); render(); break;
     case "dup": openNew(true); break;
     case "del": openDel(); break;
     case "dayAdd": t.days.push({title:"",note:"",stops:[]}); mut(); break;
@@ -1281,6 +1914,7 @@ document.addEventListener("click",e=>{
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
     case "pick": pickItem(t,i,j); break;
+    case "pday": planDay=i; render(); document.querySelector(".dayswitch [aria-pressed=true]")?.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"}); break;
     case "pp": {const k=b.dataset.k,v=b.dataset.v; if(!k)break;
       if("multi" in b.dataset){const cur0=String(getPath(t,k)||"").split(",").map(x=>x.trim()).filter(Boolean);const nx=cur0.includes(v)?cur0.filter(x=>x!==v):[...cur0,v];setPath(t,k,nx.join(", "))}
       else setPath(t,k,v);
@@ -1337,7 +1971,7 @@ function openNew(dup){
     const o={name:$("#nf-name").value.trim()||"Chuyến mới",destination:$("#nf-dest").value.trim(),start:$("#nf-start").value,nights:$("#nf-nights").value,people:$("#nf-people").value};
     let t=blankTrip(o);
     if(src&&$("#nf-keep")?.checked){const c=structuredClone(src);Object.assign(c,{name:t.name,destination:t.destination,start:t.start,nights:t.nights,people:t.people,createdAt:Date.now()});t=c}
-    const id=uid(); trips[id]=t; cur=id; editing=!src; tab="plan"; route(); closeModal(); save(id,true); render(); toast("Đã tạo chuyến");
+    const id=uid(); trips[id]=t; cur=id; homeView=false; editing=!src; editInfo=!src; tab="plan"; route(); closeModal(); save(id,true); render(); toast("Đã tạo chuyến");
   });
 }
 function openDel(){
@@ -1355,5 +1989,4 @@ $("#newBtn").addEventListener("click",()=>openNew());
 init();
 </script>
 
-</body>
-</html>
+</body></html>
