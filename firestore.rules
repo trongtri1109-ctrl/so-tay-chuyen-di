@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Chỉ 3 thành viên Sổ Tay Chuyến Đi được đọc và ghi dữ liệu
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email in [
+          'tri@sotay-chuyen-di.app',
+          'honganh@sotay-chuyen-di.app',
+          'tandat@sotay-chuyen-di.app'
+        ];
+    }
+    match /{document=**} {
+      allow read, write: if isMember();
+    }
+  }
+}
