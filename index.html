@@ -751,7 +751,7 @@ body.landing .hero2{padding-top:3vh}
   body:not(.landing) .app{max-width:min(2000px,88vw);zoom:1.18}
   .slist{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-@media (min-width:2200px){body.landing .app{zoom:1.25}}
+
 
 .srow .acts{display:flex;flex-direction:column;gap:6px;align-items:center}
 .srow .go.ed{border:0;cursor:pointer;color:var(--ink2)}
@@ -761,6 +761,48 @@ body.landing .hero2{padding-top:3vh}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sgrid .wide{grid-column:1/-1}
 .sgrid .lbl{display:flex;flex-direction:column;gap:4px}
 @media (max-width:760px){.srow .go{width:34px;height:34px}}
+
+/* album theo ngày */
+.achips{display:flex;gap:6px;flex-wrap:wrap}
+.achip{border:1px solid var(--hair);background:var(--field);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.achip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.drop{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:16px 18px;border:2px dashed color-mix(in oklab,var(--accent) 45%,transparent);border-radius:18px;background:color-mix(in oklab,var(--accent) 7%,transparent);transition:background .15s,border-color .15s}
+.drop.over{background:color-mix(in oklab,var(--accent) 18%,transparent);border-color:var(--accent)}
+.drop .dic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:color-mix(in oklab,var(--accent) 16%,transparent);color:var(--accent)}
+.drop .dtx{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0}
+.drop .dtx b{font-size:16px}.drop .dtx select.f{width:auto;max-width:100%;padding:6px 10px;font-weight:600}
+.drop .dtx small{flex-basis:100%;color:var(--ink2);font-size:13px}
+.aday{display:flex;flex-direction:column;gap:10px;padding-top:6px}
+.aday+.aday{border-top:1px solid var(--hair);padding-top:16px}
+.aday-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.aday-h h4{margin:0;font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aday-h small{color:var(--ink3)}
+.aday-h .addp{margin:0;cursor:pointer}
+.aempty .ghost{display:flex;align-items:center;justify-content:center;min-height:90px;border:1.5px dashed var(--hair);border-radius:14px;color:var(--ink2);font-size:14px;cursor:pointer}
+.aempty .ghost:hover{border-color:var(--accent);color:var(--accent)}
+.aempty{color:var(--ink3);font-size:14px}
+.vlink summary{cursor:pointer;color:var(--ink2);font-size:14px;padding:4px 0}
+.vlink .linkrow{margin-top:8px}
+@media (max-width:760px){.drop{grid-template-columns:auto 1fr;padding:14px}.drop .upbtn{grid-column:1/-1;justify-content:center}.aday-h h4{flex-basis:100%;order:3;white-space:normal}}
+
+/* v31: màn ngang rộng — chia đôi: chữ / form bên trái, ảnh nét bên phải, không còn nền mờ */
+.side-art{display:none}
+@media (min-aspect-ratio:3/2) and (min-width:1000px){
+  body.landing{background:linear-gradient(135deg,#f3f7f2 0%,#e6efe9 55%,#dfe9ef 100%)}
+  :root[data-theme="dark"] body.landing{background:linear-gradient(135deg,#0d1511,#121c18 55%,#111820)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.landing{background:linear-gradient(135deg,#0d1511,#121c18 55%,#111820)}}
+  body.landing .photo-bg{display:none}
+  body.landing .app{max-width:min(2700px,94vw)}
+  .hero2,.login2{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(28px,4vw,72px);align-items:center;text-align:left;padding:2vh 0 0;min-height:calc(100vh - 110px)}
+  .hero2 .side-art,.login2 .side-art{display:block;grid-column:2;grid-row:1;height:calc(100vh - 140px);max-width:58vw;aspect-ratio:1552/1132;object-fit:cover;border-radius:28px;box-shadow:0 30px 80px rgba(20,40,30,.25),0 0 0 1px rgba(255,255,255,.5)}
+  .hero2 .hbox{grid-column:1;grid-row:1;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;align-items:flex-start;padding:0;max-width:min(900px,34vw);justify-self:end;animation:riseIn .8s both}
+  .hero2 .hbox h1{font-size:clamp(34px,3.1vw,104px);line-height:1.08;text-align:left}
+  .hero2 .hbox .sub2{font-size:clamp(16px,1.15vw,30px);text-align:left;margin:.8em 0 1.4em;max-width:30em}
+  .hero2 .pillcta{padding:.8em 2.4em;font-size:clamp(16px,1vw,24px)}
+  .login2 .card2{grid-column:1;grid-row:1;justify-self:end;width:min(clamp(400px,22vw,560px),100%);background:color-mix(in oklab,var(--base) 92%,transparent);border-color:var(--hair);box-shadow:0 24px 60px rgba(20,40,30,.14)}
+  @media (min-width:2400px){.lnav2{padding:14px 18px 14px 24px}.brand2{font-size:26px}.lnav2 .links a,.obtn{font-size:17px}.card2{font-size:18px}.card2 h2{font-size:32px}.card2 .f{font-size:19px;padding:15px 16px}.pillcta.wide{font-size:19px;padding:16px}}
+  .scrolldown{left:25%;color:var(--ink2);text-shadow:none}.scrolldown .mouse{border-color:currentColor;box-shadow:none}.scrolldown .mouse i{background:currentColor}
+}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1216,6 +1258,7 @@ function landingHTML(){
   return `<div style="display:flex;flex-direction:column;gap:16px">
   ${landNav()}
   <section class="hero2">
+    <img class="side-art" src="hero-bg.jpg" alt="Hai bạn chạy xe máy trên đèo Đà Lạt">
     <div class="hbox">
       <h1><span class="ln">Freedom is a full tank</span><br><span class="ln">and good friends.</span></h1>
       <p class="sub2">One shared notebook for your crew: itinerary, maps, to-dos, photos and expenses.</p>
@@ -1239,7 +1282,7 @@ function landNav(){
       <button class="obtn${loginView?" on":""}" data-act="showLogin">Đăng nhập</button></div></nav>`;
 }
 function loginHTML(){
-  return `<div style="display:flex;flex-direction:column">${landNav()}<div class="login2"><form class="card2" id="loginForm" novalidate>
+  return `<div style="display:flex;flex-direction:column">${landNav()}<div class="login2"><img class="side-art" src="hero-bg.jpg" alt=""><form class="card2" id="loginForm" novalidate>
     <div class="head">${logoSVG(56)}<h2>Chào mừng trở lại</h2><p class="sub">Đăng nhập để mở sổ tay của nhóm</p></div>
     <label class="lbl">Tài khoản<input class="f" id="lg-user" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="vd: tri" required></label>
     <label class="lbl">Mật khẩu<span class="pwrap"><input class="f" id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••" required><button type="button" data-act="togglePw">Hiện</button></span></label>
@@ -1459,7 +1502,7 @@ function planHTML(t){
 /* ---------- media storage ----------
    claude.ai: shared artifact assets (ref "a:<id>", shown from /_blob/<id>)
    elsewhere: this browser's IndexedDB (ref "i:<id>") */
-let assets=null, albumDay="all", uploading="";
+let assets=null, albumDay="all", uploading="", upDay=null;
 const blobUrls={};
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("sotay-media",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbOp(mode,fn){const d=await idb();return new Promise((res,rej)=>{const tx=d.transaction("files",mode);const q=fn(tx.objectStore("files"));tx.oncomplete=()=>res(q?.result);tx.onerror=()=>rej(tx.error)})}
@@ -1513,9 +1556,9 @@ async function hydrateMedia(){
   }
   document.querySelectorAll(".gone").forEach(x=>{x.classList.remove("gone");x.innerHTML='<div class="miss">Ảnh chỉ lưu trên máy của người đăng</div>'});
 }
-async function addFiles(files){
+async function addFiles(files,dayArg){
   const t=trips[cur]; if(!t||!files.length) return;
-  const day=albumDay==="all"||albumDay==="none"?"":+albumDay; let ok=0, fail=[];
+  const day=dayArg!==undefined?dayArg:(upDay===null||upDay===""?"":+upDay); let ok=0, fail=[];
   for(let i=0;i<files.length;i++){
     uploading=`Đang tải ${i+1}/${files.length}…`; const u=$("#upst"); if(u) u.textContent=uploading;
     try{const r=await putMedia(files[i]); t.photos.push({...r,caption:"",day,by:localUser?((window.LOCAL_NAMES||{})[localUser]||localUser):"",at:Date.now()}); ok++}
@@ -1525,9 +1568,9 @@ async function addFiles(files){
   toast(ok?`Đã thêm ${ok} ảnh/video`+(fail.length?`, ${fail.length} lỗi (${fail[0]})`:""):`Không tải được: ${fail[0]||""}`);
 }
 function canUpload(){return canWrite&&(!sharedMedia()||!!assets)}
-function tileHTML(x,k){
-  const cap=x.caption?`<span class="cap">${esc(x.caption)}</span>`:"";
-  const day=x.day!==""&&x.day!=null?`<span class="badge2">Ngày ${+x.day+1}</span>`:"";
+function tileHTML(x,k,noDay){
+  const capT=x.caption||(x.stop?"📍 "+x.stop:""); const cap=capT?`<span class="cap">${esc(capT)}</span>`:"";
+  const day=!noDay&&x.day!==""&&x.day!=null?`<span class="badge2">Ngày ${+x.day+1}</span>`:"";
   if(x.type==="link"){let host="";try{host=new URL(x.url).hostname.replace(/^www\./,"")}catch{}
     return `<a class="tile link" href="${esc(x.url)}" target="_blank" rel="noopener">${day}<b>↗</b><span>${esc(x.caption||host||"Link")}</span><small style="color:var(--ink3)">${esc(host)}</small></a>`}
   const src=mediaSrc(x.ref);
@@ -1536,16 +1579,37 @@ function tileHTML(x,k){
   return `<button class="tile" data-act="open" data-k2="${k}" aria-label="Xem ${esc(x.caption||"ảnh")}">${media}${day}${cap}</button>`;
 }
 function albumHTML(t){
-  const list=t.photos.map((x,k)=>[x,k]).filter(([x])=>albumDay==="all"||(albumDay==="none"?(x.day===""||x.day==null):String(x.day)===String(albumDay)));
-  const up=canUpload();
+  const up=canUpload(), N=t.photos.length;
+  const inDay=(x,i)=>i==="none"?(x.day===""||x.day==null||+x.day>=t.days.length):String(x.day)===String(i);
+  const cnt=i=>t.photos.filter(x=>inDay(x,i)).length;
+  if(upDay===null) upDay=(albumDay!=="all"&&albumDay!=="none")?+albumDay:(t.days.length?0:"");
+  const chips=[["all",`Tất cả · ${N}`],...t.days.map((d,i)=>[String(i),`Ngày ${i+1} · ${cnt(i)}`]),...(cnt("none")?[["none",`Chưa xếp · ${cnt("none")}`]]:[])]
+    .map(([v,l])=>`<button class="achip" data-act="albumDay" data-v="${v}" aria-pressed="${String(albumDay)===v}">${l}</button>`).join("");
+  const dayOpts=t.days.map((d,i)=>`<option value="${i}" ${String(upDay)===String(i)?"selected":""}>Ngày ${i+1}${d.title?" · "+esc(d.title):""}</option>`).join("")+`<option value="" ${upDay===""?"selected":""}>Chưa xếp ngày</option>`;
+  const drop=up?`<div class="drop" id="dropZone">
+      <div class="dic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-8 8"/></svg></div>
+      <div class="dtx"><b>Thêm ảnh vào</b> <select class="f" id="upDay" aria-label="Thêm ảnh vào ngày">${dayOpts}</select>
+        <small>${uploading?`<span id="upst">${uploading}</span>`:`<span id="upst">Kéo thả ảnh vào đây, hoặc bấm nút để chọn từ máy / điện thoại. Ảnh tự nén, cả nhóm cùng thấy.</span>`}</small></div>
+      <label class="btn primary upbtn">Chọn ảnh<input type="file" id="upfile" accept="${FB_ON?"image/*":"image/*,video/*"}" multiple></label>
+    </div>`:"";
+  const section=(i,title,list)=>`<section class="aday">
+      <div class="aday-h"><span class="day-n">${i==="none"?"Chưa xếp":"Ngày "+(i+1)}</span><h4>${esc(title)}</h4><small>${list.length} ảnh</small>
+        ${up&&i!=="none"?`<label class="pen addp">+ Thêm ảnh<input type="file" class="updayfile" data-d="${i}" accept="${FB_ON?"image/*":"image/*,video/*"}" multiple hidden></label>`:""}</div>
+      ${list.length?`<div class="grid">${list.map(([x,k])=>tileHTML(x,k,true)).join("")}</div>`
+        :`<div class="aempty">${up&&i!=="none"?`<label class="ghost">Chưa có ảnh ngày này — bấm để thêm<input type="file" class="updayfile" data-d="${i}" accept="image/*" multiple hidden></label>`:"Chưa có ảnh"}</div>`}
+    </section>`;
+  const all=t.photos.map((x,k)=>[x,k]);
+  let body="";
+  if(albumDay==="all"){
+    body=t.days.map((d,i)=>section(i,d.title||"",all.filter(([x])=>inDay(x,i)))).join("");
+    const rest=all.filter(([x])=>inDay(x,"none")); if(rest.length) body+=section("none","Ảnh chưa gắn ngày — mở ảnh để chọn ngày",rest);
+  } else if(albumDay==="none") body=section("none","Ảnh chưa gắn ngày — mở ảnh để chọn ngày",all.filter(([x])=>inDay(x,"none")));
+  else {const i=+albumDay; body=section(i,t.days[i]?.title||"",all.filter(([x])=>inDay(x,i)))}
   return `<section class="glass album">
-    <div class="album-h"><h3>Album</h3>
-      <select class="f" id="albumDay" aria-label="Lọc theo ngày"><option value="all">Tất cả (${t.photos.length})</option>${t.days.map((d,i)=>`<option value="${i}" ${String(albumDay)===String(i)?"selected":""}>Ngày ${i+1}${d.title?" · "+esc(d.title):""}</option>`).join("")}<option value="none" ${albumDay==="none"?"selected":""}>Chưa xếp ngày</option></select>
-      ${up?`<label class="btn primary upbtn">+ Thêm ảnh / video<input type="file" id="upfile" accept="${FB_ON?"image/*":"image/*,video/*"}" multiple></label>`:""}
-    </div>
-    ${uploading?`<div class="sub" id="upst">${uploading}</div>`:`<div class="sub" id="upst">${up?(FB_ON?"Ảnh được nén tự động và đồng bộ cho cả nhóm. Video hãy up YouTube/Drive rồi dán link bên dưới.":sharedMedia()?"Ảnh được nén tự động, cả nhóm cùng xem. Video tối đa 20MB, video dài nên dán link YouTube/Drive.":"Ảnh được nén tự động và lưu trên máy này. Video dài nên dán link YouTube/Drive."):(sharedMedia()?"Bạn cần quyền chỉnh sửa trang để đăng ảnh.":"")}</div>`}
-    ${canWrite?`<div class="linkrow"><input class="f" id="linkIn" placeholder="Dán link video YouTube, album Google Photos…" inputmode="url"><button class="btn" data-act="addLink">Thêm link</button></div>`:""}
-    ${list.length?`<div class="grid">${list.map(([x,k])=>tileHTML(x,k)).join("")}</div>`:`<div class="empty-day">${t.photos.length?"Ngày này chưa có ảnh.":"Chưa có ảnh nào. Bấm “Thêm ảnh / video” để chọn từ thư viện hoặc chụp bằng điện thoại."}</div>`}
+    <div class="album-h"><h3>Album</h3><div class="achips">${chips}</div></div>
+    ${drop}
+    ${body}
+    ${canWrite?`<details class="vlink"><summary>Có video? Dán link YouTube / Google Drive</summary><div class="linkrow"><input class="f" id="linkIn" placeholder="https://…" inputmode="url"><button class="btn" data-act="addLink">Thêm link</button></div></details>`:""}
   </section>`;
 }
 function openLB(k){
@@ -1556,15 +1620,20 @@ function openLB(k){
     <div class="glass panel">
       ${canWrite?`<input class="f" data-k="photos.${k}.caption" value="${esc(x.caption)}" placeholder="Chú thích ảnh">
       <div class="row3"><select class="f" data-k="photos.${k}.day" data-day aria-label="Thuộc ngày"><option value="">Chưa xếp ngày</option>${t.days.map((d,i)=>`<option value="${i}" ${String(x.day)===String(i)?"selected":""}>Ngày ${i+1}</option>`).join("")}</select>
-        <button class="btn danger" data-act="photoDel" data-k2="${k}">Xoá</button></div>`:`<div>${esc(x.caption||"")}</div>`}
+        <button class="btn danger" data-act="photoDel" data-k2="${k}">Xoá</button></div>
+      ${x.day!==""&&x.day!=null&&t.days[+x.day]?.stops?.length?`<select class="f" data-k="photos.${k}.stop" aria-label="Chụp ở điểm nào"><option value="">Chụp ở điểm nào? (không bắt buộc)</option>${t.days[+x.day].stops.map(s=>`<option ${s.title===x.stop?"selected":""}>${esc(s.title)}</option>`).join("")}</select>`:""}`:`<div>${esc(x.caption||"")}</div>`}
       <div class="sub">${x.by?esc(x.by)+" · ":""}${new Date(x.at||Date.now()).toLocaleDateString("vi-VN")}</div>
     </div></div>`;
   hydrateMedia();
 }
+document.addEventListener("dragover",e=>{const z=e.target.closest?.("#dropZone");if(z){e.preventDefault();z.classList.add("over")}});
+document.addEventListener("dragleave",e=>{const z=e.target.closest?.("#dropZone");if(z&&!z.contains(e.relatedTarget))z.classList.remove("over")});
+document.addEventListener("drop",e=>{const z=e.target.closest?.("#dropZone");if(!z)return;e.preventDefault();z.classList.remove("over");const f=[...(e.dataTransfer?.files||[])].filter(x=>/^(image|video)\//.test(x.type));if(f.length)addFiles(f)});
 function closeLB(){$("#lightbox").innerHTML="";if(tab==="album")render()}
 document.addEventListener("change",e=>{
   if(e.target.id==="upfile"){addFiles([...e.target.files]);e.target.value=""}
-  if(e.target.id==="albumDay"){albumDay=e.target.value;render()}
+  if(e.target.classList.contains("updayfile")){const d=+e.target.dataset.d;upDay=d;addFiles([...e.target.files],d);e.target.value=""}
+  if(e.target.id==="upDay"){upDay=e.target.value===""?"":+e.target.value}
 });
 
 /* ---------- Gợi ý ---------- */
@@ -1988,6 +2057,7 @@ document.addEventListener("click",e=>{
     case "taskDel": t.tasks.splice(+b.dataset.k2,1); mut(); break;
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
+    case "albumDay": albumDay=b.dataset.v; if(albumDay!=="all"&&albumDay!=="none") upDay=+albumDay; render(); break;
     case "pick": pickItem(t,i,j); break;
     case "pday": planDay=i; render(); document.querySelector(".dayswitch [aria-pressed=true]")?.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"}); break;
     case "pp": {const k=b.dataset.k,v=b.dataset.v; if(!k)break;
