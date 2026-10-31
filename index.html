@@ -68,6 +68,7 @@ button{cursor:pointer}
 
 .btn{border:0;border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;background:var(--field);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{filter:brightness(.97)}
+a.btn{text-decoration:none;color:var(--ink)}
 .btn.primary{background:var(--accent);color:#fff}
 .btn.danger{color:var(--danger)}
 .btn.icon{padding:6px;width:32px;height:32px;justify-content:center}
@@ -138,6 +139,19 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .gitem{background:var(--glass-strong);border:1px solid var(--hair);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
 .gitem b{font-size:15px;font-weight:600}
 .gitem p{margin:0;color:var(--ink2);font-size:13.5px}
+.psk{display:block;width:100%;height:auto;max-height:120px;margin:-2px 0 6px;border-radius:10px;background:var(--field);color:var(--ink2)}
+.psk *{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.psk .f{fill:var(--glass-strong)}
+.psk .a{stroke:var(--accent)}
+.psk .af{fill:var(--accent);stroke:none}
+.psk .dk{fill:currentColor;stroke:none}
+.psk .thin{stroke-width:1.2;opacity:.6}
+.psk .dash{stroke-dasharray:3 3;stroke-width:1.2;opacity:.7}
+.psk text{fill:var(--accent);stroke:none;font:600 8px var(--font)}
+.gimg{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;margin-bottom:6px;background:var(--field)}
+.gimg-wrap{position:relative}
+.gimg-wrap .x{position:absolute;top:6px;right:6px;width:26px;height:26px;padding:0;background:rgba(0,0,0,.5);color:#fff}
+.mini{font-size:12px;padding:3px 10px}
 .gitem .gm{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12.5px;color:var(--ink3);align-items:center;margin-top:2px}
 .gedit{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 0;border-bottom:1px solid var(--hair)}
 .gedit .full{grid-column:1/-1}
@@ -557,7 +571,7 @@ function render(){
   if(!Array.isArray(t.ledger)) t.ledger=[];
   if(!Array.isArray(t.members)) t.members=defaultMembers(t);
   m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):tab==="guide"?guideHTML(t):tab==="ledger"?ledgerHTML(t):costHTML(t));
-  if(tab==="album") hydrateMedia();
+  if(tab==="album"||tab==="guide") hydrateMedia();
   if(tab==="guide"&&!editing) drawRouteMap(t);
 }
 function renderList(){
@@ -854,14 +868,54 @@ function themeApply(v){
 themeApply(themeGet());
 $("#themeBtn").addEventListener("click",()=>{const v=THEMES[(THEMES.indexOf(themeGet())+1)%3];try{localStorage.setItem("sotay-theme",v)}catch{};themeApply(v);toast(v==="dark"?"Giao diện tối":v==="light"?"Giao diện sáng":"Theo giao diện hệ thống");if(tab==="guide")render()});
 
+
+/* ---------- Hình minh hoạ dáng pose (vẽ SVG) ---------- */
+function man(x,y,o={}){const h=o.h||1,l=o.lean||0,hx=x+l,hy=y-34*h;
+  const legs=o.sit?`M${x} ${y-14*h}L${x+11*h} ${y-14*h}L${x+11*h} ${y}`:o.walk?`M${x} ${y-14*h}L${x-7*h} ${y}M${x} ${y-14*h}L${x+6*h} ${y-1}`:o.jump?`M${x} ${y-14*h}L${x-6*h} ${y-6*h}M${x} ${y-14*h}L${x+6*h} ${y-6*h}`:`M${x} ${y-14*h}L${x-4*h} ${y}M${x} ${y-14*h}L${x+4*h} ${y}`;
+  const arms=o.arms!=null?o.arms:o.up?`M${hx} ${y-27*h}L${x-8*h} ${y-40*h}M${hx} ${y-27*h}L${x+8*h} ${y-40*h}`:`M${hx} ${y-27*h}L${x-6*h} ${y-17*h}M${hx} ${y-27*h}L${x+6*h} ${y-17*h}`;
+  return `<g class="${o.cls||""}"><path d="M${hx} ${hy+5*h}L${x} ${y-14*h}${legs}${arms}"/><circle class="${o.dark?"dk":"f"}" cx="${hx}" cy="${hy}" r="${5*h}"/></g>`}
+const cam=(x,y)=>`<rect class="af" x="${x-7}" y="${y-5}" width="14" height="10" rx="2.5"/><circle cx="${x}" cy="${y}" r="2.6" style="stroke:#fff;stroke-width:1.4"/>`;
+const arr=(x1,y1,x2,y2)=>{const a=Math.atan2(y2-y1,x2-x1),k=5;return `<path class="a" d="M${x1} ${y1}L${x2} ${y2}M${x2} ${y2}L${x2-k*Math.cos(a-.5)} ${y2-k*Math.sin(a-.5)}M${x2} ${y2}L${x2-k*Math.cos(a+.5)} ${y2-k*Math.sin(a+.5)}"/>`};
+const gnd='<path class="thin" d="M6 72H114"/>', hills='<path class="thin" d="M60 72L78 50L90 60L102 44L116 62"/>';
+const pine=(x,y,s=1)=>`<path class="thin" d="M${x} ${y}L${x-7*s} ${y+14*s}H${x+7*s}ZM${x} ${y+8*s}L${x-9*s} ${y+24*s}H${x+9*s}Z M${x} ${y+24*s}V${y+30*s}"/>`;
+const SK={
+ "đi bộ rồi ngoảnh lại":gnd+man(72,72,{walk:1,lean:-2})+'<path class="a" d="M66 36q-4 -3 -8 0"/>'+arr(58,56,34,56)+cam(20,56),
+ "tựa lan can nhìn xa":hills+'<path d="M8 50H62M14 50V72M34 50V72M54 50V72"/>'+man(44,72,{lean:4,arms:"M48 45L56 50M48 45L40 52"})+cam(16,40)+'<path class="dash" d="M50 38L100 40"/>',
+ "ngồi bậc thang ôm gối":'<path d="M40 72V60H60V48H80V36H100"/>'+man(48,60,{sit:1,arms:"M48 33L58 46"})+cam(108,62)+'<path class="dash" d="M70 30H110V70"/>',
+ "ly cà phê che nửa mặt":'<circle class="f" cx="60" cy="38" r="20"/><path d="M52 34h4M64 34h4"/><rect class="f" x="48" y="42" width="24" height="22" rx="3"/><path d="M72 48q8 0 8 6t-8 6"/><path class="a" d="M54 36q-2-4 0-8M60 36q-2-4 0-8M66 36q-2-4 0-8" style="opacity:.0"/><path class="thin" d="M40 70h40"/>',
+ "góc nghiêng bên cửa sổ":'<rect x="78" y="10" width="34" height="46" rx="2"/><path d="M95 10V56M78 33H112"/><path class="a" d="M78 20L56 34M78 30L58 44M78 40L60 54"/>'+man(46,72,{sit:1,lean:3,arms:"M49 45L60 48"})+cam(14,46),
+ "chụp từ dưới lên rừng thông":pine(86,8,1.3)+pine(104,18,1)+gnd+man(60,72,{h:1.45})+cam(30,68)+arr(36,64,50,30),
+ "khoác áo, tay đút túi":'<path class="thin" d="M30 72L54 22M90 72L66 22"/>'+man(60,70,{arms:"M60 43L54 56M60 43L66 56"})+'<path class="a" d="M52 42L50 58H70L68 42"/>'+arr(60,74,60,76)+cam(60,10),
+ "nắm tay kéo đi trước":gnd+man(74,72,{walk:1,lean:-3,arms:"M71 45L58 50"})+man(46,72,{walk:1,arms:"M46 45L58 50"})+'<circle class="af" cx="58" cy="50" r="2.5"/>'+cam(16,48)+arr(80,30,100,30),
+ "tựa vai ngắm thung lũng":'<path class="thin" d="M8 40L34 18L54 34L74 12L112 40"/><path class="thin" d="M8 52H112"/>'+man(52,74,{arms:"M52 47L58 52"})+man(64,74,{lean:-2,arms:"M62 47L56 52"})+cam(58,10)+'<text x="72" y="13">phía sau</text>',
+ "cụng ly cà phê":'<path class="f" d="M30 30h22l-3 34h-16z"/><path class="f" d="M68 30h22l-3 34h-16z"/><path class="a" d="M60 18v8M52 22l4 4M68 22l-4 4"/><path class="thin" d="M14 70h92"/>',
+ "bóng đen hoàng hôn":'<circle class="af" cx="60" cy="58" r="20" style="opacity:.55"/><path d="M6 58H114"/>'+man(50,72,{dark:1,cls:"dkg"})+man(68,72,{dark:1,lean:-2})+'<text x="8" y="16">ngược sáng · giảm sáng</text>',
+ "chung một áo khoác":gnd+man(52,72)+man(66,72,{lean:-2})+'<path class="a" d="M42 46Q59 30 76 46L74 64H44Z"/>',
+ "đi giữa đường đồi chè":'<path class="thin" d="M6 40q54-18 108 0M6 52q54-18 108 0M6 64q54-18 108 0"/>'+man(56,46,{h:.45})+man(62,46,{h:.45})+cam(60,74)+'<text x="72" y="76">zoom 2–3x</text>',
+ "người nhỏ giữa khung cảnh lớn":'<path class="dash" d="M42 4V76M80 4V76M4 28H116M4 52H116"/><path class="thin" d="M4 60L30 30L50 46L72 22L116 60"/>'+man(80,56,{h:.4}),
+ "đóng khung bằng cửa sổ, vòm cây":'<rect x="8" y="6" width="104" height="68" rx="6" style="stroke-width:7;opacity:.35"/><path class="thin" d="M20 60L44 34L62 50L82 28L100 60"/>'+man(60,64,{h:.4}),
+ "biển mây lúc bình minh":'<circle class="af" cx="86" cy="30" r="9" style="opacity:.7"/><path class="thin" d="M6 50q10-8 20 0t20 0t20 0t20 0t20 0t20 0M6 60q10-8 20 0t20 0t20 0t20 0t20 0"/><path d="M10 72L34 54L48 72"/>'+man(34,54,{h:.45}),
+ "cả nhóm cùng nhảy":gnd+man(30,62,{jump:1,up:1})+man(50,60,{jump:1,up:1})+man(70,63,{jump:1,up:1})+man(90,61,{jump:1,up:1})+cam(60,76)+'<text x="6" y="12">1 · 2 · 3!</text>',
+ "giờ vàng":'<circle class="af" cx="60" cy="44" r="12" style="opacity:.75"/><path class="a" d="M60 24v-6M60 64v6M40 44h-6M80 44h6M46 30l-4-4M74 30l4-4"/><path d="M6 60H114"/><text x="10" y="76">6–7h sáng · 16h30–17h30</text>',
+ "toàn cảnh thành phố về đêm":'<path d="M6 60V44h10v-8h10v14h8V30h12v30h10V40h14v20h10V36h12v24h12"/><path class="a" d="M14 50h0M22 46h0M40 40h0M42 50h0M58 52h0M74 48h0M86 44h0M96 50h0" style="stroke-width:3"/><path d="M40 72h40"/><rect class="f" x="54" y="62" width="12" height="10" rx="2"/>'
+};
+function poseSketch(name){const f=SK[(name||"").trim().toLowerCase()];return f?`<svg class="psk" viewBox="0 0 120 80" role="img" aria-label="Hình minh hoạ: ${esc(name)}">${f}</svg>`:""}
+async function addGuideImg(i,j,file){
+  const t=trips[cur], x=t.guide[i]?.items[j]; if(!x||!file) return;
+  try{const r=await putMedia(file); if(x.img) delMedia(x.img); x.img=r.ref; save(cur,true); render(); toast("Đã thêm ảnh mẫu")}
+  catch(e){toast(e?.code==="too_big"?"Ảnh quá lớn":"Không tải được ảnh")}
+}
+document.addEventListener("change",e=>{if(e.target.matches("[data-gimg]")&&e.target.files[0]){const [i,j]=e.target.dataset.gimg.split(",").map(Number);addGuideImg(i,j,e.target.files[0]);e.target.value=""}});
+
 function guideHTML(t){
   const dest=t.destination||"";
   return `<div class="guide">${editing?"":routeHTML(t)}${t.guide.map((g,i)=>{
     if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span></div>
-      ${g.items.length?`<div class="gitems">${g.items.map((x,j)=>{const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}"><b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
+      ${g.items.length?`<div class="gitems">${g.items.map((x,j)=>{const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
         ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}
-        ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}</div>`}).join("")}</div>`
+        ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}
+        ${canWrite&&!x.img&&(g.kind==="pose"||g.kind==="photo")&&(!sharedMedia()||assets)?`<label class="btn mini upbtn" style="align-self:flex-start;margin-top:6px">+ Ảnh mẫu<input type="file" accept="image/*" data-gimg="${i},${j}"></label>`:""}</div>`}).join("")}</div>`
       :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}</section>`;
     return `<section class="glass gsec"><div class="gsec-h">
         <input class="f title" style="flex:1" data-k="guide.${i}.title" value="${esc(g.title)}" aria-label="Tên danh sách">
@@ -1047,6 +1101,7 @@ document.addEventListener("click",e=>{
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
     case "pick": pickItem(t,i,j); break;
+    case "gImgDel": {const x=t.guide[i].items[j]; if(x.img) delMedia(x.img); delete x.img; mut(); break}
     case "rSort": sortRoute(t); mut(); break;
     case "rDel": routeOf(t).splice(+b.dataset.k2,1); setLocIdx=-1; sortRoute(t); mut(); break;
     case "rStart": {const r=routeOf(t); r.forEach(x=>delete x.start); r[+b.dataset.k2].start=true; sortRoute(t); mut(); break}
