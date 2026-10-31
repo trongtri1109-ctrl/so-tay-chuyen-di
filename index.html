@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="config.js"></script>
 </head>
 <body>
 <title>Sổ Tay Chuyến Đi</title>
@@ -61,6 +62,9 @@ button{cursor:pointer}
 .trip-btn small{display:block;color:var(--ink2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trip-btn>span{min-width:0}
 .status{font-size:12px;color:var(--ink3);padding:0 4px}
+.acct{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px;font-size:12px;color:var(--ink2);min-width:0}
+.acct:empty{display:none}
+.acct span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .btn{border:0;border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;background:var(--field);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{filter:brightness(.97)}
@@ -183,6 +187,7 @@ td input.n{text-align:right}
     <div class="side-h"><h2>Chuyến đi</h2><button class="btn primary sm" id="newBtn">+ Mới</button></div>
     <div class="list" id="list"></div>
     <div class="status" id="status">Đang tải…</div>
+    <div class="acct" id="acct"></div>
   </aside>
   <main id="main"><div class="glass empty"><h2>Đang tải chuyến đi…</h2></div></main>
 </div>
@@ -228,7 +233,68 @@ async function removeTrip(id){
 }
 const byRecent=(a,b)=>(trips[b].updatedAt||0)-(trips[a].updatedAt||0);
 
+let unsub=null, fbUser=null;
+function subscribe(okText){
+  if(unsub){unsub();unsub=null}
+  const timer=setTimeout(()=>setStatus("Chưa kết nối được, dữ liệu có thể chưa mới"),10000);
+  unsub=db.collection("trips").onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){clearTimeout(timer);setStatus(okText())}
+    const next={};
+    snap.docs.forEach(d=>{ next[d.id]= pending[d.id]&&trips[d.id] ? trips[d.id] : structuredClone(d.data()) });
+    for(const id in pending) if(trips[id]&&!next[id]) next[id]=trips[id];
+    trips=next; if(!cur||!trips[cur]) pick();
+    if(document.activeElement&&document.activeElement.closest("main,.modal-open")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) deferRender=true; else render();
+  },e=>{clearTimeout(timer);
+    if(e&&(e.code==="permission-denied"||e.code==="permission_denied")){mode="denied";trips={};cur=null;render();setStatus("Tài khoản chưa được cấp quyền")}
+    else setStatus("Mất kết nối dữ liệu, tải lại trang để thử lại")});
+}
+/* Firebase mode: only used when config.js provides FIREBASE_CONFIG (GitHub Pages build) */
+function initFirebase(){
+  firebase.initializeApp(window.FIREBASE_CONFIG);
+  const auth=firebase.auth();
+  firebase.auth().getRedirectResult().catch(e=>toast("Đăng nhập lỗi: "+(e.code||e.message)));
+  auth.onAuthStateChanged(u=>{
+    fbUser=u; if(unsub){unsub();unsub=null}
+    trips={};cur=null;
+    if(!u){mode="login";canWrite=false;setStatus("Chưa đăng nhập");render();return}
+    const allow=(window.ALLOWED_EMAILS||[]).map(e=>e.toLowerCase());
+    if(allow.length&&!allow.includes((u.email||"").toLowerCase())){mode="denied";canWrite=false;setStatus("Tài khoản chưa được cấp quyền");render();return}
+    db=firebase.firestore(); mode="db"; canWrite=true; render();
+    subscribe(()=>"Đã đồng bộ · "+u.email);
+  });
+}
+function signIn(){
+  const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
+  firebase.auth().signInWithPopup(p).catch(e=>{
+    if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment") firebase.auth().signInWithRedirect(p);
+    else if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request") toast("Đăng nhập lỗi: "+e.code);
+  });
+}
+function signOut(){if(localUser){try{localStorage.removeItem("sotay-session")}catch{};location.reload();return}firebase.auth().signOut()}
+
+/* Simple login gate: only used when config.js provides LOCAL_USERS (GitHub Pages build). Not real security. */
+let localUser=null;
+async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function sessionGet(){try{return JSON.parse(localStorage.getItem("sotay-session")||"null")}catch{return null}}
+async function localLogin(u,p){
+  u=u.trim().toLowerCase(); const h=await sha("so-tay-v1:"+u+":"+p);
+  if(window.LOCAL_USERS[u]!==h) return false;
+  try{localStorage.setItem("sotay-session",JSON.stringify({u,h}))}catch{}
+  location.reload(); return true;
+}
+document.addEventListener("submit",async e=>{
+  if(e.target.id!=="loginForm") return; e.preventDefault();
+  const ok=await localLogin($("#lg-user").value,$("#lg-pass").value);
+  if(!ok){$("#lg-err").hidden=false;$("#lg-pass").select()}
+});
+
 async function init(){
+  if(window.firebase&&window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey){initFirebase();return}
+  if(window.LOCAL_USERS&&Object.keys(window.LOCAL_USERS).length){
+    const s=sessionGet();
+    if(!(s&&window.LOCAL_USERS[s.u]&&window.LOCAL_USERS[s.u]===s.h)){mode="login-local";canWrite=false;setStatus("Chưa đăng nhập");render();$("#lg-user")?.focus();return}
+    localUser=s.u;
+  }
   let user=null;
   try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch{db=null}
   if(!db){mode="local";trips=localLoad();setStatus("Chuyến đi được lưu trên trình duyệt này");
@@ -236,15 +302,7 @@ async function init(){
     pick();render();return}
   mode="db";
   try{const w=await user?.can?.("data.write"); if(w===false) canWrite=false}catch{}
-  const timer=setTimeout(()=>setStatus("Chưa kết nối được, dữ liệu có thể chưa mới"),10000);
-  db.collection("trips").onSnapshot(snap=>{
-    if(!snap.metadata.fromCache){clearTimeout(timer);setStatus(canWrite?"Đã đồng bộ · mọi người cùng sửa được":"Chỉ xem · nhờ chủ trang cấp quyền sửa")}
-    const next={};
-    snap.docs.forEach(d=>{ next[d.id]= pending[d.id]&&trips[d.id] ? trips[d.id] : structuredClone(d.data()) });
-    for(const id in pending) if(trips[id]&&!next[id]) next[id]=trips[id];
-    trips=next; if(!cur||!trips[cur]) pick();
-    if(document.activeElement&&document.activeElement.closest("main,.modal-open")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) deferRender=true; else render();
-  },e=>{clearTimeout(timer);setStatus("Mất kết nối dữ liệu, tải lại trang để thử lại")});
+  subscribe(()=>canWrite?"Đã đồng bộ · mọi người cùng sửa được":"Chỉ xem · nhờ chủ trang cấp quyền sửa");
 }
 document.addEventListener("focusout",()=>setTimeout(()=>{if(deferRender&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"")){deferRender=false;render()}},0));
 
@@ -285,8 +343,27 @@ function render(){
   document.documentElement.style.setProperty("--accent",t?.color||COLORS[0]);
   renderList();
   const m=$("#main");
+  const who=fbUser?.email||(localUser&&((window.LOCAL_NAMES||{})[localUser]||localUser));
+  $("#acct").innerHTML=who?`<span>${esc(who)}</span><button class="btn sm" data-act="signout">Đăng xuất</button>`:"";
+  if(mode==="login-local"){
+    m.innerHTML=`<form class="glass sheet" id="loginForm" style="margin:40px auto">
+      <h2>Đăng nhập Sổ Tay Chuyến Đi</h2>
+      <label class="lbl">Tài khoản<input class="f" id="lg-user" autocomplete="username" required></label>
+      <label class="lbl">Mật khẩu<input class="f" id="lg-pass" type="password" autocomplete="current-password" required></label>
+      <div class="badge over" id="lg-err" hidden>Sai tài khoản hoặc mật khẩu.</div>
+      <div class="foot"><button class="btn primary">Đăng nhập</button></div></form>`;
+    return;
+  }
+  if(mode==="login"){
+    m.innerHTML=`<div class="glass empty"><h2>Đăng nhập để xem chuyến đi</h2><p>Sổ tay này chỉ dành cho các thành viên được mời. Đăng nhập bằng tài khoản Google đã được cấp quyền.</p><button class="btn primary" data-act="signin">Đăng nhập bằng Google</button></div>`;
+    return;
+  }
+  if(mode==="denied"){
+    m.innerHTML=`<div class="glass empty"><h2>Tài khoản chưa được cấp quyền</h2><p>${esc(fbUser?.email||"")} không nằm trong danh sách thành viên. Hãy đăng nhập bằng tài khoản khác hoặc nhờ chủ sổ tay thêm email của bạn.</p><button class="btn primary" data-act="signout">Đăng nhập tài khoản khác</button></div>`;
+    return;
+  }
   if(!t){
-    m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<button class="btn primary" data-act="new">+ Tạo chuyến mới</button>`:""}</div>`;
+    m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<div class="actions" style="justify-content:center"><button class="btn primary" data-act="new">+ Tạo chuyến mới</button>${fbUser?`<button class="btn" data-act="sample">Nạp chuyến mẫu Đà Lạt</button>`:""}</div>`:""}</div>`;
     return;
   }
   m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):costHTML(t));
@@ -412,6 +489,9 @@ document.addEventListener("click",e=>{
   if(b.dataset.color){trips[cur].color=b.dataset.color;save(cur);render();return}
   const a=b.dataset.act; if(!a) return;
   if(a==="new"){openNew();return}
+  if(a==="signin"){signIn();return}
+  if(a==="signout"){signOut();return}
+  if(a==="sample"){fetch("data/da-lat-3n2d.json").then(r=>r.json()).then(t=>{t.updatedAt=Date.now();trips.tdalat3n2d=t;cur="tdalat3n2d";route();save(cur,true);render()}).catch(()=>toast("Không tải được chuyến mẫu"));return}
   const t=trips[cur]; const i=+b.dataset.i, j=+b.dataset.j;
   const mut=()=>{save(cur);render()};
   switch(a){

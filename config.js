@@ -5,8 +5,15 @@
 // rồi dán kết quả vào đúng dòng bên dưới.
 window.LOCAL_USERS = {
   "tri": "213a843e0518fe2e1e5a49db33fe7eb76c147929d77f1977e5b0ad897c5153a1",
-  "thanhvien1": "42841ca5619e95ac549a8b3a4440be8ca18d1605a2df89574aebe5875c3d14e4",
-  "thanhvien2": "4b8f06c779fc5b1aa87db9c1dd08b89a0f68eaaab5fdc326012d213808144f0e"
+  "honganh": "8843acee0bca8d61867fa825ab02b84822c84dcefef0b9d8b2ac6a1ee6e80e3e",
+  "tandat": "267454f626799cc89d576c8a4cd77cd7e0a17abb13cf01803cfb15c92eda388e"
+};
+
+// Tên hiển thị
+window.LOCAL_NAMES = {
+  "tri": "Trí",
+  "honganh": "Hồng Ánh",
+  "tandat": "Tấn Đạt"
 };
 
 // Để trống apiKey: chưa dùng Firebase.
