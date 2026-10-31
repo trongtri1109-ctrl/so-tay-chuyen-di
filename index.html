@@ -853,6 +853,9 @@ body.landing .hero2{padding-top:3vh}
 @media (max-width:900px){.ledger2{grid-template-columns:1fr}.ledger2>.kpis{grid-template-columns:1fr 1fr}.ledger2>.kpis .kpi:first-child{grid-column:1/-1}
   .lform2{grid-template-columns:1fr 1fr}.lform2 #lf-desc{grid-column:1/-1;order:-1}.lform2 .btn{grid-column:1/-1;order:9}
   .mv{grid-template-columns:1fr auto 1fr;}.mv b{grid-column:1/-1;justify-self:end}}
+
+.tx.locked{opacity:.72}.tx .lock{font-style:normal;font-size:11px;margin-left:6px;opacity:.7}
+.addtx .hint{display:block;color:var(--ink3);font-size:12px;margin-top:6px}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1620,7 +1623,7 @@ async function addFiles(files,dayArg){
 }
 function canUpload(){return canWrite&&(FB_ON||!sharedMedia()||!!assets)}
 function tileHTML(x,k,noDay){
-  const capT=x.caption||(x.stop?"📍 "+x.stop:""); const cap=capT?`<span class="cap">${esc(capT)}</span>`:"";
+  const capT=x.caption||(x.stop?"Tại "+x.stop:""); const cap=capT?`<span class="cap">${esc(capT)}</span>`:"";
   const day=!noDay&&x.day!==""&&x.day!=null?`<span class="badge2">Ngày ${+x.day+1}</span>`:"";
   if(x.type==="link"){let host="";try{host=new URL(x.url).hostname.replace(/^www\./,"")}catch{}
     return `<a class="tile link" href="${esc(x.url)}" target="_blank" rel="noopener">${day}<b>↗</b><span>${esc(x.caption||host||"Link")}</span><small style="color:var(--ink3)">${esc(host)}</small></a>`}
@@ -1940,6 +1943,11 @@ function ledgerCalc(t){
   return {thu,chi,share,bal,fund,moves,mv};
 }
 let lfKind="chi", lfBy="Quỹ";
+/* Mỗi người chỉ ghi/sửa/xoá khoản tiền của chính mình. Khoản trả từ quỹ chung: người ghi mới sửa được. */
+function myName(t){if(!localUser)return null;const n=nameOf(localUser);return memberList(t).includes(n)?n:null}
+function canEditTx(t,r){if(!canWrite)return false;const me=myName(t);if(!me)return true;
+  if(r.owner)return r.owner===localUser; if(r.by==="Quỹ"||!r.by)return true; return r.by===me}
+function payers(t,kind){const me=myName(t);if(!me)return null;return kind==="thu"?[me]:["Quỹ",me]}
 
 let _lfDraft=null;
 function keepLedgerDraft(){_lfDraft={d:$("#lf-date")?.value,s:$("#lf-desc")?.value,a:$("#lf-amt")?.value}}
@@ -1952,6 +1960,7 @@ function fmtDay(d){if(!d)return "Không rõ ngày";const x=new Date(d+"T00:00:00
   return (diff===0?"Hôm nay · ":diff===1?"Hôm qua · ":"")+x.toLocaleDateString("vi-VN",{weekday:"long",day:"numeric",month:"numeric"})}
 function ledgerHTML(t){
   if(lfKind==="thu"&&lfBy==="Quỹ") lfBy=memberList(t)[0]||"";
+  {const pl=payers(t,lfKind); if(pl&&!pl.includes(lfBy)) lfBy=lfKind==="thu"?pl[0]:pl[1]}
   const L=ledgerCalc(t), est=calc(t), ro=!canWrite;
   const today=new Date().toISOString().slice(0,10);
   const rows=t.ledger.map((r,k)=>({...r,k})).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b.k-a.k);
@@ -1977,12 +1986,12 @@ function ledgerHTML(t){
       <input class="f" id="lf-desc" placeholder="${lfKind==="thu"?"VD: Góp quỹ đợt 1":"Chi cho gì? VD: Lẩu gà lá é"}" required aria-label="Nội dung">
       <input class="f" type="date" id="lf-date" value="${today}" aria-label="Ngày">
       <button class="btn primary">Ghi</button>
-      <div class="lbl full">${lfKind==="thu"?"Ai góp":"Ai trả tiền"}<input type="hidden" id="lf-by" value="${esc(lfBy)}">${peoplePick(t,{val:lfBy,fund:lfKind!=="thu",act:"lfBy"})}</div>
+      <div class="lbl full">${lfKind==="thu"?"Ai góp":"Ai trả tiền"}<input type="hidden" id="lf-by" value="${esc(lfBy)}">${peoplePick(t,{val:lfBy,fund:lfKind!=="thu",act:"lfBy",only:payers(t,lfKind)})}${myName(t)?`<small class="hint">Bạn chỉ ghi được tiền của mình (hoặc chi từ quỹ chung).</small>`:""}</div>
     </form></section>`}
   <section class="glass txlist">
-    <div class="tx-h"><h3>Lịch sử thu chi</h3><small>${t.ledger.length} khoản${ro?"":" · bấm vào một dòng để sửa"}</small></div>
+    <div class="tx-h"><h3>Lịch sử thu chi</h3><small>${t.ledger.length} khoản${ro?"":myName(t)?" · bấm vào khoản của bạn để sửa":" · bấm vào một dòng để sửa"}</small></div>
     ${groups.length?groups.map(g=>`<div class="txg"><div class="txd">${esc(fmtDay(g.d))}<span>${vnd(g.r.filter(r=>r.kind!=="thu").reduce((a,r)=>a+(+r.amount||0),0))}</span></div>
-      ${g.r.map(r=>`<button class="tx" ${ro?"disabled":`data-act="lEdit" data-k2="${r.k}"`}>${catIcon(r)}<span class="txm"><b>${esc(r.desc||"(không ghi nội dung)")}</b><small>${r.kind==="thu"?`${esc(r.by||"")} góp quỹ`:`${r.by==="Quỹ"||!r.by?"Trả từ quỹ chung":esc(r.by)+" trả"} · ${esc(r.cat||"Khác")}`}</small></span><span class="txa ${r.kind==="thu"?"in":"out"}">${r.kind==="thu"?"+":"−"}${vnd(r.amount)}</span></button>`).join("")}</div>`).join("")
+      ${g.r.map(r=>{const ok=canEditTx(t,r);return `<button class="tx ${ok?"":"locked"}" ${ok?`data-act="lEdit" data-k2="${r.k}"`:`disabled title="Chỉ ${esc(r.by&&r.by!=="Quỹ"?r.by:"người ghi")} sửa được"`}>${catIcon(r)}<span class="txm"><b>${esc(r.desc||"(không ghi nội dung)")}</b><small>${r.kind==="thu"?`${esc(r.by||"")} góp quỹ`:`${r.by==="Quỹ"||!r.by?"Trả từ quỹ chung":esc(r.by)+" trả"} · ${esc(r.cat||"Khác")}`}</small></span><span class="txa ${r.kind==="thu"?"in":"out"}">${r.kind==="thu"?"+":"−"}${vnd(r.amount)}${ok||ro?"":`<i class="lock" aria-label="Không sửa được"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></i>`}</span></button>`}).join("")}</div>`).join("")
       :`<div class="empty-day">Chưa có khoản nào. Ghi lại mỗi lần góp quỹ hoặc chi tiêu, cuối chuyến trang tự tính ai chuyển cho ai.</div>`}
     <details class="memd"><summary>Thành viên chia tiền (${t.members.length})</summary>
       <div class="members">${t.members.map((m,i)=>`<span class="chip">${esc(m)}${ro?"":`<button data-act="memDel" data-i="${i}" aria-label="Bỏ ${esc(m)}">✕</button>`}</span>`).join("")}
@@ -1990,8 +1999,8 @@ function ledgerHTML(t){
   </section></div>`;
 }
 function openLedgerEdit(k){
-  const t=trips[cur], r=t.ledger[k]; if(!r) return;
-  const people=[...(r.kind==="thu"?[]:["Quỹ"]),...memberList(t)];
+  const t=trips[cur], r=t.ledger[k]; if(!r) return; if(!canEditTx(t,r)){toast("Bạn chỉ sửa được khoản tiền của mình");return}
+  const people=payers(t,r.kind)||[...(r.kind==="thu"?[]:["Quỹ"]),...memberList(t)];
   $("#modal").innerHTML=`<div class="scrim" data-scrim><form class="glass sheet sedit" id="txForm" role="dialog" aria-modal="true">
     <h2>${r.kind==="thu"?"Sửa khoản góp quỹ":"Sửa khoản chi"}</h2>
     <div class="sgrid">
@@ -2005,14 +2014,15 @@ function openLedgerEdit(k){
   </form></div>`;
   const f=$("#txForm");
   f.onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(f));v.amount=parseInt(String(v.amount).replace(/\D/g,""),10)||0;
-    Object.assign(r,v);closeModal();save(cur,true);render();toast("Đã lưu")};
+    Object.assign(r,v); if(!r.owner&&localUser) r.owner=localUser; closeModal();save(cur,true);render();toast("Đã lưu")};
   const d=$("#txDel");d.onclick=()=>{if(d.dataset.ok){t.ledger.splice(k,1);closeModal();save(cur,true);render();toast("Đã xoá")}else{d.dataset.ok=1;d.textContent="Bấm lần nữa để xoá"}};
 }
 document.addEventListener("submit",e=>{
   if(e.target.id!=="ledgerForm") return; e.preventDefault();
   const t=trips[cur]; const amt=parseInt(($("#lf-amt").value||"").replace(/\D/g,""),10)||0; if(!amt){toast("Nhập số tiền");return}
   const kind=lfKind; let by=lfBy; if(kind==="thu"&&by==="Quỹ") by=t.members[0]||"";
-  t.ledger.push({date:$("#lf-date").value,desc:$("#lf-desc").value.trim(),amount:amt,kind,by,cat:kind==="thu"?"":guessCat($("#lf-desc").value)});
+  {const pl=payers(t,kind); if(pl&&!pl.includes(by)){toast("Bạn chỉ ghi được tiền của mình");return}}
+  t.ledger.push({date:$("#lf-date").value,desc:$("#lf-desc").value.trim(),amount:amt,kind,by,cat:kind==="thu"?"":guessCat($("#lf-desc").value),owner:localUser||""});
   save(cur,true); render(); toast("Đã ghi");
 });
 function guessCat(s){s=s.toLowerCase();
@@ -2031,10 +2041,10 @@ document.addEventListener("change",e=>{if(e.target.matches("[data-relc]")&&tab==
 function memberList(t){const m=(t.members&&t.members.length)?t.members:defaultMembers(t);return m}
 function userOfName(n){const L=window.LOCAL_NAMES||{};return Object.keys(L).find(u=>L[u]===n)||""}
 function ppAv(n){const u=userOfName(n), a=u?avatarOf(u):"";return a?`<img class="av" src="${a}" alt="">`:`<span class="av" aria-hidden="true">${esc((n||"?").trim().split(/\s+/).pop().charAt(0).toUpperCase())}</span>`}
-function peoplePick(t,{k,val,fund,ro,act="pp",multi}){
+function peoplePick(t,{k,val,fund,ro,act="pp",multi,only}){
   const sel=multi?String(val||"").split(",").map(x=>x.trim()).filter(Boolean):[val];
   const btn=(n,isFund)=>`<button type="button" class="pp ${isFund?"fund":""}" data-act="${act}" ${k?`data-k="${k}"`:""} data-v="${esc(n)}" ${multi?"data-multi":""} aria-pressed="${sel.includes(n)}" ${ro?"disabled":""}>${isFund?"":ppAv(n)}${esc(n)}</button>`;
-  return `<div class="pp-grid" role="group">${fund?btn("Quỹ",true):""}${memberList(t).map(n=>btn(n)).join("")}</div>`;
+  return `<div class="pp-grid" role="group">${fund&&(!only||only.includes("Quỹ"))?btn("Quỹ",true):""}${memberList(t).filter(n=>!only||only.includes(n)).map(n=>btn(n)).join("")}</div>`;
 }
 function todoHTML(t){
   const n=t.tasks.length, d=t.tasks.filter(x=>x.done).length, ro=!canWrite;
@@ -2139,7 +2149,7 @@ document.addEventListener("click",e=>{
       if("multi" in b.dataset){const cur0=String(getPath(t,k)||"").split(",").map(x=>x.trim()).filter(Boolean);const nx=cur0.includes(v)?cur0.filter(x=>x!==v):[...cur0,v];setPath(t,k,nx.join(", "))}
       else setPath(t,k,v);
       mut(); break}
-    case "lfKind": lfKind=b.dataset.v; lfBy=lfKind==="thu"?(memberList(t)[0]||""):"Quỹ"; keepLedgerDraft(); render(); restoreLedgerDraft(); break;
+    case "lfKind": lfKind=b.dataset.v; lfBy=lfKind==="thu"?(myName(t)||memberList(t)[0]||""):"Quỹ"; keepLedgerDraft(); render(); restoreLedgerDraft(); break;
     case "lfBy": lfBy=b.dataset.v; keepLedgerDraft(); render(); restoreLedgerDraft(); break;
     case "customAdd": addCustomPlace(t); break;
     case "gImgDel": {const x=t.guide[i].items[j]; if(x.img) delMedia(x.img); delete x.img; mut(); break}
@@ -2156,7 +2166,7 @@ document.addEventListener("click",e=>{
     case "gUp": {const a=t.guide[i].items;[a[j-1],a[j]]=[a[j],a[j-1]];mut();break}
     case "gsecAdd": t.guide.push({title:"Danh sách mới",items:[]}); mut(); break;
     case "gsecDel": t.guide.splice(i,1); mut(); break;
-    case "lDel": t.ledger.splice(+b.dataset.k2,1); mut(); break;
+    case "lDel": if(!canEditTx(t,t.ledger[+b.dataset.k2])){toast("Bạn chỉ xoá được khoản tiền của mình");break} t.ledger.splice(+b.dataset.k2,1); mut(); break;
     case "lEdit": openLedgerEdit(+b.dataset.k2); break;
     case "memAdd": {const v=($("#memIn")?.value||"").trim(); if(v&&!t.members.includes(v)){t.members.push(v);mut()} break}
     case "memDel": t.members.splice(i,1); mut(); break;
