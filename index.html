@@ -231,7 +231,9 @@ const byRecent=(a,b)=>(trips[b].updatedAt||0)-(trips[a].updatedAt||0);
 async function init(){
   let user=null;
   try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch{db=null}
-  if(!db){mode="local";trips=localLoad();setStatus("Bạn chưa đăng nhập claude.ai nên đang dùng bản riêng trên trình duyệt này. Đăng nhập để xem và sửa các chuyến chung.");pick();render();return}
+  if(!db){mode="local";trips=localLoad();setStatus("Chuyến đi được lưu trên trình duyệt này");
+    if(!Object.keys(trips).length){try{const r=await fetch("data/da-lat-3n2d.json");if(r.ok){trips.tdalat3n2d=await r.json();localSave()}}catch{}}
+    pick();render();return}
   mode="db";
   try{const w=await user?.can?.("data.write"); if(w===false) canWrite=false}catch{}
   const timer=setTimeout(()=>setStatus("Chưa kết nối được, dữ liệu có thể chưa mới"),10000);
