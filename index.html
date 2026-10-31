@@ -167,6 +167,51 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .acct .who{display:flex;align-items:center;gap:8px;min-width:0;border:0;background:transparent;padding:0;cursor:pointer;color:inherit;font:inherit}
 .acct .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .avrow{display:flex;gap:14px;align-items:center}
+/* route */
+.route{padding:18px 20px 16px;display:flex;flex-direction:column;gap:12px}
+.route-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.route-h h3{font-size:20px;flex:1;min-width:120px}
+.route-h select.f{width:auto}
+.rbody{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+#routeMap{height:340px;border-radius:var(--r-md);border:1px solid var(--hair);overflow:hidden;position:relative;z-index:0}
+.rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto}
+.rstop{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;background:var(--glass-strong);border:1px solid var(--hair);border-radius:12px;padding:8px 10px}
+.rstop>*{min-width:0}
+.rstop b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rstop small{display:block;font-size:12px;color:var(--ink3)}
+.rstop .rt{display:flex;gap:2px}
+.rstop .rt .btn{width:28px;height:28px;padding:0;font-size:13px}
+.num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.num.start{box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 35%,transparent)}
+.num.nogeo{background:var(--ink3)}
+.leg{font-size:11.5px;color:var(--accent);font-weight:600}
+.rfoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rfoot .sub{flex:1;min-width:180px}
+.pick{margin-top:6px;align-self:flex-start;border:1px solid var(--hair);border-radius:999px;padding:4px 12px;font-size:12.5px;font-weight:600;background:transparent;color:var(--accent);cursor:pointer}
+.pick.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.gitem.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.pinnum{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;border:2px solid #fff;display:grid;place-items:center;font:700 12px/1 var(--font);box-shadow:0 2px 6px rgba(0,0,0,.3);transform:translate(-13px,-13px)}
+.pinnum.start{background:#111;}
+.setloc{outline:3px solid var(--warn);outline-offset:-3px}
+@media (max-width:860px){.rbody{grid-template-columns:1fr}#routeMap{height:280px}.rlist{max-height:none}}
+/* minimal leaflet */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;outline:0;-webkit-tap-highlight-color:transparent;background:var(--field);font:inherit;touch-action:none}
+.leaflet-tile,.leaflet-marker-icon{user-select:none;-webkit-user-drag:none}
+.leaflet-tile{visibility:hidden}.leaflet-tile-loaded{visibility:inherit}
+.leaflet-container img.leaflet-tile{max-width:none!important;max-height:none!important;width:256px;height:256px}
+.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}
+.leaflet-pane>svg path{pointer-events:none}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}
+.leaflet-top .leaflet-control{margin-top:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-right .leaflet-control{float:right;margin-right:6px}.leaflet-bottom .leaflet-control{margin-bottom:4px}
+.leaflet-control-zoom{border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.leaflet-control-zoom a{display:block;width:32px;height:32px;line-height:32px;text-align:center;text-decoration:none;font-weight:700;font-size:18px;background:var(--glass-strong);color:var(--ink)}
+.leaflet-control-attribution{font-size:10px;background:var(--glass-strong);padding:1px 6px;border-radius:6px;color:var(--ink2)}
+.leaflet-control-attribution a{color:var(--ink2)}
+.leaflet-div-icon{background:transparent;border:0}
+.leaflet-tooltip{position:absolute;padding:3px 8px;background:var(--glass-strong);color:var(--ink);border-radius:6px;white-space:nowrap;font-size:12px;box-shadow:var(--shadow);pointer-events:none}
+.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:grabbing}.leaflet-crosshair{cursor:crosshair}
 /* album */
 .album{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px}
 .album-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -272,7 +317,7 @@ td input.n{text-align:right}
 <div class="wash" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="app">
   <aside class="side glass">
-    <div class="side-h"><h2>Chuyến đi</h2><button class="btn primary sm" id="newBtn">+ Mới</button></div>
+    <div class="side-h"><h2>Chuyến đi</h2><div class="actions"><button class="btn icon" id="themeBtn" aria-label="Đổi giao diện sáng tối"></button><button class="btn primary sm" id="newBtn">+ Mới</button></div></div>
     <div class="list" id="list"></div>
     <div class="status" id="status">Đang tải…</div>
     <div class="acct" id="acct"></div>
@@ -513,6 +558,7 @@ function render(){
   if(!Array.isArray(t.members)) t.members=defaultMembers(t);
   m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):tab==="guide"?guideHTML(t):tab==="ledger"?ledgerHTML(t):costHTML(t));
   if(tab==="album") hydrateMedia();
+  if(tab==="guide"&&!editing) drawRouteMap(t);
 }
 function renderList(){
   const ids=Object.keys(trips).sort(byRecent);
@@ -692,19 +738,130 @@ document.addEventListener("change",e=>{
 
 /* ---------- Gợi ý ---------- */
 const POSE_DEFAULT=[{"title": "Dáng pose chụp đơn", "kind": "pose", "items": [{"name": "Đi bộ rồi ngoảnh lại", "note": "Người chụp đứng phía trước, chụp liên tục khi bạn bước tới và quay đầu cười.", "addr": "", "time": ""}, {"name": "Tựa lan can nhìn xa", "note": "Đứng nghiêng 45°, một tay vịn lan can, mắt nhìn về thung lũng, chụp ngang tầm ngực.", "addr": "", "time": ""}, {"name": "Ngồi bậc thang ôm gối", "note": "Chọn bậc gỗ hoặc bậc đá, ngồi lệch một bên khung hình, để khoảng trống phía nhìn.", "addr": "", "time": ""}, {"name": "Ly cà phê che nửa mặt", "note": "Hai tay cầm ly ấm, đưa lên ngang môi, mắt nhìn ống kính. Hợp quán gỗ ánh vàng.", "addr": "", "time": ""}, {"name": "Góc nghiêng bên cửa sổ", "note": "Ngồi sát cửa sổ cho ánh sáng tự nhiên rọi một bên mặt, nhìn ra ngoài.", "addr": "", "time": ""}, {"name": "Chụp từ dưới lên rừng thông", "note": "Người chụp ngồi thấp, chĩa máy lên để chân dài và thấy ngọn thông, trời xanh.", "addr": "", "time": ""}, {"name": "Khoác áo, tay đút túi", "note": "Áo khoác dáng dài, đứng giữa đường thông hoặc hẻm dốc, bước nhẹ về phía máy.", "addr": "", "time": ""}]}, {"title": "Dáng pose chụp đôi", "kind": "pose", "items": [{"name": "Nắm tay kéo đi trước", "note": "Một người đi trước ngoảnh lại, tay kéo người kia, máy chụp từ phía sau người bị kéo.", "addr": "", "time": ""}, {"name": "Tựa vai ngắm thung lũng", "note": "Chụp từ phía sau lưng hai người, khung cảnh đồi núi chiếm 2/3 ảnh.", "addr": "", "time": ""}, {"name": "Cụng ly cà phê", "note": "Chụp cận tay và hai ly, nền mờ là view quán.", "addr": "", "time": ""}, {"name": "Bóng đen hoàng hôn", "note": "Đứng ngược sáng lúc mặt trời sắp lặn, giảm sáng trên điện thoại để chỉ còn dáng người.", "addr": "", "time": ""}, {"name": "Chung một áo khoác", "note": "Một người khoác áo rộng, choàng qua người kia, cười nhìn nhau.", "addr": "", "time": ""}, {"name": "Đi giữa đường đồi chè", "note": "Hai người nhỏ giữa luống chè, chụp từ xa bằng zoom 2x–3x cho hậu cảnh nén lại.", "addr": "", "time": ""}]}, {"title": "Chụp phong cảnh và nhóm", "kind": "pose", "items": [{"name": "Người nhỏ giữa khung cảnh lớn", "note": "Đặt người ở 1/3 khung hình, để đồi chè, mây hoặc hồ chiếm phần lớn ảnh.", "addr": "", "time": ""}, {"name": "Đóng khung bằng cửa sổ, vòm cây", "note": "Dùng khung cửa, vòm lá thông làm viền tự nhiên cho cảnh phía xa.", "addr": "", "time": ""}, {"name": "Biển mây lúc bình minh", "note": "Đến trước 5h30, chụp ngược sáng, khoá phơi sáng vào vùng trời.", "addr": "", "time": ""}, {"name": "Cả nhóm cùng nhảy", "note": "Chế độ chụp liên tục, đếm 1-2-3, chụp từ thấp lên cho nhảy cao hơn.", "addr": "", "time": ""}, {"name": "Giờ vàng", "note": "Ánh sáng đẹp nhất khoảng 6h–7h sáng và 16h30–17h30 chiều.", "addr": "", "time": ""}, {"name": "Toàn cảnh thành phố về đêm", "note": "Tựa điện thoại lên lan can cho chắc tay, bật chế độ chụp đêm.", "addr": "", "time": ""}]}];
-const DALAT_GUIDE=[{"title": "Ăn sáng", "kind": "food", "items": [{"name": "Bánh căn Lệ", "note": "Bánh căn trứng, xíu mại, chấm nước mắm mỡ hành.", "addr": "27/44 Yersin, P. Xuân Hương", "time": "7:00–11:00"}, {"name": "Bánh mì xíu mại Hồng", "note": "Bánh mì chấm chén xíu mại nóng.", "addr": "72 Yersin, P. Xuân Hương", "time": "6:00–12:00"}, {"name": "Bún bò Bà Sồi", "note": "Bún bò quen của người địa phương.", "addr": "51/6 Phan Đình Phùng", "time": "6:00–11:00"}, {"name": "Phở Uyên", "note": "Phở bò, đi sớm đỡ đợi.", "addr": "167 Xô Viết Nghệ Tĩnh", "time": "6:00–11:00"}, {"name": "Bánh canh cá lóc An", "note": "Bánh canh cá lóc, nước dùng ngọt.", "addr": "21/9 Trần Phú", "time": "6:30–19:00"}]}, {"title": "Cà phê buổi sáng, săn mây", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Bình Minh Ơi", "note": "Mở từ rất sớm để ngắm bình minh, mây.", "addr": "89 Hoàng Hoa Thám, P. Xuân Hương", "time": "Từ 4:30"}, {"name": "Cầu Đất Panorama", "note": "Săn mây trên đồi chè, cách trung tâm khoảng 25 km, đường đèo sáng sớm nhiều sương.", "addr": "QL20, khu đồi chè Trạm Hành", "time": "4:30–18:00"}, {"name": "Cheo Veooo", "note": "Bình minh sương dày, nhìn xuống thung lũng và thành phố.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": "24/7"}, {"name": "Thuỷ Tạ", "note": "Quán nằm trên mặt hồ Xuân Hương, đẹp lúc bình minh.", "addr": "Hồ Xuân Hương, trung tâm", "time": ""}, {"name": "Cà phê Tùng", "note": "Quán xưa từ thập niên 60, không gian hoài cổ.", "addr": "6 khu Hoà Bình", "time": ""}]}, {"title": "Ăn trưa", "kind": "food", "items": [{"name": "Lẩu gà lá é Tao Ngộ", "note": "Món nên thử nhất, gọi nồi lớn cho nhóm.", "addr": "", "time": ""}, {"name": "Bò tay cầm Kim Gia", "note": "Bò tay cầm, bò nướng, bò nhúng ớt.", "addr": "65 Quang Trung", "time": "8:30–21:30"}, {"name": "Mì trộn A Sỹ", "note": "Mì trộn trứng lòng đào.", "addr": "66 KQH Nguyễn Lương Bằng", "time": "7:00–19:30"}, {"name": "Bánh ướt lòng gà Hằng", "note": "Bánh ướt, lòng gà, gà xé.", "addr": "39 Đồng Tâm", "time": "12:30–19:00"}, {"name": "Cơm niêu Fresh", "note": "Cơm niêu, hợp nhóm đông.", "addr": "90 Vạn Thành", "time": "7:00–17:00"}, {"name": "Lẩu Mà La", "note": "Hơn 10 loại nước lẩu.", "addr": "24 Nguyễn Văn Cừ", "time": "10:00–22:00"}]}, {"title": "Cà phê chiều, chụp hoàng hôn", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Góc của Tùng", "note": "Ngoại ô phía nam, đồi thông, nổi tiếng ngắm hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo", "note": "Hoàng hôn rồi đèn thành phố lên. Mang áo khoác, trời lạnh nhanh.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": ""}, {"name": "In The Forest", "note": "Thung lũng thông dốc, đẹp nhất ngay trước hoàng hôn.", "addr": "", "time": ""}, {"name": "Tiệm Cà Phê Hoàng Hôn Chiều", "note": "Ngắm hoàng hôn vùng Trại Mát.", "addr": "Dốc số 9, Trại Mát", "time": "5:00–20:00"}, {"name": "Túi Mơ To", "note": "Thung lũng nhà kính, lúc lên đèn buổi tối rất lạ mắt.", "addr": "Phía đông trung tâm", "time": ""}, {"name": "Lưng Chừng", "note": "Lưng đồi dưới đèo Prenn, nhìn thung lũng xanh.", "addr": "Gần đèo Prenn", "time": ""}]}, {"title": "Quán, điểm hot gần đây", "kind": "hot", "items": [{"name": "Hoa Điền Sơn Trang", "note": "Đồi dã quỳ (đúng mùa tháng 11), điểm “bàn tay” khổng lồ.", "addr": "Tiểu khu 159, P.5", "time": ""}, {"name": "Lò Sấy Coffee Store", "note": "Trên sườn đồi, ngắm đèn thành phố và sao ban đêm.", "addr": "", "time": ""}, {"name": "Kong Coffee", "note": "Sân thượng nhìn thung lũng nhà kính và núi xa.", "addr": "Rìa phía đông thành phố", "time": ""}, {"name": "Tuyệt Tình Cốc", "note": "Hồ nước xanh ngọc giữa vách đá.", "addr": "Xã Lát, Lạc Dương", "time": ""}, {"name": "Ngôi nhà lá phong", "note": "Nhà nhiều mái, hàng nghìn cây phong.", "addr": "", "time": ""}]}, {"title": "Địa điểm chụp ảnh đẹp", "kind": "photo", "items": [{"name": "Bức tường vàng Cối Xay Gió", "note": "Phông vàng vintage, ngay đối diện Cà phê Tùng.", "addr": "Khu Hoà Bình", "time": ""}, {"name": "Ga Đà Lạt", "note": "Nhà ga kiến trúc Pháp, toa tàu cũ.", "addr": "1 Quang Trung", "time": ""}, {"name": "Đồi chè Cầu Đất", "note": "Luống chè xếp tầng, săn mây sáng sớm.", "addr": "Cầu Đất", "time": ""}, {"name": "Phim trường Secret Garden", "note": "Nhà gỗ dưới rừng thông, cầu gỗ, bè trên hồ Tuyền Lâm.", "addr": "Gần làng Đất Sét", "time": ""}, {"name": "Chùa Linh Phước", "note": "Rồng khảm mảnh chai, tháp chuông cao.", "addr": "Trại Mát", "time": ""}, {"name": "Hồ Xuân Hương lúc bình minh", "note": "Sương trên mặt hồ, ít người.", "addr": "Trung tâm", "time": ""}]}, {"title": "Góc chụp đẹp ở quán", "kind": "photo", "items": [{"name": "Cà phê Tùng: bàn gỗ cũ trong góc", "note": "Bàn ghế cũ mang dấu thời gian, tranh bạc màu trên tường, hợp ảnh hoài cổ.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: cận cảnh phin nhỏ giọt", "note": "Chụp macro phin và ly trên bàn gỗ. Quán đèn mờ, nên ngồi gần cửa và đi ban ngày.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: ra bức tường vàng đối diện", "note": "Ngay trước tiệm bánh Cối Xay Gió, phông vàng sáng, bù cho trong quán tối.", "addr": "", "time": ""}, {"name": "Cheo Veooo: mỏm đá chìa ra", "note": "Bộ bàn ghế đặt sẵn trên mỏm đá, góc ảnh và video được săn nhiều nhất.", "addr": "", "time": ""}, {"name": "Cheo Veooo: hiên ngoài và tầng 2", "note": "Nhìn rộng ra đồi núi và hồ Xuân Hương, đẹp lúc bình minh và hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo: cửa sổ, chậu hoa, kệ sách", "note": "Góc trong nhà gỗ, hợp trang phục vintage. Quán nhỏ, nên đến sớm.", "addr": "", "time": ""}]}];
+const DALAT_GUIDE=[{"title": "Ăn sáng", "kind": "food", "items": [{"name": "Bánh căn Lệ", "note": "Bánh căn trứng, xíu mại, chấm nước mắm mỡ hành.", "addr": "27/44 Yersin, P. Xuân Hương", "time": "7:00–11:00", "lat": 11.9423, "lng": 108.45057}, {"name": "Bánh mì xíu mại Hồng", "note": "Bánh mì chấm chén xíu mại nóng.", "addr": "72 Yersin, P. Xuân Hương", "time": "6:00–12:00", "lat": 11.94177, "lng": 108.45196}, {"name": "Bún bò Bà Sồi", "note": "Bún bò quen của người địa phương.", "addr": "51/6 Phan Đình Phùng", "time": "6:00–11:00", "lat": 11.9482, "lng": 108.43573}, {"name": "Phở Uyên", "note": "Phở bò, đi sớm đỡ đợi.", "addr": "167 Xô Viết Nghệ Tĩnh", "time": "6:00–11:00", "lat": 11.95695, "lng": 108.43391}, {"name": "Bánh canh cá lóc An", "note": "Bánh canh cá lóc, nước dùng ngọt.", "addr": "21/9 Trần Phú", "time": "6:30–19:00", "lat": 11.93624, "lng": 108.43503}]}, {"title": "Cà phê buổi sáng, săn mây", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Bình Minh Ơi", "note": "Mở từ rất sớm để ngắm bình minh, mây.", "addr": "89 Hoàng Hoa Thám, P. Xuân Hương", "time": "Từ 4:30", "lat": 11.93128, "lng": 108.46447}, {"name": "Cầu Đất Panorama", "note": "Săn mây trên đồi chè, cách trung tâm khoảng 25 km, đường đèo sáng sớm nhiều sương.", "addr": "QL20, khu đồi chè Trạm Hành", "time": "4:30–18:00", "lat": 11.87932, "lng": 108.5618}, {"name": "Cheo Veooo", "note": "Bình minh sương dày, nhìn xuống thung lũng và thành phố.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": "24/7", "lat": 11.93828, "lng": 108.48229}, {"name": "Thuỷ Tạ", "note": "Quán nằm trên mặt hồ Xuân Hương, đẹp lúc bình minh.", "addr": "Hồ Xuân Hương, trung tâm", "time": "", "lat": 11.94001, "lng": 108.44209}, {"name": "Cà phê Tùng", "note": "Quán xưa từ thập niên 60, không gian hoài cổ.", "addr": "6 khu Hoà Bình", "time": "", "lat": 11.94343, "lng": 108.43615}]}, {"title": "Ăn trưa", "kind": "food", "items": [{"name": "Lẩu gà lá é Tao Ngộ", "note": "Món nên thử nhất, gọi nồi lớn cho nhóm.", "addr": "", "time": ""}, {"name": "Bò tay cầm Kim Gia", "note": "Bò tay cầm, bò nướng, bò nhúng ớt.", "addr": "65 Quang Trung", "time": "8:30–21:30"}, {"name": "Mì trộn A Sỹ", "note": "Mì trộn trứng lòng đào.", "addr": "66 KQH Nguyễn Lương Bằng", "time": "7:00–19:30", "lat": 11.95185, "lng": 108.43593}, {"name": "Bánh ướt lòng gà Hằng", "note": "Bánh ướt, lòng gà, gà xé.", "addr": "39 Đồng Tâm", "time": "12:30–19:00", "lat": 11.93814, "lng": 108.42567}, {"name": "Cơm niêu Fresh", "note": "Cơm niêu, hợp nhóm đông.", "addr": "90 Vạn Thành", "time": "7:00–17:00", "lat": 11.94941, "lng": 108.40453}, {"name": "Lẩu Mà La", "note": "Hơn 10 loại nước lẩu.", "addr": "24 Nguyễn Văn Cừ", "time": "10:00–22:00", "lat": 11.93955, "lng": 108.43304}]}, {"title": "Cà phê chiều, chụp hoàng hôn", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Góc của Tùng", "note": "Ngoại ô phía nam, đồi thông, nổi tiếng ngắm hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo", "note": "Hoàng hôn rồi đèn thành phố lên. Mang áo khoác, trời lạnh nhanh.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": "", "lat": 11.93828, "lng": 108.48229}, {"name": "In The Forest", "note": "Thung lũng thông dốc, đẹp nhất ngay trước hoàng hôn.", "addr": "", "time": ""}, {"name": "Tiệm Cà Phê Hoàng Hôn Chiều", "note": "Ngắm hoàng hôn vùng Trại Mát.", "addr": "Dốc số 9, Trại Mát", "time": "5:00–20:00", "lat": 11.94612, "lng": 108.50146}, {"name": "Túi Mơ To", "note": "Thung lũng nhà kính, lúc lên đèn buổi tối rất lạ mắt.", "addr": "Phía đông trung tâm", "time": ""}, {"name": "Lưng Chừng", "note": "Lưng đồi dưới đèo Prenn, nhìn thung lũng xanh.", "addr": "Gần đèo Prenn", "time": ""}]}, {"title": "Quán, điểm hot gần đây", "kind": "hot", "items": [{"name": "Hoa Điền Sơn Trang", "note": "Đồi dã quỳ (đúng mùa tháng 11), điểm “bàn tay” khổng lồ.", "addr": "Tiểu khu 159, P.5", "time": ""}, {"name": "Lò Sấy Coffee Store", "note": "Trên sườn đồi, ngắm đèn thành phố và sao ban đêm.", "addr": "", "time": ""}, {"name": "Kong Coffee", "note": "Sân thượng nhìn thung lũng nhà kính và núi xa.", "addr": "Rìa phía đông thành phố", "time": ""}, {"name": "Tuyệt Tình Cốc", "note": "Hồ nước xanh ngọc giữa vách đá.", "addr": "Xã Lát, Lạc Dương", "time": "", "lat": 12.04626, "lng": 108.33853}, {"name": "Ngôi nhà lá phong", "note": "Nhà nhiều mái, hàng nghìn cây phong.", "addr": "", "time": ""}]}, {"title": "Địa điểm chụp ảnh đẹp", "kind": "photo", "items": [{"name": "Bức tường vàng Cối Xay Gió", "note": "Phông vàng vintage, ngay đối diện Cà phê Tùng.", "addr": "Khu Hoà Bình", "time": "", "lat": 11.94418, "lng": 108.43484}, {"name": "Ga Đà Lạt", "note": "Nhà ga kiến trúc Pháp, toa tàu cũ.", "addr": "1 Quang Trung", "time": "", "lat": 11.9416, "lng": 108.45443}, {"name": "Đồi chè Cầu Đất", "note": "Luống chè xếp tầng, săn mây sáng sớm.", "addr": "Cầu Đất", "time": "", "lat": 11.87775, "lng": 108.56034}, {"name": "Phim trường Secret Garden", "note": "Nhà gỗ dưới rừng thông, cầu gỗ, bè trên hồ Tuyền Lâm.", "addr": "Gần làng Đất Sét", "time": "", "lat": 11.93641, "lng": 108.42295}, {"name": "Chùa Linh Phước", "note": "Rồng khảm mảnh chai, tháp chuông cao.", "addr": "Trại Mát", "time": "", "lat": 11.94428, "lng": 108.4994}, {"name": "Hồ Xuân Hương lúc bình minh", "note": "Sương trên mặt hồ, ít người.", "addr": "Trung tâm", "time": "", "lat": 11.94508, "lng": 108.44872}]}, {"title": "Góc chụp đẹp ở quán", "kind": "photo", "items": [{"name": "Cà phê Tùng: bàn gỗ cũ trong góc", "note": "Bàn ghế cũ mang dấu thời gian, tranh bạc màu trên tường, hợp ảnh hoài cổ.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: cận cảnh phin nhỏ giọt", "note": "Chụp macro phin và ly trên bàn gỗ. Quán đèn mờ, nên ngồi gần cửa và đi ban ngày.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: ra bức tường vàng đối diện", "note": "Ngay trước tiệm bánh Cối Xay Gió, phông vàng sáng, bù cho trong quán tối.", "addr": "", "time": ""}, {"name": "Cheo Veooo: mỏm đá chìa ra", "note": "Bộ bàn ghế đặt sẵn trên mỏm đá, góc ảnh và video được săn nhiều nhất.", "addr": "", "time": ""}, {"name": "Cheo Veooo: hiên ngoài và tầng 2", "note": "Nhìn rộng ra đồi núi và hồ Xuân Hương, đẹp lúc bình minh và hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo: cửa sổ, chậu hoa, kệ sách", "note": "Góc trong nhà gỗ, hợp trang phục vintage. Quán nhỏ, nên đến sớm.", "addr": "", "time": ""}]}];
 function defaultGuide(t){
   const base=/đà\s*lạt|da\s*lat/i.test((t.destination||"")+" "+(t.name||""))?DALAT_GUIDE
     :["Ăn sáng","Cà phê buổi sáng","Ăn trưa","Cà phê chiều, ngắm hoàng hôn","Quán, điểm hot gần đây","Địa điểm chụp ảnh đẹp"].map(title=>({title,items:[]}));
   return structuredClone([...base,...POSE_DEFAULT]);
 }
+
+/* ---------- Lộ trình: chọn điểm, tự sắp xếp, bản đồ ---------- */
+let routeDay=0, setLocIdx=-1, _map=null;
+const rkey=x=>(x.name||"").trim().toLowerCase()+"|"+(x.addr||"").trim().toLowerCase();
+function routeOf(t,d=routeDay){t.routes=t.routes||{};return t.routes[d]=t.routes[d]||[]}
+function routeIndex(t,x){return routeOf(t).findIndex(r=>rkey(r)===rkey(x))}
+const hav=(a,b)=>{const R=6371,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lng-a.lng)*r;const h=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const hasGeo=x=>typeof x.lat==="number"&&typeof x.lng==="number";
+function sortRoute(t){
+  const r=routeOf(t); if(r.length<3&&!r.some(x=>x.start)) {const si=r.findIndex(x=>x.start);if(si>0)r.unshift(...r.splice(si,1));return}
+  const geo=r.filter(hasGeo), no=r.filter(x=>!hasGeo(x));
+  if(geo.length<2){t.routes[routeDay]=[...geo,...no];return}
+  let si=geo.findIndex(x=>x.start); if(si<0) si=0;
+  const left=geo.slice(), path=[left.splice(si,1)[0]];
+  while(left.length){const last=path[path.length-1];let bi=0,bd=1e9;left.forEach((x,k)=>{const d=hav(last,x);if(d<bd){bd=d;bi=k}});path.push(left.splice(bi,1)[0])}
+  // 2-opt, giữ cố định điểm xuất phát, đường mở
+  let better=true,guard=0;
+  while(better&&guard++<200){better=false;
+    for(let i=1;i<path.length-1;i++)for(let k=i+1;k<path.length;k++){
+      const a=path[i-1],b=path[i],c=path[k],d=path[k+1];
+      const cur=hav(a,b)+(d?hav(c,d):0), nxt=hav(a,c)+(d?hav(b,d):0);
+      if(nxt<cur-1e-6){path.splice(i,k-i+1,...path.slice(i,k+1).reverse());better=true}}}
+  t.routes[routeDay]=[...path,...no];
+}
+function routeKm(r){let s=0;for(let i=1;i<r.length;i++)if(hasGeo(r[i])&&hasGeo(r[i-1]))s+=hav(r[i-1],r[i]);return s}
+function gmapsDir(t,r){
+  const p=x=>hasGeo(x)?x.lat+","+x.lng:[x.name,x.addr,t.destination].filter(Boolean).join(", ");
+  if(!r.length) return "";
+  if(r.length===1) return mapUrl(r[0].name,t.destination);
+  const w=r.slice(1,-1).slice(0,8).map(p).join("|");
+  return "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+encodeURIComponent(p(r[0]))+"&destination="+encodeURIComponent(p(r[r.length-1]))+(w?"&waypoints="+encodeURIComponent(w):"");
+}
+async function geocode(x,dest){
+  try{const q=[x.name,x.addr,dest].filter(Boolean).join(", ");
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=vi&q="+encodeURIComponent(q)).then(r=>r.json());
+    if(r[0]) return {lat:+(+r[0].lat).toFixed(5),lng:+(+r[0].lon).toFixed(5)};
+    if(x.addr){const r2=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=vi&q="+encodeURIComponent([x.addr,dest].filter(Boolean).join(", "))).then(r=>r.json());
+      if(r2[0]) return {lat:+(+r2[0].lat).toFixed(5),lng:+(+r2[0].lon).toFixed(5)}}
+  }catch{} return null;
+}
+async function pickItem(t,i,j){
+  const g=t.guide[i], x=g.items[j], r=routeOf(t), k=routeIndex(t,x);
+  if(k>=0){r.splice(k,1);sortRoute(t);save(cur);render();return}
+  const stop={name:x.name,addr:x.addr||"",note:x.note||"",src:g.title,kind:g.kind||""};
+  if(hasGeo(x)){stop.lat=x.lat;stop.lng=x.lng}
+  r.push(stop); sortRoute(t); save(cur); render(); toast(`Đã thêm vào lộ trình Ngày ${routeDay+1}`);
+  if(!hasGeo(stop)){const c=await geocode(stop,t.destination);
+    if(c){Object.assign(stop,c);x.lat=c.lat;x.lng=c.lng;sortRoute(t);save(cur);render()}
+    else toast("Chưa tìm được vị trí, bấm “Đặt vị trí” rồi chạm lên bản đồ")}
+}
+function routeHTML(t){
+  const r=routeOf(t), km=routeKm(r);
+  let prev=null;
+  return `<section class="glass route">
+    <div class="route-h"><h3>Lộ trình</h3>
+      <select class="f" id="routeDay" aria-label="Chọn ngày">${t.days.map((d,i)=>`<option value="${i}" ${i===routeDay?"selected":""}>Ngày ${i+1}${dayDate(t,i)?" · "+dayDate(t,i):""}${(t.routes?.[i]||[]).length?` (${t.routes[i].length})`:""}</option>`).join("")}</select>
+      ${r.length>2&&canWrite?`<button class="btn sm" data-act="rSort">Tự xếp theo đường đi</button>`:""}</div>
+    ${r.length?`<div class="rbody"><div id="routeMap" class="${setLocIdx>=0?"setloc":""}" aria-label="Bản đồ lộ trình"></div>
+      <ol class="rlist">${r.map((x,k)=>{const leg=prev&&hasGeo(prev)&&hasGeo(x)?hav(prev,x):null;prev=x;
+        return `<li class="rstop"><span class="num ${k===0?"start":""} ${hasGeo(x)?"":"nogeo"}">${k+1}</span>
+          <div><b>${esc(x.name)}</b><small>${leg!=null?`<span class="leg">+${leg<1?Math.round(leg*1000)+" m":leg.toFixed(1)+" km"}</span> · `:k===0?`<span class="leg">Xuất phát</span> · `:""}${esc(x.src||"")}${hasGeo(x)?"":" · chưa có vị trí"}</small></div>
+          ${canWrite?`<div class="rt">${k>0?`<button class="btn" data-act="rStart" data-k2="${k}" title="Xuất phát từ đây" aria-label="Xuất phát từ đây">⚑</button>`:""}
+            <button class="btn" data-act="rLoc" data-k2="${k}" title="Đặt vị trí trên bản đồ" aria-label="Đặt vị trí">◎</button>
+            <button class="btn danger" data-act="rDel" data-k2="${k}" aria-label="Bỏ khỏi lộ trình">✕</button></div>`:""}</li>`}).join("")}</ol></div>
+      <div class="rfoot"><span class="sub">${r.length} điểm · khoảng ${(km*1.3).toFixed(1)} km đường đi (ước tính từ khoảng cách thẳng × 1,3)${setLocIdx>=0?` · <b>Chạm lên bản đồ để đặt vị trí “${esc(r[setLocIdx]?.name||"")}”</b>`:""}</span>
+        <a class="btn" href="${gmapsDir(t,r)}" target="_blank" rel="noopener">Mở trên Google Maps</a>
+        ${canWrite?`<button class="btn primary" data-act="rToPlan">Đưa vào Lịch trình Ngày ${routeDay+1}</button>`:""}</div>`
+    :`<p class="sub" style="margin:0">Bấm “+ Chọn vào lộ trình” ở các quán, địa điểm bên dưới. Trang tự sắp xếp theo đường đi gần nhất, đánh số 1-2-3 và vẽ bản đồ.</p>`}
+  </section>`;
+}
+function loadLeaflet(){
+  if(window.L) return Promise.resolve();
+  if(loadLeaflet.p) return loadLeaflet.p;
+  return loadLeaflet.p=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
+}
+function isDark(){const th=document.documentElement.dataset.theme;return th?th==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+async function drawRouteMap(t){
+  const el=document.getElementById("routeMap"); if(!el) return;
+  try{await loadLeaflet()}catch{el.innerHTML='<div class="miss">Không tải được bản đồ</div>';return}
+  if(!document.body.contains(el)) return;
+  if(_map){try{_map.remove()}catch{} _map=null}
+  const r=routeOf(t), pts=r.filter(hasGeo);
+  _map=L.map(el,{zoomControl:true,attributionControl:true,zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/"+(isDark()?"dark_all":"light_all")+"/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(_map);
+  const accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#0A84FF";
+  if(pts.length>1) L.polyline(pts.map(x=>[x.lat,x.lng]),{color:accent,weight:4,opacity:.85,dashArray:"8 8"}).addTo(_map);
+  r.forEach((x,k)=>{if(!hasGeo(x))return;
+    L.marker([x.lat,x.lng],{icon:L.divIcon({className:"",html:`<div class="pinnum ${k===0?"start":""}">${k+1}</div>`,iconSize:[0,0]})}).addTo(_map).bindTooltip(`${k+1}. ${x.name}`,{direction:"top",offset:[0,-14]});});
+  if(pts.length) _map.fitBounds(L.latLngBounds(pts.map(x=>[x.lat,x.lng])).pad(.2),{maxZoom:15});
+  else _map.setView([11.9404,108.4583],12);
+  _map.on("click",e=>{ if(setLocIdx<0||!canWrite) return; const x=r[setLocIdx]; if(!x) return;
+    x.lat=+e.latlng.lat.toFixed(5); x.lng=+e.latlng.lng.toFixed(5);
+    t.guide.forEach(g=>g.items.forEach(it=>{if(rkey(it)===rkey(x)){it.lat=x.lat;it.lng=x.lng}}));
+    setLocIdx=-1; sortRoute(t); save(cur); render(); toast("Đã đặt vị trí")});
+}
+document.addEventListener("change",e=>{if(e.target.id==="routeDay"){routeDay=+e.target.value;setLocIdx=-1;render()}});
+
+/* ---------- Giao diện sáng / tối ---------- */
+const THEMES=["auto","light","dark"];
+function themeGet(){try{return localStorage.getItem("sotay-theme")||"auto"}catch{return "auto"}}
+function themeApply(v){
+  if(v==="auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=v;
+  const b=$("#themeBtn"); if(b){b.innerHTML=v==="dark"?'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+    :v==="light"?'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>'
+    :'<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>';
+    b.title=v==="dark"?"Giao diện tối":v==="light"?"Giao diện sáng":"Theo hệ thống";}
+}
+themeApply(themeGet());
+$("#themeBtn").addEventListener("click",()=>{const v=THEMES[(THEMES.indexOf(themeGet())+1)%3];try{localStorage.setItem("sotay-theme",v)}catch{};themeApply(v);toast(v==="dark"?"Giao diện tối":v==="light"?"Giao diện sáng":"Theo giao diện hệ thống");if(tab==="guide")render()});
+
 function guideHTML(t){
   const dest=t.destination||"";
-  return `<div class="guide">${t.guide.map((g,i)=>{
+  return `<div class="guide">${editing?"":routeHTML(t)}${t.guide.map((g,i)=>{
     if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span></div>
-      ${g.items.length?`<div class="gitems">${g.items.map(x=>`<div class="gitem"><b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
+      ${g.items.length?`<div class="gitems">${g.items.map((x,j)=>{const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}"><b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
-        ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}</div>`).join("")}</div>`
+        ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}
+        ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}</div>`}).join("")}</div>`
       :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}</section>`;
     return `<section class="glass gsec"><div class="gsec-h">
         <input class="f title" style="flex:1" data-k="guide.${i}.title" value="${esc(g.title)}" aria-label="Tên danh sách">
@@ -889,6 +1046,15 @@ document.addEventListener("click",e=>{
     case "taskDel": t.tasks.splice(+b.dataset.k2,1); mut(); break;
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
+    case "pick": pickItem(t,i,j); break;
+    case "rSort": sortRoute(t); mut(); break;
+    case "rDel": routeOf(t).splice(+b.dataset.k2,1); setLocIdx=-1; sortRoute(t); mut(); break;
+    case "rStart": {const r=routeOf(t); r.forEach(x=>delete x.start); r[+b.dataset.k2].start=true; sortRoute(t); mut(); break}
+    case "rLoc": setLocIdx=setLocIdx===+b.dataset.k2?-1:+b.dataset.k2; render(); if(setLocIdx>=0) toast("Chạm lên bản đồ để đặt vị trí"); break;
+    case "rToPlan": {const r=routeOf(t), d=t.days[routeDay]; if(!d) break;
+      const type=x=>x.kind==="food"?"Ăn uống":x.kind==="cafe"?"Cà phê":"Tham quan";
+      r.forEach(x=>d.stops.push({time:"",title:x.name,note:x.note||"",type:type(x),cost:"",place:x.addr?x.name+", "+x.addr:x.name}));
+      mut(); toast(`Đã thêm ${r.length} điểm vào Lịch trình Ngày ${routeDay+1}`); break}
     case "gAdd": t.guide[i].items.push({name:"",note:"",addr:"",time:""}); mut(); break;
     case "gDel": t.guide[i].items.splice(j,1); mut(); break;
     case "gUp": {const a=t.guide[i].items;[a[j-1],a[j]]=[a[j],a[j-1]];mut();break}
