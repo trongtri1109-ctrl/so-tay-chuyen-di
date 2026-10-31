@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Sổ Tay Chuyến Đi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: fixed colour wash behind everything; a frosted sidebar of trips on the left (chips on phone), the selected trip on the right with a segmented control for Itinerary / Costs. */
+:root{
+  --accent:#0A84FF;
+  --base:#EEF1F6; --ink:#1C1C1E; --ink2:#5E6470; --ink3:#8A8F98;
+  --glass:rgba(255,255,255,.58); --glass-strong:rgba(255,255,255,.78); --glass-edge:rgba(255,255,255,.75);
+  --hair:rgba(60,60,67,.14); --field:rgba(118,118,128,.12); --shadow:0 8px 32px rgba(30,40,60,.10),0 1px 2px rgba(30,40,60,.06);
+  --good:#248A3D; --good-bg:rgba(52,199,89,.16); --warn:#B25000; --warn-bg:rgba(255,149,0,.18); --danger:#D70015;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","Segoe UI",Roboto,system-ui,sans-serif;
+  --r-lg:22px; --r-md:14px; --r-sm:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --base:#0B0C10; --ink:#F2F2F7; --ink2:#AEB1B8; --ink3:#7C808A;
+  --glass:rgba(38,40,48,.52); --glass-strong:rgba(44,46,54,.82); --glass-edge:rgba(255,255,255,.12);
+  --hair:rgba(255,255,255,.10); --field:rgba(118,118,128,.24); --shadow:0 8px 32px rgba(0,0,0,.35);
+  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --base:#0B0C10; --ink:#F2F2F7; --ink2:#AEB1B8; --ink3:#7C808A;
+  --glass:rgba(38,40,48,.52); --glass-strong:rgba(44,46,54,.82); --glass-edge:rgba(255,255,255,.12);
+  --hair:rgba(255,255,255,.10); --field:rgba(118,118,128,.24); --shadow:0 8px 32px rgba(0,0,0,.35);
+  --good:#30D158; --good-bg:rgba(48,209,88,.16); --warn:#FFB340; --warn-bg:rgba(255,159,10,.18); --danger:#FF453A; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--base);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wash{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.wash i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;transition:background .6s}
+.wash i:nth-child(1){width:55vw;height:55vw;left:-12vw;top:-18vw;background:var(--accent)}
+.wash i:nth-child(2){width:45vw;height:45vw;right:-10vw;top:10vh;background:color-mix(in oklab,var(--accent) 45%,#FF9F0A)}
+.wash i:nth-child(3){width:50vw;height:50vw;left:25vw;bottom:-25vw;background:color-mix(in oklab,var(--accent) 40%,#30D158)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wash i{opacity:.32}}
+:root[data-theme="dark"] .wash i{opacity:.32}
+
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid var(--glass-edge);box-shadow:var(--shadow);border-radius:var(--r-lg)}
+.app{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-block:24px 64px;display:grid;grid-template-columns:270px 1fr;gap:20px;align-items:start}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.02em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in oklab,var(--accent) 60%,transparent);outline-offset:2px}
+
+/* sidebar */
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);padding:16px;display:flex;flex-direction:column;gap:12px}
+.side-h{display:flex;align-items:center;justify-content:space-between;padding:2px 4px}
+.side-h h2{font-size:22px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:4px}
+.trip-btn{display:flex;gap:10px;align-items:center;text-align:left;width:100%;border:0;background:transparent;padding:10px;border-radius:var(--r-md);min-width:0}
+.trip-btn:hover{background:var(--field)}
+.trip-btn[aria-current="true"]{background:var(--glass-strong);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.dot{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.trip-btn b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trip-btn small{display:block;color:var(--ink2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trip-btn>span{min-width:0}
+.status{font-size:12px;color:var(--ink3);padding:0 4px}
+
+.btn{border:0;border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;background:var(--field);display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{filter:brightness(.97)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.danger{color:var(--danger)}
+.btn.icon{padding:6px;width:32px;height:32px;justify-content:center}
+.btn.sm{padding:5px 12px;font-size:13px}
+
+/* main */
+main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.hero{padding:24px;display:flex;flex-direction:column;gap:14px}
+.hero-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.hero h1{font-size:clamp(28px,4.4vw,40px);font-weight:700;min-width:0}
+.dest{color:var(--ink2);font-size:16px;margin-top:2px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--field);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.chip b{font-weight:700}
+
+.seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--field);border-radius:11px;padding:3px;align-self:flex-start}
+.seg button{border:0;background:transparent;border-radius:8px;padding:6px 22px;font-weight:600;font-size:14px}
+.seg button[aria-selected="true"]{background:var(--glass-strong);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+
+.day{padding:20px 20px 10px}
+.day-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--hair)}
+.day-n{background:var(--accent);color:#fff;border-radius:999px;padding:3px 11px;font-size:13px;font-weight:700}
+.day-h h3{font-size:20px;font-weight:700;flex:1;min-width:0}
+.day-date{color:var(--ink2);font-size:13px;font-variant-numeric:tabular-nums}
+.day-note{color:var(--ink2);margin:10px 0 0;font-size:14px}
+.stops{list-style:none;margin:0;padding:0}
+.stop{display:grid;grid-template-columns:56px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--hair)}
+.stop:last-child{border-bottom:0}
+.t{font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent);padding-top:1px}
+.stop h4{margin:0;font-size:16px;font-weight:600}
+.stop p{margin:3px 0 7px;color:var(--ink2);font-size:14px;max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.pill{border-radius:999px;padding:2px 10px;background:color-mix(in oklab,var(--accent) 16%,transparent);color:var(--ink);font-weight:500}
+.pill.eat{background:var(--warn-bg)}
+.cost-note{color:var(--ink2);font-variant-numeric:tabular-nums}
+.maplink{color:var(--accent);font-weight:600;text-decoration:none;display:inline-flex;gap:4px;align-items:center}
+.maplink:hover{text-decoration:underline}
+.empty-day{color:var(--ink3);padding:14px 0;font-size:14px}
+
+/* edit fields */
+.f{width:100%;border:0;border-radius:var(--r-sm);background:var(--field);padding:8px 10px;min-width:0}
+textarea.f{resize:vertical;min-height:38px}
+.f.title{font-size:17px;font-weight:600}
+.edit-stop{display:grid;grid-template-columns:84px 1fr auto;gap:10px;padding:12px 0;border-bottom:1px solid var(--hair);align-items:start}
+.edit-stop .col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.edit-stop .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.tools{display:flex;flex-direction:column;gap:4px}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0}
+.hero-edit{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hero-edit label,.lbl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink2);font-weight:500;min-width:0}
+.hero-edit .wide{grid-column:span 2}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid transparent;padding:0}
+.sw[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--base)}
+
+/* costs */
+.costs{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.costs>*{min-width:0}
+.items{padding:12px 20px}
+.items-h{display:flex;justify-content:space-between;align-items:center;padding:6px 0 10px}
+.items-h h3{font-size:20px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:560px}
+th{font-size:12px;color:var(--ink2);text-align:left;font-weight:600;padding:6px;border-bottom:1px solid var(--hair)}
+td{padding:6px;border-bottom:1px solid var(--hair);vertical-align:middle}
+td.num,th.num{text-align:right}
+td .f{padding:6px 8px}
+td input.n{text-align:right}
+.sum{padding:22px;display:flex;flex-direction:column;gap:10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px)}
+.sum .lbl2{font-size:13px;color:var(--ink2);font-weight:600}
+.big{font-size:38px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.sub{color:var(--ink2);font-size:14px;font-variant-numeric:tabular-nums}
+.badge{border-radius:var(--r-md);padding:10px 12px;font-size:13px;font-weight:500}
+.badge.ok{background:var(--good-bg);color:var(--good)}
+.badge.over{background:var(--warn-bg);color:var(--warn)}
+.bars{display:flex;flex-direction:column;gap:8px;padding-top:6px;border-top:1px solid var(--hair)}
+.bar{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px}
+.bar .tr{grid-column:1/-1;height:6px;border-radius:3px;background:var(--field);overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.bar .v{font-variant-numeric:tabular-nums;color:var(--ink2)}
+
+.empty{padding:40px 28px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty h2{font-size:24px}
+.empty p{color:var(--ink2);margin:0;max-width:44ch}
+
+/* sheet */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.25);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-left,0px))}
+.sheet{width:min(460px,100%);padding:22px;display:flex;flex-direction:column;gap:14px;background:var(--glass-strong)}
+.sheet h2{font-size:20px}
+.sheet .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .foot{display:flex;justify-content:flex-end;gap:8px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateX(-50%);z-index:30;padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;background:var(--glass-strong)}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;padding-block:16px 48px}
+  .side{position:static;padding:12px}
+  .list{flex-direction:row;overflow-x:auto;padding-bottom:2px}
+  .trip-btn{width:auto;flex:none;max-width:220px}
+  .costs{grid-template-columns:1fr}
+  .sum{position:static}
+  .hero-edit{grid-template-columns:1fr 1fr}
+}
+@media (max-width:520px){
+  .hero{padding:18px}.day{padding:16px 16px 6px}.items{padding:10px 14px}
+  .edit-stop{grid-template-columns:1fr auto}.edit-stop>.f{grid-column:1/-1}
+  .edit-stop .row2{grid-template-columns:1fr}
+  .stop{grid-template-columns:46px 1fr;gap:10px}
+}
+@media (prefers-reduced-motion:reduce){.wash i{transition:none}}
+</style>
+
+<div class="wash" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="app">
+  <aside class="side glass">
+    <div class="side-h"><h2>Chuyến đi</h2><button class="btn primary sm" id="newBtn">+ Mới</button></div>
+    <div class="list" id="list"></div>
+    <div class="status" id="status">Đang tải…</div>
+  </aside>
+  <main id="main"><div class="glass empty"><h2>Đang tải chuyến đi…</h2></div></main>
+</div>
+<div id="modal"></div>
+<div class="toast glass" id="toast" hidden></div>
+
+<script>
+const COLORS=["#0A84FF","#30B0C7","#34C759","#FF9F0A","#FF375F","#5E5CE6","#AC8E68"];
+const TYPES=["Tham quan","Ăn uống","Cà phê","Di chuyển","Lưu trú","Mua sắm","Nghỉ","Đi chơi đêm","Khác"];
+const EAT=new Set(["Ăn uống","Cà phê"]);
+const UNITS={group:"Cả nhóm",person:"× số người",night:"× số đêm",day:"× số ngày",personDay:"× người × ngày"};
+const WD=["CN","T2","T3","T4","T5","T6","T7"];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const vnd=n=>Math.round(n||0).toLocaleString("vi-VN")+" ₫";
+const uid=()=>"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+let db=null, mode="loading", canWrite=true;
+let trips={}, cur=null, editing=false, tab="plan";
+const pending={}; let deferRender=false;
+
+/* ---------- storage ---------- */
+function setStatus(t){$("#status").textContent=t}
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,1800)}
+function localLoad(){try{return JSON.parse(localStorage.getItem("trips-v1")||"{}")}catch{return {}}}
+function localSave(){try{localStorage.setItem("trips-v1",JSON.stringify(trips))}catch{}}
+function save(id,immediate){
+  const t=trips[id]; if(!t||!canWrite) return;
+  t.updatedAt=Date.now();
+  if(mode==="local"){localSave();setStatus("Đã lưu trên trình duyệt này (bản riêng, chưa đăng nhập)");return}
+  clearTimeout(pending[id]); setStatus("Đang lưu…");
+  pending[id]=setTimeout(async()=>{
+    try{await db.collection("trips").doc(id).set(JSON.parse(JSON.stringify(t)));setStatus("Đã lưu")}
+    catch(e){setStatus(e&&e.code==="quota_exceeded"?"Hết dung lượng lưu, hãy xoá bớt chuyến cũ":"Chưa lưu được, thử lại sau");if(e&&e.code==="invalid_argument"){canWrite=false;render()}}
+    finally{delete pending[id]}
+  },immediate?0:700);
+}
+async function removeTrip(id){
+  delete trips[id];
+  if(mode==="local") localSave();
+  else{try{await db.collection("trips").doc(id).delete()}catch{setStatus("Chưa xoá được")}}
+  cur=Object.keys(trips).sort(byRecent)[0]||null; route(); render(); toast("Đã xoá chuyến");
+}
+const byRecent=(a,b)=>(trips[b].updatedAt||0)-(trips[a].updatedAt||0);
+
+async function init(){
+  let user=null;
+  try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch{db=null}
+  if(!db){mode="local";trips=localLoad();setStatus("Bạn chưa đăng nhập claude.ai nên đang dùng bản riêng trên trình duyệt này. Đăng nhập để xem và sửa các chuyến chung.");pick();render();return}
+  mode="db";
+  try{const w=await user?.can?.("data.write"); if(w===false) canWrite=false}catch{}
+  const timer=setTimeout(()=>setStatus("Chưa kết nối được, dữ liệu có thể chưa mới"),10000);
+  db.collection("trips").onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){clearTimeout(timer);setStatus(canWrite?"Đã đồng bộ · mọi người cùng sửa được":"Chỉ xem · nhờ chủ trang cấp quyền sửa")}
+    const next={};
+    snap.docs.forEach(d=>{ next[d.id]= pending[d.id]&&trips[d.id] ? trips[d.id] : structuredClone(d.data()) });
+    for(const id in pending) if(trips[id]&&!next[id]) next[id]=trips[id];
+    trips=next; if(!cur||!trips[cur]) pick();
+    if(document.activeElement&&document.activeElement.closest("main,.modal-open")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) deferRender=true; else render();
+  },e=>{clearTimeout(timer);setStatus("Mất kết nối dữ liệu, tải lại trang để thử lại")});
+}
+document.addEventListener("focusout",()=>setTimeout(()=>{if(deferRender&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"")){deferRender=false;render()}},0));
+
+/* ---------- routing ---------- */
+function pick(){const h=location.hash.slice(1);cur=trips[h]?h:(Object.keys(trips).sort(byRecent)[0]||null)}
+function route(){try{history.replaceState(null,"",cur?"#"+cur:location.pathname)}catch{}}
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(trips[h]){cur=h;editing=false;render()}});
+
+/* ---------- helpers ---------- */
+function blankTrip(o){
+  const n=+o.nights||0, days=[];
+  for(let i=0;i<=n;i++) days.push({title:"",note:"",stops:[]});
+  return {name:o.name,destination:o.destination,start:o.start,nights:n,people:+o.people||1,budgetPP:0,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],days,
+    items:[{label:"Lưu trú (phòng/đêm)",amount:0,qty:1,unit:"night"},{label:"Di chuyển tại chỗ",amount:0,qty:1,unit:"day"},
+      {label:"Ăn uống",amount:0,qty:1,unit:"personDay"},{label:"Vé tham quan",amount:0,qty:1,unit:"person"},{label:"Mua sắm, quà",amount:0,qty:1,unit:"person"}],
+    createdAt:Date.now(),updatedAt:Date.now()};
+}
+function dayDate(t,i){
+  if(!t.start) return ""; const d=new Date(t.start+"T00:00:00"); if(isNaN(d)) return "";
+  d.setDate(d.getDate()+i); return WD[d.getDay()]+", "+String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+}
+function range(t){const a=dayDate(t,0),b=dayDate(t,Math.max(0,t.days.length-1));return a?(t.days.length>1?a+" – "+b:a):"Chưa chọn ngày"}
+function mapUrl(q,dest){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([q,dest].filter(Boolean).join(", "))}
+function calc(t){
+  const p=Math.max(1,+t.people||1), n=+t.nights||0, d=t.days.length||1;
+  const mult={group:1,person:p,night:n,day:d,personDay:p*d};
+  const rows=(t.items||[]).map(it=>({...it,total:(+it.amount||0)*(+it.qty||0)*(mult[it.unit]??1)}));
+  const total=rows.reduce((a,r)=>a+r.total,0);
+  return {rows,total,pp:total/p,p};
+}
+function getPath(o,p){return p.split(".").reduce((a,k)=>a?.[k],o)}
+function setPath(o,p,v){const ks=p.split(".");const last=ks.pop();const tgt=ks.reduce((a,k)=>a[k],o);tgt[last]=v}
+
+/* ---------- render ---------- */
+function render(){
+  const t=cur&&trips[cur];
+  document.documentElement.style.setProperty("--accent",t?.color||COLORS[0]);
+  renderList();
+  const m=$("#main");
+  if(!t){
+    m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<button class="btn primary" data-act="new">+ Tạo chuyến mới</button>`:""}</div>`;
+    return;
+  }
+  m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):costHTML(t));
+}
+function renderList(){
+  const ids=Object.keys(trips).sort(byRecent);
+  $("#list").innerHTML=ids.map(id=>{const t=trips[id];return `<button class="trip-btn" data-trip="${id}" aria-current="${id===cur}">
+    <span class="dot" style="background:${esc(t.color)}">${esc((t.destination||t.name||"?").trim().charAt(0).toUpperCase())}</span>
+    <span><b>${esc(t.name||"Chưa đặt tên")}</b><small>${esc(range(t))}</small></span></button>`}).join("")||`<div class="status">Chưa có chuyến nào</div>`;
+  $("#newBtn").hidden=!canWrite;
+}
+function heroHTML(t){
+  const c=calc(t);
+  const head = editing ? `
+    <div class="hero-edit">
+      <label class="wide">Tên chuyến<input class="f title" data-k="name" value="${esc(t.name)}"></label>
+      <label class="wide">Điểm đến<input class="f" data-k="destination" value="${esc(t.destination)}" placeholder="VD: Đà Lạt, Lâm Đồng"></label>
+      <label>Ngày đi<input class="f" type="date" data-k="start" value="${esc(t.start)}"></label>
+      <label>Số đêm<input class="f" type="number" min="0" data-k="nights" data-num value="${t.nights}"></label>
+      <label>Số người<input class="f" type="number" min="1" data-k="people" data-num value="${t.people}"></label>
+      <label>Ngân sách / người<input class="f" inputmode="numeric" data-k="budgetPP" data-money value="${(+t.budgetPP||0).toLocaleString("vi-VN")}"></label>
+      <div class="lbl wide">Màu chuyến<div class="swatches">${COLORS.map(col=>`<button class="sw" style="background:${col}" data-color="${col}" aria-pressed="${col===t.color}" aria-label="Màu ${col}"></button>`).join("")}</div></div>
+    </div>` : `
+    <div><h1>${esc(t.name||"Chưa đặt tên")}</h1><div class="dest">${esc(t.destination||"")}</div></div>`;
+  return `<section class="glass hero">
+    <div class="hero-top">${editing?"":head}
+      <div class="actions">${canWrite?`
+        <button class="btn ${editing?"primary":""}" data-act="edit">${editing?"Xong":"Sửa"}</button>
+        <button class="btn" data-act="dup">Nhân bản</button>
+        <button class="btn danger" data-act="del">Xoá</button>`:""}
+      </div></div>
+    ${editing?head:`<div class="chips">
+      <span class="chip">${esc(range(t))}</span>
+      <span class="chip"><b>${t.days.length}</b> ngày <b>${t.nights}</b> đêm</span>
+      <span class="chip"><b>${c.p}</b> người</span>
+      <span class="chip">≈ <b>${vnd(c.pp)}</b> / người</span></div>`}
+    <div class="seg" role="tablist">
+      <button role="tab" aria-selected="${tab==="plan"}" data-tab="plan">Lịch trình</button>
+      <button role="tab" aria-selected="${tab==="cost"}" data-tab="cost">Chi phí</button>
+    </div></section>`;
+}
+const pin='<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
+function planHTML(t){
+  return t.days.map((d,i)=>{
+    const date=dayDate(t,i);
+    if(!editing) return `<section class="glass day">
+      <div class="day-h"><span class="day-n">Ngày ${i+1}</span><h3>${esc(d.title||"Chưa đặt tiêu đề")}</h3>${date?`<span class="day-date">${date}</span>`:""}</div>
+      ${d.note?`<p class="day-note">${esc(d.note)}</p>`:""}
+      ${d.stops.length?`<ol class="stops">${d.stops.map(s=>`<li class="stop"><div class="t">${esc(s.time||"—")}</div><div>
+        <h4>${esc(s.title||"Chưa đặt tên")}</h4>${s.note?`<p>${esc(s.note)}</p>`:""}
+        <div class="meta"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>
+          ${s.cost?`<span class="cost-note">${esc(s.cost)}</span>`:""}
+          ${(s.place||s.title)&&s.type!=="Nghỉ"?`<a class="maplink" href="${mapUrl(s.place||s.title,t.destination)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}
+        </div></div></li>`).join("")}</ol>`:`<div class="empty-day">Chưa có điểm nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}
+    </section>`;
+    return `<section class="glass day">
+      <div class="day-h"><span class="day-n">Ngày ${i+1}</span>
+        <input class="f title" style="flex:1;min-width:160px" data-k="days.${i}.title" value="${esc(d.title)}" placeholder="Tiêu đề ngày, VD: Trung tâm và chợ đêm">
+        ${date?`<span class="day-date">${date}</span>`:""}
+        <button class="btn icon" data-act="dayUp" data-i="${i}" aria-label="Đưa ngày lên" ${i===0?"disabled":""}>↑</button>
+        <button class="btn icon danger" data-act="dayDel" data-i="${i}" aria-label="Xoá ngày">✕</button></div>
+      <textarea class="f" style="margin-top:10px" rows="1" data-k="days.${i}.note" placeholder="Ghi chú cho ngày này">${esc(d.note)}</textarea>
+      ${d.stops.map((s,j)=>`<div class="edit-stop">
+        <input class="f" type="time" data-k="days.${i}.stops.${j}.time" value="${esc(s.time)}" aria-label="Giờ">
+        <div class="col">
+          <input class="f" style="font-weight:600" data-k="days.${i}.stops.${j}.title" value="${esc(s.title)}" placeholder="Tên điểm đến / hoạt động">
+          <textarea class="f" rows="1" data-k="days.${i}.stops.${j}.note" placeholder="Mô tả, lưu ý">${esc(s.note)}</textarea>
+          <div class="row2">
+            <select class="f" data-k="days.${i}.stops.${j}.type" aria-label="Loại">${TYPES.map(x=>`<option ${x===s.type?"selected":""}>${x}</option>`).join("")}</select>
+            <input class="f" data-k="days.${i}.stops.${j}.cost" value="${esc(s.cost)}" placeholder="Chi phí, VD: ~50k/người">
+            <input class="f" data-k="days.${i}.stops.${j}.place" value="${esc(s.place)}" placeholder="Tên trên Google Maps">
+          </div></div>
+        <div class="tools">
+          <button class="btn icon" data-act="up" data-i="${i}" data-j="${j}" aria-label="Lên" ${j===0?"disabled":""}>↑</button>
+          <button class="btn icon" data-act="down" data-i="${i}" data-j="${j}" aria-label="Xuống" ${j===d.stops.length-1?"disabled":""}>↓</button>
+          <button class="btn icon danger" data-act="stopDel" data-i="${i}" data-j="${j}" aria-label="Xoá điểm">✕</button>
+        </div></div>`).join("")}
+      <div class="add-row"><button class="btn sm" data-act="stopAdd" data-i="${i}">+ Thêm điểm</button></div>
+    </section>`;
+  }).join("")+(editing?`<div><button class="btn primary" data-act="dayAdd">+ Thêm ngày</button></div>`:"");
+}
+function costHTML(t){
+  const c=calc(t), max=Math.max(1,...c.rows.map(r=>r.total)), b=+t.budgetPP||0, ro=!canWrite?"disabled":"";
+  return `<div class="costs">
+    <section class="glass items">
+      <div class="items-h"><h3>Các khoản chi</h3>${canWrite?`<button class="btn sm" data-act="itemAdd">+ Thêm khoản</button>`:""}</div>
+      <div class="tbl"><table><thead><tr><th>Khoản</th><th class="num">Đơn giá</th><th class="num">SL</th><th>Tính theo</th><th class="num">Thành tiền</th><th></th></tr></thead><tbody>
+      ${c.rows.map((r,k)=>`<tr>
+        <td><input class="f" data-k="items.${k}.label" value="${esc(r.label)}" ${ro} aria-label="Tên khoản"></td>
+        <td style="width:130px"><input class="f n" inputmode="numeric" data-k="items.${k}.amount" data-money value="${(+r.amount||0).toLocaleString("vi-VN")}" ${ro} aria-label="Đơn giá"></td>
+        <td style="width:64px"><input class="f n" type="number" min="0" data-k="items.${k}.qty" data-num value="${r.qty}" ${ro} aria-label="Số lượng"></td>
+        <td style="width:150px"><select class="f" data-k="items.${k}.unit" ${ro} aria-label="Tính theo">${Object.entries(UNITS).map(([u,l])=>`<option value="${u}" ${u===r.unit?"selected":""}>${l}</option>`).join("")}</select></td>
+        <td class="num" data-total="${k}">${vnd(r.total)}</td>
+        <td style="width:40px">${canWrite?`<button class="btn icon danger" data-act="itemDel" data-k2="${k}" aria-label="Xoá khoản">✕</button>`:""}</td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="sub" style="margin:10px 0 4px">SL là số phòng, số xe… Tính theo nhân thêm với số người, số đêm (${t.nights}) hoặc số ngày (${t.days.length}).</p>
+    </section>
+    <aside class="glass sum" id="sum">${sumHTML(t)}</aside></div>`;
+}
+function sumHTML(t){
+  const c=calc(t), max=Math.max(1,...c.rows.map(r=>r.total)), b=+t.budgetPP||0;
+  return `<div class="lbl2">Mỗi người</div><div class="big">${vnd(c.pp)}</div>
+    <div class="sub">Cả nhóm ${c.p} người: ${vnd(c.total)}</div>
+    ${b?`<div class="badge ${b>=c.pp?"ok":"over"}">${b>=c.pp?"Trong ngân sách, dư "+vnd(b-c.pp)+" / người":"Vượt ngân sách "+vnd(c.pp-b)+" / người"}</div>`:`<div class="sub">Đặt ngân sách mỗi người trong phần Sửa để so sánh.</div>`}
+    <div class="bars">${c.rows.filter(r=>r.total>0).map(r=>`<div class="bar"><span>${esc(r.label)}</span><span class="v">${vnd(r.total/c.p)}</span><span class="tr"><i style="width:${r.total/max*100}%"></i></span></div>`).join("")||`<div class="sub">Nhập đơn giá để xem phân bổ.</div>`}</div>`;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("input",e=>{
+  const el=e.target, k=el.dataset?.k; if(!k||!cur) return; const t=trips[cur];
+  let v=el.value;
+  if("money" in el.dataset){const raw=v.replace(/\D/g,"");v=raw?parseInt(raw,10):0;el.value=raw?v.toLocaleString("vi-VN"):""}
+  else if("num" in el.dataset){v=Math.max(0,parseInt(v,10)||0)}
+  setPath(t,k,v); save(cur);
+  if(tab==="cost"){const s=$("#sum");if(s)s.innerHTML=sumHTML(t);calc(t).rows.forEach((r,i)=>{const td=document.querySelector(`[data-total="${i}"]`);if(td)td.textContent=vnd(r.total)})}
+  if(k==="name"||k==="start") renderList();
+});
+document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(k&&(/\.unit$/.test(k)||k==="start"||k==="nights"))render()});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.trip){cur=b.dataset.trip;editing=false;route();render();window.scrollTo({top:0});return}
+  if(b.dataset.tab){tab=b.dataset.tab;render();return}
+  if(b.dataset.color){trips[cur].color=b.dataset.color;save(cur);render();return}
+  const a=b.dataset.act; if(!a) return;
+  if(a==="new"){openNew();return}
+  const t=trips[cur]; const i=+b.dataset.i, j=+b.dataset.j;
+  const mut=()=>{save(cur);render()};
+  switch(a){
+    case "edit": editing=!editing; if(!editing) save(cur,true); render(); break;
+    case "dup": openNew(true); break;
+    case "del": openDel(); break;
+    case "dayAdd": t.days.push({title:"",note:"",stops:[]}); mut(); break;
+    case "dayDel": t.days.splice(i,1); mut(); break;
+    case "dayUp": [t.days[i-1],t.days[i]]=[t.days[i],t.days[i-1]]; mut(); break;
+    case "stopAdd": t.days[i].stops.push({time:"",title:"",note:"",type:"Tham quan",cost:"",place:""}); mut(); break;
+    case "stopDel": t.days[i].stops.splice(j,1); mut(); break;
+    case "up": {const s=t.days[i].stops;[s[j-1],s[j]]=[s[j],s[j-1]];mut();break}
+    case "down": {const s=t.days[i].stops;[s[j+1],s[j]]=[s[j],s[j+1]];mut();break}
+    case "itemAdd": t.items.push({label:"Khoản mới",amount:0,qty:1,unit:"person"}); mut(); break;
+    case "itemDel": t.items.splice(+b.dataset.k2,1); mut(); break;
+  }
+});
+
+/* ---------- sheets ---------- */
+function closeModal(){$("#modal").innerHTML=""}
+function openNew(dup){
+  const src=dup&&trips[cur];
+  $("#modal").innerHTML=`<div class="scrim modal-open" data-scrim><form class="glass sheet" id="newForm">
+    <h2>${src?"Nhân bản chuyến":"Chuyến đi mới"}</h2>
+    <label class="lbl">Tên chuyến<input class="f" id="nf-name" required value="${src?esc(src.name+" (bản sao)"):""}" placeholder="VD: Phú Quốc hè 2027"></label>
+    <label class="lbl">Điểm đến<input class="f" id="nf-dest" value="${src?esc(src.destination):""}" placeholder="VD: Phú Quốc, Kiên Giang"></label>
+    <div class="grid2">
+      <label class="lbl">Ngày đi<input class="f" type="date" id="nf-start"></label>
+      <label class="lbl">Số đêm<input class="f" type="number" min="0" id="nf-nights" value="${src?src.nights:2}"></label>
+      <label class="lbl">Số người<input class="f" type="number" min="1" id="nf-people" value="${src?src.people:4}"></label>
+    </div>
+    ${src?`<label class="check"><input type="checkbox" id="nf-keep" checked> Giữ lịch trình và chi phí của chuyến gốc</label>`:""}
+    <div class="foot"><button type="button" class="btn" data-close>Huỷ</button><button class="btn primary">Tạo</button></div>
+  </form></div>`;
+  $("#nf-name").focus();
+  $("#newForm").addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const o={name:$("#nf-name").value.trim()||"Chuyến mới",destination:$("#nf-dest").value.trim(),start:$("#nf-start").value,nights:$("#nf-nights").value,people:$("#nf-people").value};
+    let t=blankTrip(o);
+    if(src&&$("#nf-keep")?.checked){const c=structuredClone(src);Object.assign(c,{name:t.name,destination:t.destination,start:t.start,nights:t.nights,people:t.people,createdAt:Date.now()});t=c}
+    const id=uid(); trips[id]=t; cur=id; editing=!src; tab="plan"; route(); closeModal(); save(id,true); render(); toast("Đã tạo chuyến");
+  });
+}
+function openDel(){
+  const t=trips[cur];
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><div class="glass sheet" role="dialog" aria-modal="true">
+    <h2>Xoá “${esc(t.name)}”?</h2><p class="sub" style="margin:0">Lịch trình và chi phí của chuyến này sẽ bị xoá hẳn, không khôi phục được.</p>
+    <div class="foot"><button class="btn" data-close>Huỷ</button><button class="btn primary" style="background:var(--danger)" id="confirmDel">Xoá chuyến</button></div></div></div>`;
+  $("#confirmDel").onclick=()=>{closeModal();removeTrip(cur)};
+}
+$("#modal").addEventListener("click",e=>{if(e.target.matches("[data-scrim]")||e.target.closest("[data-close]"))closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+$("#newBtn").addEventListener("click",()=>openNew());
+
+init();
+</script>
+
+</body>
+</html>

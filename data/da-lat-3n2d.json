@@ -1,0 +1,251 @@
+{
+  "name": "Đà Lạt 3N2Đ",
+  "destination": "Đà Lạt, Lâm Đồng",
+  "start": "",
+  "nights": 2,
+  "people": 4,
+  "budgetPP": 3000000,
+  "color": "#34C759",
+  "days": [
+    {
+      "title": "Trung tâm, hồ Tuyền Lâm, chợ đêm",
+      "note": "Đến nơi buổi sáng, đi nhẹ quanh thành phố để quen đường.",
+      "stops": [
+        {
+          "time": "06:00",
+          "title": "Ăn sáng bánh căn Nhà Chung",
+          "note": "Bánh căn trứng, xíu mại, nước chấm mỡ hành.",
+          "type": "Ăn uống",
+          "cost": "~40k/người",
+          "place": "Bánh căn Nhà Chung"
+        },
+        {
+          "time": "07:30",
+          "title": "Gửi đồ ở homestay, nhận xe máy",
+          "note": "Chọn homestay gần chợ hoặc hồ Xuân Hương.",
+          "type": "Lưu trú",
+          "cost": "Xe ~130k/ngày",
+          "place": "Hồ Xuân Hương"
+        },
+        {
+          "time": "08:30",
+          "title": "Quảng trường Lâm Viên, dạo hồ Xuân Hương",
+          "note": "Chụp ảnh nụ Atiso, uống cà phê ven hồ.",
+          "type": "Tham quan",
+          "cost": "Miễn phí",
+          "place": "Quảng trường Lâm Viên"
+        },
+        {
+          "time": "11:30",
+          "title": "Lẩu gà lá é Tao Ngộ",
+          "note": "Gọi 1 nồi lớn cho 4 người.",
+          "type": "Ăn uống",
+          "cost": "~120k/người",
+          "place": "Lẩu gà lá é Tao Ngộ"
+        },
+        {
+          "time": "13:30",
+          "title": "Cáp treo Robin xuống Thiền viện Trúc Lâm",
+          "note": "Ngắm rừng thông, ăn mặc kín đáo khi vào thiền viện.",
+          "type": "Tham quan",
+          "cost": "~150k khứ hồi",
+          "place": "Ga cáp treo Đà Lạt Robin Hill"
+        },
+        {
+          "time": "15:30",
+          "title": "Hồ Tuyền Lâm",
+          "note": "Đạp vịt hoặc ngồi cà phê ven hồ.",
+          "type": "Tham quan",
+          "cost": "Miễn phí",
+          "place": "Hồ Tuyền Lâm"
+        },
+        {
+          "time": "18:30",
+          "title": "Chợ đêm Đà Lạt",
+          "note": "Bánh tráng nướng, sữa đậu nành nóng, xiên nướng.",
+          "type": "Ăn uống",
+          "cost": "~100k/người",
+          "place": "Chợ đêm Đà Lạt"
+        },
+        {
+          "time": "20:30",
+          "title": "Cà phê Tùng",
+          "note": "Không khí Đà Lạt xưa, về sớm để mai săn mây.",
+          "type": "Cà phê",
+          "cost": "~50k/người",
+          "place": "Cà phê Tùng"
+        }
+      ]
+    },
+    {
+      "title": "Săn mây Cầu Đất, thác Datanla",
+      "note": "Dậy sớm, nghỉ trưa, tối đi chơi.",
+      "stops": [
+        {
+          "time": "04:15",
+          "title": "Xuất phát đi Cầu Đất (~25 km)",
+          "note": "Mặc áo ấm, găng tay. Mùa dã quỳ hai bên đường.",
+          "type": "Di chuyển",
+          "cost": "Xăng ~50k/xe",
+          "place": "Đồi chè Cầu Đất"
+        },
+        {
+          "time": "05:15",
+          "title": "Săn mây Cầu Đất Farm hoặc đồi Đa Phú",
+          "note": "Mây đẹp nhất 5h30–6h30.",
+          "type": "Tham quan",
+          "cost": "0–50k",
+          "place": "Cầu Đất Farm"
+        },
+        {
+          "time": "07:30",
+          "title": "Ăn sáng, dạo đồi chè",
+          "note": "Nhà máy chè cũ hơn 90 năm.",
+          "type": "Ăn uống",
+          "cost": "~50k/người",
+          "place": "Nhà máy chè Cầu Đất"
+        },
+        {
+          "time": "10:00",
+          "title": "Về homestay nghỉ ngơi",
+          "note": "Ngủ bù khoảng 2 tiếng.",
+          "type": "Nghỉ",
+          "cost": "",
+          "place": ""
+        },
+        {
+          "time": "12:00",
+          "title": "Bánh ướt lòng gà Trang",
+          "note": "Bánh ướt, lòng gà, nước mắm tỏi ớt.",
+          "type": "Ăn uống",
+          "cost": "~60k/người",
+          "place": "Bánh ướt lòng gà Trang"
+        },
+        {
+          "time": "14:00",
+          "title": "Thác Datanla, máng trượt",
+          "note": "Máng trượt xuyên rừng xuống chân thác. Mang giày bám.",
+          "type": "Tham quan",
+          "cost": "~250k",
+          "place": "Khu du lịch thác Datanla"
+        },
+        {
+          "time": "18:30",
+          "title": "Lẩu bò Ba Toa",
+          "note": "Hoặc quán nướng ngói cho nhóm đông.",
+          "type": "Ăn uống",
+          "cost": "~150k/người",
+          "place": "Lẩu bò quán Gỗ Ba Toa"
+        },
+        {
+          "time": "21:00",
+          "title": "Maze Bar 100 Roofs",
+          "note": "Quán bar mê cung độc lạ.",
+          "type": "Đi chơi đêm",
+          "cost": "~100k/người",
+          "place": "100 Roofs Cafe Maze Bar"
+        }
+      ]
+    },
+    {
+      "title": "Ga Đà Lạt, chùa Ve Chai, mua đặc sản",
+      "note": "Đi thong thả, xong trước giờ về.",
+      "stops": [
+        {
+          "time": "07:30",
+          "title": "Bánh mì xíu mại",
+          "note": "Chấm chén xíu mại sốt cà chua.",
+          "type": "Ăn uống",
+          "cost": "~35k/người",
+          "place": "Bánh mì xíu mại Hoàng Diệu"
+        },
+        {
+          "time": "08:30",
+          "title": "Ga xe lửa Đà Lạt",
+          "note": "Nhà ga kiến trúc Pháp, toa tàu cũ.",
+          "type": "Tham quan",
+          "cost": "~10k",
+          "place": "Ga Đà Lạt"
+        },
+        {
+          "time": "09:30",
+          "title": "Chùa Linh Phước (chùa Ve Chai)",
+          "note": "Rồng khảm mảnh chai, cách ga ~7 km.",
+          "type": "Tham quan",
+          "cost": "Miễn phí",
+          "place": "Chùa Linh Phước"
+        },
+        {
+          "time": "11:30",
+          "title": "Nem nướng Bà Hùng",
+          "note": "Cuốn bánh tráng, rau rừng.",
+          "type": "Ăn uống",
+          "cost": "~70k/người",
+          "place": "Nem nướng Bà Hùng"
+        },
+        {
+          "time": "13:00",
+          "title": "Chợ Đà Lạt mua đặc sản",
+          "note": "Mứt, hồng treo gió, atiso, cà phê Cầu Đất.",
+          "type": "Mua sắm",
+          "cost": "Tuỳ ý",
+          "place": "Chợ Đà Lạt"
+        },
+        {
+          "time": "15:00",
+          "title": "Trả phòng, ra bến xe / sân bay",
+          "note": "Sân bay Liên Khương cách ~30 km.",
+          "type": "Di chuyển",
+          "cost": "",
+          "place": "Sân bay Liên Khương"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "label": "Homestay (số phòng)",
+      "amount": 700000,
+      "qty": 2,
+      "unit": "night"
+    },
+    {
+      "label": "Thuê xe máy (số xe)",
+      "amount": 130000,
+      "qty": 2,
+      "unit": "day"
+    },
+    {
+      "label": "Xăng (số xe)",
+      "amount": 150000,
+      "qty": 2,
+      "unit": "group"
+    },
+    {
+      "label": "Ăn uống",
+      "amount": 400000,
+      "qty": 1,
+      "unit": "personDay"
+    },
+    {
+      "label": "Vé tham quan",
+      "amount": 460000,
+      "qty": 1,
+      "unit": "person"
+    },
+    {
+      "label": "Đi chơi đêm",
+      "amount": 150000,
+      "qty": 1,
+      "unit": "person"
+    },
+    {
+      "label": "Đặc sản, quà",
+      "amount": 300000,
+      "qty": 1,
+      "unit": "person"
+    }
+  ],
+  "createdAt": 1793417440113,
+  "updatedAt": 1793417440113
+}
