@@ -752,6 +752,15 @@ body.landing .hero2{padding-top:3vh}
   .slist{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (min-width:2200px){body.landing .app{zoom:1.25}}
+
+.srow .acts{display:flex;flex-direction:column;gap:6px;align-items:center}
+.srow .go.ed{border:0;cursor:pointer;color:var(--ink2)}
+.srow .go.ed:hover{color:var(--accent);background:color-mix(in oklab,var(--accent) 16%,transparent)}
+.addstop{display:flex;justify-content:center;margin-top:10px}.addstop .pen{margin:0;padding:7px 16px;font-size:13px}
+.sedit{width:min(560px,100%)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sgrid .wide{grid-column:1/-1}
+.sgrid .lbl{display:flex;flex-direction:column;gap:4px}
+@media (max-width:760px){.srow .go{width:34px;height:34px}}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1388,21 +1397,22 @@ function planView(t){
   if(planDay>=t.days.length) planDay=0;
   const d=t.days[planDay]||{title:"",note:"",stops:[]};
   const pills=t.days.map((x,i)=>`<button class="dpill" data-act="pday" data-i="${i}" aria-pressed="${i===planDay}"><b>Ngày ${i+1}</b><small>${esc(dayDate(t,i)||(x.title||"").slice(0,22)||`${x.stops.length} điểm`)}</small></button>`).join("");
-  const rows=d.stops.map(s=>{const nm=s.place||s.title; const thumb=s.img
+  const rows=d.stops.map((s,k)=>{const nm=s.place||s.title; const thumb=s.img
       ?`<div class="th"><img data-ref="${esc(s.img)}" ${mediaSrc(s.img)?`src="${mediaSrc(s.img)}"`:""} alt=""></div>`
       :`<div class="th" ${nm&&s.type!=="Nghỉ"?`data-wq="${esc(wkey(nm,t.destination))}"`:""}>${TYPE_ICON[s.type]||ICON_DEFAULT}</div>`;
     return `<li class="srow">${thumb}
       <div class="tx"><div class="tm">${esc(s.time||"—")}</div><h4>${esc(s.title||"Chưa đặt tên")}</h4>${s.note?`<p>${esc(s.note)}</p>`:""}
         <div class="mini"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>${s.cost?`<span>${esc(s.cost)}</span>`:""}</div></div>
-      ${nm&&s.type!=="Nghỉ"?`<a class="go" href="${mapUrl(nm,t.destination)}" target="_blank" rel="noopener" aria-label="Chỉ đường tới ${esc(s.title)}">${pin.replace('width="12" height="12"','width="18" height="18"')}</a>`:"<span></span>"}</li>`}).join("");
+      <div class="acts">${nm&&s.type!=="Nghỉ"?`<a class="go" href="${mapUrl(nm,t.destination)}" target="_blank" rel="noopener" aria-label="Chỉ đường tới ${esc(s.title)}">${pin.replace('width="12" height="12"','width="18" height="18"')}</a>`:""}${canWrite?`<button class="go ed" data-act="stopEdit" data-i="${planDay}" data-j="${k}" aria-label="Sửa ${esc(s.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>`:""}</div></li>`}).join("");
   return `<div class="dayswitch" role="tablist">${pills}</div>
     <section class="glass day" id="dayCard">
       <div class="dayhead2"><span class="day-n">Ngày ${planDay+1}</span>${canWrite?`<button class="pen" data-act="editAt" data-f="day" data-i="${planDay}" aria-label="Sửa ngày ${planDay+1}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}<h3>${esc(d.title||"Chưa đặt tiêu đề")}</h3>${d.note?`<p>${esc(d.note)}</p>`:""}</div>
       ${d.stops.length?`<ol class="slist">${rows}</ol>`:`<div class="empty-day">Chưa có điểm nào${canWrite?". Bấm ✎ Sửa để thêm.":""}</div>`}
+      ${canWrite?`<div class="addstop"><button class="pen" data-act="stopNew" data-i="${planDay}">+ Thêm điểm</button></div>`:""}
       <div class="daynav">${planDay>0?`<button class="btn sm" data-act="pday" data-i="${planDay-1}">← Ngày ${planDay}</button>`:"<span></span>"}${planDay<t.days.length-1?`<button class="btn sm" data-act="pday" data-i="${planDay+1}">Ngày ${planDay+2} →</button>`:""}</div>
     </section>`;
 }
-document.addEventListener("click",e=>{const r=e.target.closest(".srow");if(r&&!e.target.closest("a"))r.classList.toggle("open")});
+document.addEventListener("click",e=>{const r=e.target.closest(".srow");if(r&&!e.target.closest("a,button"))r.classList.toggle("open")});
 (function(){let x0=null,y0=0;document.addEventListener("touchstart",e=>{const c=e.target.closest("#dayCard");x0=c?e.touches[0].clientX:null;y0=e.touches[0].clientY},{passive:true});
   document.addEventListener("touchend",e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
     if(Math.abs(dx)>60&&Math.abs(dy)<50){const t=trips[cur];if(!t)return;const n=planDay+(dx<0?1:-1);if(n>=0&&n<t.days.length){planDay=n;render()}}},{passive:true})})();
@@ -1968,6 +1978,8 @@ document.addEventListener("click",e=>{
     case "dayUp": [t.days[i-1],t.days[i]]=[t.days[i],t.days[i-1]]; mut(); break;
     case "stopAdd": t.days[i].stops.push({time:"",title:"",note:"",type:"Tham quan",cost:"",place:""}); mut(); break;
     case "stopDel": t.days[i].stops.splice(j,1); mut(); break;
+    case "stopEdit": openStopEdit(i,j); break;
+    case "stopNew": openStopEdit(i,-1); break;
     case "up": {const s=t.days[i].stops;[s[j-1],s[j]]=[s[j],s[j-1]];mut();break}
     case "down": {const s=t.days[i].stops;[s[j+1],s[j]]=[s[j],s[j+1]];mut();break}
     case "itemAdd": t.items.push({label:"Khoản mới",amount:0,qty:1,unit:"person"}); mut(); break;
@@ -2036,6 +2048,28 @@ function openNew(dup){
     if(src&&$("#nf-keep")?.checked){const c=structuredClone(src);Object.assign(c,{name:t.name,destination:t.destination,start:t.start,nights:t.nights,people:t.people,createdAt:Date.now()});t=c}
     const id=uid(); trips[id]=t; cur=id; homeView=false; editing=!src; editInfo=!src; tab="plan"; route(); closeModal(); save(id,true); render(); toast("Đã tạo chuyến");
   });
+}
+
+function openStopEdit(i,j){
+  const t=trips[cur], isNew=j<0, s=isNew?{time:"",title:"",note:"",type:"Tham quan",cost:"",place:""}:t.days[i].stops[j];
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><form class="glass sheet sedit" id="stopForm" role="dialog" aria-modal="true">
+    <h2>${isNew?"Thêm điểm · Ngày "+(i+1):"Sửa điểm"}</h2>
+    <div class="sgrid">
+      <label class="lbl">Giờ<input class="f" type="time" name="time" value="${esc(s.time)}"></label>
+      <label class="lbl">Loại<select class="f" name="type">${TYPES.map(x=>`<option ${x===s.type?"selected":""}>${x}</option>`).join("")}</select></label>
+      <label class="lbl wide">Tên điểm<input class="f" name="title" value="${esc(s.title)}" placeholder="VD: Ăn sáng bánh căn Nhà Chung" required></label>
+      <label class="lbl wide">Ghi chú<textarea class="f" name="note" rows="2">${esc(s.note)}</textarea></label>
+      <label class="lbl">Chi phí<input class="f" name="cost" value="${esc(s.cost)}" placeholder="~50k/người"></label>
+      <label class="lbl">Địa chỉ cho bản đồ<input class="f" name="place" value="${esc(s.place)}" placeholder="Tên quán / địa chỉ"></label>
+    </div>
+    <div class="foot">${isNew?"":`<button type="button" class="btn" style="color:var(--danger);margin-right:auto" id="stopDelBtn">Xoá điểm</button>`}<button type="button" class="btn" data-close>Huỷ</button><button class="btn primary">Lưu</button></div>
+  </form></div>`;
+  const f=$("#stopForm"); setTimeout(()=>f.elements.title.focus(),50);
+  f.onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(f));if(!v.title.trim()){f.elements.title.focus();return}
+    const n={...s,...v}; if(isNew) t.days[i].stops.push(n); else t.days[i].stops[j]=n;
+    t.days[i].stops.sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
+    closeModal(); save(cur,true); render(); toast(isNew?"Đã thêm điểm":"Đã lưu")};
+  const del=$("#stopDelBtn"); if(del) del.onclick=()=>{if(del.dataset.ok){t.days[i].stops.splice(j,1);closeModal();save(cur,true);render();toast("Đã xoá điểm")}else{del.dataset.ok=1;del.textContent="Bấm lần nữa để xoá"}};
 }
 function openDel(){
   const t=trips[cur];
