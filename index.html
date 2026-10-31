@@ -810,6 +810,49 @@ body.landing .hero2{padding-top:3vh}
 .side-art .sg{position:absolute;left:-15%;top:-25%;width:75%;height:75%;background:radial-gradient(closest-side,rgba(255,222,150,.85),rgba(255,222,150,0));mix-blend-mode:screen;animation:sunpulse 7s ease-in-out infinite alternate;pointer-events:none}
 .side-art .sr{position:absolute;left:-40%;top:-60%;width:180%;height:200%;background:repeating-conic-gradient(from 200deg at 22% 18%,rgba(255,230,170,0) 0deg 6deg,rgba(255,232,175,.34) 8deg 11deg,rgba(255,230,170,0) 13deg 20deg);mix-blend-mode:screen;filter:blur(2px);transform-origin:22% 18%;animation:rays 12s ease-in-out infinite alternate;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.side-art *{animation:none!important}}
+
+/* thu chi dễ nhìn */
+.ledger2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.ledger2>.kpis{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.kpi small{color:var(--ink2);font-size:13px}.kpi b{font-size:clamp(22px,2.2vw,30px);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kbar{height:8px;border-radius:4px;background:var(--field);overflow:hidden}.kbar i{display:block;height:100%;background:var(--good);border-radius:4px}.kbar.over i{background:var(--danger)}
+.ledger2>.addtx{order:1}.ledger2>.settle2{order:2}.ledger2>.txlist{order:3}
+.settle2,.addtx,.txlist{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.settle2 h3,.txlist h3{font-size:18px;margin:0}
+.moves{display:flex;flex-direction:column;gap:8px}
+.mv{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:color-mix(in oklab,var(--accent) 10%,var(--field))}
+.mv .who{display:flex;align-items:center;gap:8px;font-weight:600;min-width:0}
+.mv .arr{color:var(--accent);font-size:20px;font-weight:700}
+.mv b{font-size:17px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.fundav{display:inline-grid;place-items:center;background:#8E8E93;color:#fff;font-weight:700}
+.okline{padding:12px 14px;border-radius:14px;background:var(--good-bg);color:var(--good);font-weight:600}
+.balgrid{display:flex;flex-direction:column;gap:6px}
+.bcard{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 4px;border-top:1px solid var(--hair);font-size:14px}
+.bcard small{display:block;color:var(--ink3);font-size:12px}
+.bcard .pos,.bcard .neg{font-size:13px;white-space:nowrap}
+.segk.big{display:grid;grid-template-columns:1fr 1fr;background:var(--field);border-radius:12px;padding:3px}
+.segk.big button{border:0;background:transparent;padding:10px;border-radius:10px;font-weight:700;font-size:15px;color:var(--ink2);cursor:pointer}
+.segk.big button[aria-pressed="true"]{background:var(--base);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.segk.big button[data-v="chi"][aria-pressed="true"]{color:var(--danger)}.segk.big button[data-v="thu"][aria-pressed="true"]{color:var(--good)}
+.lform2{display:grid;grid-template-columns:150px 1fr 150px auto;gap:8px;align-items:center}
+.lform2 .amt{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.lform2 .full{grid-column:1/-1}
+.txlist{grid-column:1/-1}
+.tx-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.tx-h small{color:var(--ink3)}
+.txg{display:flex;flex-direction:column}
+.txd{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;padding:10px 4px 6px;border-bottom:1px solid var(--hair)}
+.tx{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;border:0;background:transparent;color:var(--ink);text-align:left;padding:10px 6px;border-bottom:1px solid var(--hair);cursor:pointer;border-radius:10px}
+.tx:hover:not([disabled]){background:var(--field)}
+.tx[disabled]{cursor:default}
+.lic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--c);background:color-mix(in oklab,var(--c) 16%,transparent)}
+.lic svg{width:20px;height:20px}
+.txm{min-width:0}.txm b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.txm small{color:var(--ink3);font-size:12.5px}
+.txa{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.txa.in{color:var(--good)}.txa.out{color:var(--ink)}
+.memd summary{cursor:pointer;color:var(--ink2);font-size:14px;padding-top:4px}.memd .members{margin-top:8px}
+@media (max-width:900px){.ledger2{grid-template-columns:1fr}.ledger2>.kpis{grid-template-columns:1fr 1fr}.ledger2>.kpis .kpi:first-child{grid-column:1/-1}
+  .lform2{grid-template-columns:1fr 1fr}.lform2 #lf-desc{grid-column:1/-1;order:-1}.lform2 .btn{grid-column:1/-1;order:9}
+  .mv{grid-template-columns:1fr auto 1fr;}.mv b{grid-column:1/-1;justify-self:end}}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -897,6 +940,7 @@ const emailOf=u=>u+"@"+FB_DOMAIN();
 let fbAvatars={}, unsubUsers=null;
 function initFirebase(){
   firebase.initializeApp(window.FIREBASE_CONFIG); FB_ON=true;
+  try{firebase.firestore().settings({experimentalAutoDetectLongPolling:true,merge:true})}catch{}
   firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
   firebase.auth().onAuthStateChanged(u=>{
     fbUser=u; if(unsub){unsub();unsub=null} if(unsubUsers){unsubUsers();unsubUsers=null}
@@ -1574,7 +1618,7 @@ async function addFiles(files,dayArg){
   uploading=""; save(cur,true); render();
   toast(ok?`Đã thêm ${ok} ảnh/video`+(fail.length?`, ${fail.length} lỗi (${fail[0]})`:""):`Không tải được: ${fail[0]||""}`);
 }
-function canUpload(){return canWrite&&(!sharedMedia()||!!assets)}
+function canUpload(){return canWrite&&(FB_ON||!sharedMedia()||!!assets)}
 function tileHTML(x,k,noDay){
   const capT=x.caption||(x.stop?"📍 "+x.stop:""); const cap=capT?`<span class="cap">${esc(capT)}</span>`:"";
   const day=!noDay&&x.day!==""&&x.day!=null?`<span class="badge2">Ngày ${+x.day+1}</span>`:"";
@@ -1852,7 +1896,7 @@ function guideHTML(t){
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
         ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}
         ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}
-        ${canWrite&&!x.img&&(g.kind==="pose"||g.kind==="photo")&&(!sharedMedia()||assets)?`<label class="btn mini upbtn" style="align-self:flex-start;margin-top:6px">+ Ảnh mẫu<input type="file" accept="image/*" data-gimg="${i},${j}"></label>`:""}</div>`}).join("")}</div>`
+        ${canWrite&&!x.img&&(g.kind==="pose"||g.kind==="photo")&&canUpload()?`<label class="btn mini upbtn" style="align-self:flex-start;margin-top:6px">+ Ảnh mẫu<input type="file" accept="image/*" data-gimg="${i},${j}"></label>`:""}</div>`}).join("")}</div>`
       :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm ✎ Sửa để thêm.":""}</div>`}</section>`;
     return `<section class="glass gsec"><div class="gsec-h">
         <input class="f title" style="flex:1" data-k="guide.${i}.title" value="${esc(g.title)}" aria-label="Tên danh sách">
@@ -1889,56 +1933,80 @@ function ledgerCalc(t){
   const debt=bal.filter(b=>b.net<-0.5).map(b=>({...b,net:-b.net})).sort((a,b)=>b.net-a.net);
   const fund=thu-t.ledger.filter(r=>r.kind!=="thu"&&(r.by==="Quỹ"||!r.by)).reduce((a,r)=>a+(+r.amount||0),0);
   if(fund>0.5) debt.unshift({m:"Quỹ chung",net:fund}); else if(fund<-0.5) cred.unshift({m:"Quỹ chung",net:-fund});
-  const moves=[]; let i=0,j=0;
+  const moves=[], mv=[]; let i=0,j=0;
   while(i<debt.length&&j<cred.length){const x=Math.min(debt[i].net,cred[j].net);
-    moves.push(`${debt[i].m} → ${cred[j].m}: ${vnd(x)}`); debt[i].net-=x; cred[j].net-=x;
+    moves.push(`${debt[i].m} → ${cred[j].m}: ${vnd(x)}`); mv.push({from:debt[i].m,to:cred[j].m,amt:x}); debt[i].net-=x; cred[j].net-=x;
     if(debt[i].net<1)i++; if(cred[j].net<1)j++;}
-  return {thu,chi,share,bal,fund,moves};
+  return {thu,chi,share,bal,fund,moves,mv};
 }
 let lfKind="chi", lfBy="Quỹ";
 
 let _lfDraft=null;
 function keepLedgerDraft(){_lfDraft={d:$("#lf-date")?.value,s:$("#lf-desc")?.value,a:$("#lf-amt")?.value}}
 function restoreLedgerDraft(){if(!_lfDraft)return;if($("#lf-date"))$("#lf-date").value=_lfDraft.d||"";if($("#lf-desc"))$("#lf-desc").value=_lfDraft.s||"";if($("#lf-amt"))$("#lf-amt").value=_lfDraft.a||"";_lfDraft=null}
+const CAT_IC={"Ăn uống":"Ăn uống","Cà phê":"Cà phê","Di chuyển":"Di chuyển","Lưu trú":"Lưu trú","Mua sắm":"Mua sắm","Vé tham quan":null,"Khác":null};
+const CAT_COL={"Ăn uống":"#FF9F0A","Cà phê":"#A2845E","Di chuyển":"#0A84FF","Lưu trú":"#AF52DE","Vé tham quan":"#30B0C7","Mua sắm":"#FF375F","Khác":"#8E8E93"};
+function catIcon(r){if(r.kind==="thu")return `<span class="lic" style="--c:#30D158"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>`;
+  const c=r.cat||"Khác";return `<span class="lic" style="--c:${CAT_COL[c]||"#8E8E93"}">${TYPE_ICON[CAT_IC[c]]||ICON_DEFAULT}</span>`}
+function fmtDay(d){if(!d)return "Không rõ ngày";const x=new Date(d+"T00:00:00");if(isNaN(x))return d;const t=new Date(new Date().toDateString());const diff=Math.round((t-x)/864e5);
+  return (diff===0?"Hôm nay · ":diff===1?"Hôm qua · ":"")+x.toLocaleDateString("vi-VN",{weekday:"long",day:"numeric",month:"numeric"})}
 function ledgerHTML(t){
   if(lfKind==="thu"&&lfBy==="Quỹ") lfBy=memberList(t)[0]||"";
   const L=ledgerCalc(t), est=calc(t), ro=!canWrite;
-  const opts=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
   const today=new Date().toISOString().slice(0,10);
   const rows=t.ledger.map((r,k)=>({...r,k})).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b.k-a.k);
-  return `<div class="ledger"><section class="glass items">
-    <div class="items-h"><h3>Thu chi thực tế</h3></div>
-    ${ro?"":`<form class="lform" id="ledgerForm">
-      <label class="lbl">Ngày<input class="f" type="date" id="lf-date" value="${today}"></label>
-      <label class="lbl span2">Nội dung<input class="f" id="lf-desc" placeholder="VD: Lẩu gà lá é" required></label>
-      <label class="lbl">Số tiền<input class="f n" id="lf-amt" inputmode="numeric" placeholder="0" required></label>
-      <div class="lbl">Loại<input type="hidden" id="lf-kind" value="${lfKind}"><div class="segk"><button type="button" data-act="lfKind" data-v="chi" aria-pressed="${lfKind==="chi"}">Chi</button><button type="button" data-act="lfKind" data-v="thu" aria-pressed="${lfKind==="thu"}">Góp quỹ</button></div></div>
-      <div class="lbl full">${lfKind==="thu"?"Ai góp":"Ai trả"}<input type="hidden" id="lf-by" value="${esc(lfBy)}">${peoplePick(t,{val:lfBy,fund:lfKind!=="thu",act:"lfBy"})}</div>
-      <button class="btn primary full">Thêm khoản</button></form>`}
-    <div class="tbl"><table class="ltable" style="min-width:820px"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Danh mục</th><th>Ai</th><th class="num">Số tiền</th><th></th></tr></thead><tbody>
-    ${rows.length?rows.map(r=>`<tr>
-      <td class="c-date" style="width:120px">${ro?esc(r.date||""):`<input class="f" type="date" data-k="ledger.${r.k}.date" value="${esc(r.date||"")}" aria-label="Ngày">`}</td>
-      <td class="c-desc" style="min-width:180px">${ro?esc(r.desc):`<input class="f" data-k="ledger.${r.k}.desc" value="${esc(r.desc)}" aria-label="Nội dung">`}</td>
-      <td class="c-cat" style="width:120px">${r.kind==="thu"?`<span class="kind-thu">Góp quỹ</span>`:ro?esc(r.cat||""):`<select class="f" data-k="ledger.${r.k}.cat" aria-label="Danh mục">${opts(CATS,r.cat||"Khác")}</select>`}</td>
-      <td class="c-by" style="width:230px">${peoplePick(t,{k:`ledger.${r.k}.by`,val:r.by,fund:r.kind!=="thu",ro})}</td>
-      <td class="num c-amt ${r.kind==="thu"?"kind-thu":"kind-chi"}" style="width:130px">${ro?(r.kind==="thu"?"+":"")+vnd(r.amount):`<input class="f n" inputmode="numeric" data-k="ledger.${r.k}.amount" data-money data-relc value="${(+r.amount||0).toLocaleString("vi-VN")}" aria-label="Số tiền">`}</td>
-      <td class="c-del" style="width:40px">${ro?"":`<button class="btn icon danger" data-act="lDel" data-k2="${r.k}" aria-label="Xoá dòng">✕</button>`}</td></tr>`).join("")
-      :`<tr><td colspan="6" class="sub" style="padding:14px 6px">Chưa có khoản nào. Ghi lại mỗi lần góp quỹ hoặc chi tiêu để cuối chuyến tự chia tiền.</td></tr>`}
-    </tbody></table></div>
-    <div class="lbl" style="margin-top:12px">Thành viên chia tiền
-      <div class="members">${t.members.map((m,i)=>`<span class="chip">${esc(m)}${ro?"":`<button data-act="memDel" data-i="${i}" aria-label="Bỏ ${esc(m)}">✕</button>`}</span>`).join("")}
-      ${ro?"":`<input class="f" id="memIn" style="width:140px" placeholder="Thêm người"><button class="btn sm" data-act="memAdd">Thêm</button>`}</div></div>
+  const groups=[];rows.forEach(r=>{const g=groups[groups.length-1];if(g&&g.d===(r.date||""))g.r.push(r);else groups.push({d:r.date||"",r:[r]})});
+  const pct=est.total?Math.min(100,Math.round(L.chi/est.total*100)):0, over=est.total&&L.chi>est.total;
+  const mv=L.mv||[];
+  return `<div class="ledger2">
+  <div class="kpis">
+    <div class="glass kpi"><small>Đã chi</small><b>${vnd(L.chi)}</b>${est.total?`<div class="kbar ${over?"over":""}"><i style="width:${pct}%"></i></div><small>${over?`Vượt dự toán ${vnd(L.chi-est.total)}`:`${pct}% dự toán ${vnd(est.total)}`}</small>`:""}</div>
+    <div class="glass kpi"><small>Quỹ chung</small><b>${vnd(L.fund)}</b><small>đã góp ${vnd(L.thu)} · còn lại trong quỹ</small></div>
+    <div class="glass kpi"><small>Mỗi người chịu</small><b>${vnd(L.share)}</b><small>chia đều ${t.members.length} người</small></div>
+  </div>
+  <section class="glass settle2">
+    <h3>Cần chuyển để cân bằng</h3>
+    ${mv.length?`<div class="moves">${mv.map(x=>`<div class="mv"><span class="who">${x.from==="Quỹ chung"?`<span class="av fundav">Q</span>`:ppAv(x.from)}${esc(x.from)}</span><span class="arr">→</span><span class="who">${x.to==="Quỹ chung"?`<span class="av fundav">Q</span>`:ppAv(x.to)}${esc(x.to)}</span><b>${vnd(x.amt)}</b></div>`).join("")}</div>`
+      :`<div class="okline">✓ Mọi người đã cân bằng, không ai nợ ai.</div>`}
+    <div class="balgrid">${L.bal.map(b=>`<div class="bcard">${ppAv(b.m)}<div><b>${esc(b.m)}</b><small>góp ${vnd(b.put)} · trả hộ ${vnd(b.paid)}</small></div><span class="${b.net>=0?"pos":"neg"}">${Math.abs(b.net)<1?"0 ₫":(b.net>0?"được nhận "+vnd(b.net):"cần đưa "+vnd(-b.net))}</span></div>`).join("")}</div>
   </section>
-  <aside class="glass sum">
-    <div class="lbl2">Đã chi</div><div class="big">${vnd(L.chi)}</div>
-    <div class="sub">Góp quỹ ${vnd(L.thu)} · Quỹ còn ${vnd(L.fund)}</div>
-    <div class="sub">Mỗi người ${vnd(L.share)} (${t.members.length} người)</div>
-    ${est.total?`<div class="badge ${L.chi<=est.total?"ok":"over"}">${L.chi<=est.total?`Đã dùng ${Math.round(L.chi/est.total*100)}% dự toán (${vnd(est.total)})`:`Vượt dự toán ${vnd(L.chi-est.total)}`}</div>`:""}
-    <div class="bal">${L.bal.map(b=>`<div class="balrow"><span>${esc(b.m)}</span><span class="${b.net>=0?"pos":"neg"}">${b.net>=0?"+":"−"}${vnd(Math.abs(b.net))}</span>
-      <small>góp ${vnd(b.put)} · trả hộ ${vnd(b.paid)}</small></div>`).join("")}</div>
-    <div class="settle"><div class="lbl2">Cần chuyển để cân bằng</div>${L.moves.length?L.moves.map(x=>`<div>${esc(x)}</div>`).join(""):`<div class="sub">Đã cân bằng.</div>`}</div>
-    <p class="sub" style="margin:0">Số dương là được nhận lại, số âm là cần đưa thêm. Khoản chi ghi “Quỹ” được trừ vào tiền góp chung.</p>
-  </aside></div>`;
+  ${ro?"":`<section class="glass addtx">
+    <div class="segk big"><button type="button" data-act="lfKind" data-v="chi" aria-pressed="${lfKind==="chi"}">− Khoản chi</button><button type="button" data-act="lfKind" data-v="thu" aria-pressed="${lfKind==="thu"}">+ Góp quỹ</button></div>
+    <form class="lform2" id="ledgerForm">
+      <input class="f amt" id="lf-amt" inputmode="numeric" placeholder="Số tiền (đ)" required aria-label="Số tiền">
+      <input class="f" id="lf-desc" placeholder="${lfKind==="thu"?"VD: Góp quỹ đợt 1":"Chi cho gì? VD: Lẩu gà lá é"}" required aria-label="Nội dung">
+      <input class="f" type="date" id="lf-date" value="${today}" aria-label="Ngày">
+      <button class="btn primary">Ghi</button>
+      <div class="lbl full">${lfKind==="thu"?"Ai góp":"Ai trả tiền"}<input type="hidden" id="lf-by" value="${esc(lfBy)}">${peoplePick(t,{val:lfBy,fund:lfKind!=="thu",act:"lfBy"})}</div>
+    </form></section>`}
+  <section class="glass txlist">
+    <div class="tx-h"><h3>Lịch sử thu chi</h3><small>${t.ledger.length} khoản${ro?"":" · bấm vào một dòng để sửa"}</small></div>
+    ${groups.length?groups.map(g=>`<div class="txg"><div class="txd">${esc(fmtDay(g.d))}<span>${vnd(g.r.filter(r=>r.kind!=="thu").reduce((a,r)=>a+(+r.amount||0),0))}</span></div>
+      ${g.r.map(r=>`<button class="tx" ${ro?"disabled":`data-act="lEdit" data-k2="${r.k}"`}>${catIcon(r)}<span class="txm"><b>${esc(r.desc||"(không ghi nội dung)")}</b><small>${r.kind==="thu"?`${esc(r.by||"")} góp quỹ`:`${r.by==="Quỹ"||!r.by?"Trả từ quỹ chung":esc(r.by)+" trả"} · ${esc(r.cat||"Khác")}`}</small></span><span class="txa ${r.kind==="thu"?"in":"out"}">${r.kind==="thu"?"+":"−"}${vnd(r.amount)}</span></button>`).join("")}</div>`).join("")
+      :`<div class="empty-day">Chưa có khoản nào. Ghi lại mỗi lần góp quỹ hoặc chi tiêu, cuối chuyến trang tự tính ai chuyển cho ai.</div>`}
+    <details class="memd"><summary>Thành viên chia tiền (${t.members.length})</summary>
+      <div class="members">${t.members.map((m,i)=>`<span class="chip">${esc(m)}${ro?"":`<button data-act="memDel" data-i="${i}" aria-label="Bỏ ${esc(m)}">✕</button>`}</span>`).join("")}
+      ${ro?"":`<input class="f" id="memIn" style="width:140px" placeholder="Thêm người"><button class="btn sm" data-act="memAdd">Thêm</button>`}</div></details>
+  </section></div>`;
+}
+function openLedgerEdit(k){
+  const t=trips[cur], r=t.ledger[k]; if(!r) return;
+  const people=[...(r.kind==="thu"?[]:["Quỹ"]),...memberList(t)];
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><form class="glass sheet sedit" id="txForm" role="dialog" aria-modal="true">
+    <h2>${r.kind==="thu"?"Sửa khoản góp quỹ":"Sửa khoản chi"}</h2>
+    <div class="sgrid">
+      <label class="lbl wide">Nội dung<input class="f" name="desc" value="${esc(r.desc||"")}"></label>
+      <label class="lbl">Số tiền<input class="f" name="amount" inputmode="numeric" value="${(+r.amount||0).toLocaleString("vi-VN")}"></label>
+      <label class="lbl">Ngày<input class="f" type="date" name="date" value="${esc(r.date||"")}"></label>
+      <label class="lbl">${r.kind==="thu"?"Ai góp":"Ai trả"}<select class="f" name="by">${people.map(p=>`<option ${p===r.by?"selected":""} value="${esc(p)}">${p==="Quỹ"?"Quỹ chung":esc(p)}</option>`).join("")}</select></label>
+      ${r.kind==="thu"?"":`<label class="lbl">Danh mục<select class="f" name="cat">${CATS.map(c=>`<option ${c===(r.cat||"Khác")?"selected":""}>${c}</option>`).join("")}</select></label>`}
+    </div>
+    <div class="foot"><button type="button" class="btn" style="color:var(--danger);margin-right:auto" id="txDel">Xoá</button><button type="button" class="btn" data-close>Huỷ</button><button class="btn primary">Lưu</button></div>
+  </form></div>`;
+  const f=$("#txForm");
+  f.onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(f));v.amount=parseInt(String(v.amount).replace(/\D/g,""),10)||0;
+    Object.assign(r,v);closeModal();save(cur,true);render();toast("Đã lưu")};
+  const d=$("#txDel");d.onclick=()=>{if(d.dataset.ok){t.ledger.splice(k,1);closeModal();save(cur,true);render();toast("Đã xoá")}else{d.dataset.ok=1;d.textContent="Bấm lần nữa để xoá"}};
 }
 document.addEventListener("submit",e=>{
   if(e.target.id!=="ledgerForm") return; e.preventDefault();
@@ -2089,6 +2157,7 @@ document.addEventListener("click",e=>{
     case "gsecAdd": t.guide.push({title:"Danh sách mới",items:[]}); mut(); break;
     case "gsecDel": t.guide.splice(i,1); mut(); break;
     case "lDel": t.ledger.splice(+b.dataset.k2,1); mut(); break;
+    case "lEdit": openLedgerEdit(+b.dataset.k2); break;
     case "memAdd": {const v=($("#memIn")?.value||"").trim(); if(v&&!t.members.includes(v)){t.members.push(v);mut()} break}
     case "memDel": t.members.splice(i,1); mut(); break;
     case "lbClose": closeLB(); break;
