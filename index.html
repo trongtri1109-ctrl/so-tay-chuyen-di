@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -368,7 +371,14 @@ function save(id,immediate){
   if(mode==="local"){localSave();setStatus("Đã lưu trên trình duyệt này");return}
   clearTimeout(pending[id]); setStatus("Đang lưu…");
   pending[id]=setTimeout(async()=>{
-    try{await db.collection("trips").doc(id).set(JSON.parse(JSON.stringify(t)));setStatus("Đã lưu")}
+    try{const data=JSON.parse(JSON.stringify(t)), base=synced[id];
+      if(base){const ch={};for(const k of Object.keys(data)) if(JSON.stringify(data[k])!==base[k]) ch[k]=data[k];
+        const removed=Object.keys(base).some(k=>!(k in data));
+        if(removed&&!FB_ON) await db.collection("trips").doc(id).set(data);
+        else{for(const k of Object.keys(base)) if(!(k in data)) ch[k]=firebase.firestore.FieldValue.delete();
+          if(Object.keys(ch).length) await db.collection("trips").doc(id).update(ch);}}
+      else await db.collection("trips").doc(id).set(data);
+      markSynced(id,data); setStatus("Đã lưu")}
     catch(e){setStatus(e&&e.code==="quota_exceeded"?"Hết dung lượng lưu, hãy xoá bớt chuyến cũ":"Chưa lưu được, thử lại sau");if(e&&e.code==="invalid_argument"){canWrite=false;render()}}
     finally{delete pending[id]}
   },immediate?0:700);
@@ -380,6 +390,8 @@ async function removeTrip(id){
   cur=Object.keys(trips).sort(byRecent)[0]||null; route(); render(); toast("Đã xoá chuyến");
 }
 const byRecent=(a,b)=>(trips[b].updatedAt||0)-(trips[a].updatedAt||0);
+const synced={}; let FB_ON=false;
+function markSynced(id,data){const m={};for(const k of Object.keys(data)) m[k]=JSON.stringify(data[k]);synced[id]=m}
 
 let unsub=null, fbUser=null;
 function subscribe(okText){
@@ -388,7 +400,7 @@ function subscribe(okText){
   unsub=db.collection("trips").onSnapshot(snap=>{
     if(!snap.metadata.fromCache){clearTimeout(timer);setStatus(okText())}
     const next={};
-    snap.docs.forEach(d=>{ next[d.id]= pending[d.id]&&trips[d.id] ? trips[d.id] : structuredClone(d.data()) });
+    snap.docs.forEach(d=>{ const data=d.data(); if(!pending[d.id]) markSynced(d.id,data); next[d.id]= pending[d.id]&&trips[d.id] ? trips[d.id] : structuredClone(data) });
     for(const id in pending) if(trips[id]&&!next[id]) next[id]=trips[id];
     trips=next; if(!cur||!trips[cur]) pick();
     if(document.activeElement&&document.activeElement.closest("main,.modal-open")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) deferRender=true; else render();
@@ -396,36 +408,55 @@ function subscribe(okText){
     if(e&&(e.code==="permission-denied"||e.code==="permission_denied")){mode="denied";trips={};cur=null;render();setStatus("Tài khoản chưa được cấp quyền")}
     else setStatus("Mất kết nối dữ liệu, tải lại trang để thử lại")});
 }
-/* Firebase mode: only used when config.js provides FIREBASE_CONFIG (GitHub Pages build) */
+/* ---------- Firebase (bản GitHub): đăng nhập tên + mật khẩu, dữ liệu đồng bộ ---------- */
+const FB_DOMAIN=()=>window.FB_EMAIL_DOMAIN||"sotay-chuyen-di.app";
+const emailOf=u=>u+"@"+FB_DOMAIN();
+let fbAvatars={}, unsubUsers=null;
 function initFirebase(){
-  firebase.initializeApp(window.FIREBASE_CONFIG);
-  const auth=firebase.auth();
-  firebase.auth().getRedirectResult().catch(e=>toast("Đăng nhập lỗi: "+(e.code||e.message)));
-  auth.onAuthStateChanged(u=>{
-    fbUser=u; if(unsub){unsub();unsub=null}
+  firebase.initializeApp(window.FIREBASE_CONFIG); FB_ON=true;
+  firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  firebase.auth().onAuthStateChanged(u=>{
+    fbUser=u; if(unsub){unsub();unsub=null} if(unsubUsers){unsubUsers();unsubUsers=null}
     trips={};cur=null;
-    if(!u){mode="login";canWrite=false;setStatus("Chưa đăng nhập");render();return}
-    const allow=(window.ALLOWED_EMAILS||[]).map(e=>e.toLowerCase());
-    if(allow.length&&!allow.includes((u.email||"").toLowerCase())){mode="denied";canWrite=false;setStatus("Tài khoản chưa được cấp quyền");render();return}
+    if(!u){localUser=null;mode="login-local";canWrite=false;setStatus("Chưa đăng nhập");render();$("#lg-user")?.focus();return}
+    localUser=(u.email||"").split("@")[0];
     db=firebase.firestore(); mode="db"; canWrite=true; render();
-    subscribe(()=>"Đã đồng bộ · "+u.email);
+    subscribe(()=>"Đã đồng bộ · mọi người cùng thấy");
+    unsubUsers=db.collection("users").onSnapshot(sn=>{fbAvatars={};sn.docs.forEach(d=>{fbAvatars[d.id]=d.data().avatar||""});render()},()=>{});
   });
 }
-function signIn(){
-  const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
-  firebase.auth().signInWithPopup(p).catch(e=>{
-    if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment") firebase.auth().signInWithRedirect(p);
-    else if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request") toast("Đăng nhập lỗi: "+e.code);
-  });
+async function fbLogin(u,p){
+  u=u.trim().toLowerCase();
+  if(!(window.LOCAL_USERS||{})[u]) return "Tài khoản không có trong danh sách thành viên.";
+  try{await firebase.auth().signInWithEmailAndPassword(emailOf(u),p);return ""}
+  catch(e){
+    if(e.code==="auth/too-many-requests") return "Nhập sai nhiều lần, đợi vài phút rồi thử lại.";
+    if(e.code==="auth/network-request-failed") return "Không có mạng.";
+    // Lần đầu: tài khoản chưa có trên Firebase, mật khẩu khớp mật khẩu ban đầu thì tự tạo
+    if(await sha("so-tay-v1:"+u+":"+p)===window.LOCAL_USERS[u]){
+      try{await firebase.auth().createUserWithEmailAndPassword(emailOf(u),p);return ""}
+      catch(e2){if(e2.code!=="auth/email-already-in-use") return "Chưa tạo được tài khoản: "+e2.code}
+    }
+    return "Sai tài khoản hoặc mật khẩu.";
+  }
 }
-function signOut(){if(localUser){try{localStorage.removeItem("sotay-session")}catch{};location.reload();return}firebase.auth().signOut()}
-
+function signOut(){if(FB_ON){firebase.auth().signOut();return}if(localUser){try{localStorage.removeItem("sotay-session")}catch{};location.reload();return}}
+async function migrateLocal(){
+  const loc=localLoad(); const ids=Object.keys(loc); if(!ids.length){toast("Máy này không có dữ liệu cũ");return}
+  let n=0,ph=0;
+  for(const id of ids){const t=loc[id];
+    for(const x of (t.photos||[])) if(x.ref&&x.ref.startsWith("i:")){try{const b=await idbOp("readonly",st=>st.get(x.ref.slice(2)));if(b&&b.type.startsWith("image/")){x.ref=(await putMedia(b)).ref;ph++}}catch{}}
+    for(const g of (t.guide||[])) for(const x of g.items) if(x.img&&x.img.startsWith("i:")){try{const b=await idbOp("readonly",st=>st.get(x.img.slice(2)));if(b){x.img=(await putMedia(b)).ref;ph++}else delete x.img}catch{}}
+    const nid=trips[id]?uid():id; trips[nid]=t; t.updatedAt=Date.now(); save(nid,true); n++}
+  try{localStorage.setItem("trips-v1-backup",localStorage.getItem("trips-v1")||"{}");localStorage.removeItem("trips-v1")}catch{}
+  toast(`Đã đưa ${n} chuyến và ${ph} ảnh lên dữ liệu chung`); render();
+}
 /* Simple login gate: only used when config.js provides LOCAL_USERS (GitHub Pages build). Not real security. */
 let localUser=null;
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function sessionGet(){try{return JSON.parse(localStorage.getItem("sotay-session")||"null")}catch{return null}}
 function userHash(u){try{return localStorage.getItem("sotay-pw-"+u)||window.LOCAL_USERS[u]}catch{return window.LOCAL_USERS[u]}}
-function avatarOf(u){try{return localStorage.getItem("sotay-avatar-"+u)||""}catch{return ""}}
+function avatarOf(u){if(FB_ON) return fbAvatars[u]||"";try{return localStorage.getItem("sotay-avatar-"+u)||""}catch{return ""}}
 function nameOf(u){return (window.LOCAL_NAMES||{})[u]||u}
 function avHTML(u,big){const a=avatarOf(u);return a?`<img class="av${big?" big":""}" src="${a}" alt="">`:`<span class="av${big?" big":""}" aria-hidden="true">${esc(nameOf(u).trim().split(/\s+/).pop().charAt(0).toUpperCase())}</span>`}
 function openAccount(){
@@ -435,6 +466,7 @@ function openAccount(){
     <div class="avrow">${avHTML(u,true)}<div style="display:flex;flex-direction:column;gap:6px">
       <b>${esc(nameOf(u))}</b><span class="sub">Tên đăng nhập: ${esc(u)}</span>
       <div class="actions"><label class="btn sm upbtn">Đổi ảnh đại diện<input type="file" id="avfile" accept="image/*"></label>${avatarOf(u)?`<button class="btn sm" data-act="avDel">Xoá ảnh</button>`:""}</div></div></div>
+    ${FB_ON&&Object.keys(localLoad()).length?`<div class="badge ok" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Máy này còn ${Object.keys(localLoad()).length} chuyến lưu riêng từ trước.<button class="btn sm" data-act="migrate">Đưa lên dữ liệu chung</button></div>`:""}
     <form id="pwForm" style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--hair);padding-top:12px">
       <b>Đổi mật khẩu</b>
       <label class="lbl">Mật khẩu hiện tại<input class="f" type="password" id="pw-old" autocomplete="current-password" required></label>
@@ -447,6 +479,15 @@ function openAccount(){
 document.addEventListener("submit",async e=>{
   if(e.target.id!=="pwForm") return; e.preventDefault();
   const u=localUser, msg=$("#pw-msg"); msg.hidden=true;
+  if(FB_ON){const a=$("#pw-new").value,b=$("#pw-new2").value;
+    if(a.length<6){msg.textContent="Mật khẩu mới cần ít nhất 6 ký tự.";msg.hidden=false;return}
+    if(a!==b){msg.textContent="Hai lần nhập mật khẩu mới không khớp.";msg.hidden=false;return}
+    try{const cu=firebase.auth().currentUser;
+      await cu.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cu.email,$("#pw-old").value));
+      await cu.updatePassword(a); e.target.reset();
+      $("#pw-done").innerHTML=`<div class="badge ok">Đã đổi mật khẩu. Từ giờ đăng nhập trên mọi máy bằng mật khẩu mới.</div>`}
+    catch(err){msg.textContent=/wrong-password|invalid-credential/.test(err.code||"")?"Mật khẩu hiện tại chưa đúng.":"Chưa đổi được: "+(err.code||err.message);msg.hidden=false}
+    return}
   const old=await sha("so-tay-v1:"+u+":"+$("#pw-old").value);
   if(old!==userHash(u)){msg.textContent="Mật khẩu hiện tại chưa đúng.";msg.hidden=false;return}
   const a=$("#pw-new").value,b=$("#pw-new2").value;
@@ -465,7 +506,10 @@ document.addEventListener("change",async e=>{
   try{const bmp=await createImageBitmap(e.target.files[0]);const S=160,k=Math.max(S/bmp.width,S/bmp.height);
     const c=document.createElement("canvas");c.width=c.height=S;const w=bmp.width*k,h=bmp.height*k;
     c.getContext("2d").drawImage(bmp,(S-w)/2,(S-h)/2,w,h);
-    localStorage.setItem("sotay-avatar-"+localUser,c.toDataURL("image/jpeg",.85));toast("Đã cập nhật ảnh đại diện");openAccount();render()}
+    const url=c.toDataURL("image/jpeg",.85);
+    if(FB_ON){await db.collection("users").doc(localUser).set({avatar:url},{merge:true});fbAvatars[localUser]=url}
+    else localStorage.setItem("sotay-avatar-"+localUser,url);
+    toast("Đã cập nhật ảnh đại diện");openAccount();render()}
   catch{toast("Không đọc được ảnh này")}
 });
 async function localLogin(u,p){
@@ -476,6 +520,10 @@ async function localLogin(u,p){
 }
 document.addEventListener("submit",async e=>{
   if(e.target.id!=="loginForm") return; e.preventDefault();
+  if(FB_ON){const btn=e.target.querySelector("button");btn.disabled=true;btn.textContent="Đang đăng nhập…";
+    const err=await fbLogin($("#lg-user").value,$("#lg-pass").value);
+    if(err&&$("#lg-err")){$("#lg-err").textContent=err;$("#lg-err").hidden=false;btn.disabled=false;btn.textContent="Đăng nhập";$("#lg-pass").select()}
+    return}
   const ok=await localLogin($("#lg-user").value,$("#lg-pass").value);
   if(!ok){$("#lg-err").hidden=false;$("#lg-pass").select()}
 });
@@ -562,7 +610,7 @@ function render(){
     return;
   }
   if(!t){
-    m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<div class="actions" style="justify-content:center"><button class="btn primary" data-act="new">+ Tạo chuyến mới</button>${fbUser?`<button class="btn" data-act="sample">Nạp chuyến mẫu Đà Lạt</button>`:""}</div>`:""}</div>`;
+    m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<div class="actions" style="justify-content:center"><button class="btn primary" data-act="new">+ Tạo chuyến mới</button>${fbUser?`<button class="btn" data-act="sample">Nạp chuyến mẫu Đà Lạt</button>${Object.keys(localLoad()).length?`<button class="btn" data-act="migrate">Đưa dữ liệu trên máy này lên</button>`:""}`:""}</div>`:""}</div>`;
     return;
   }
   if(!Array.isArray(t.tasks)) t.tasks=defaultTasks();
@@ -662,7 +710,7 @@ let assets=null, albumDay="all", uploading="";
 const blobUrls={};
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("sotay-media",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbOp(mode,fn){const d=await idb();return new Promise((res,rej)=>{const tx=d.transaction("files",mode);const q=fn(tx.objectStore("files"));tx.oncomplete=()=>res(q?.result);tx.onerror=()=>rej(tx.error)})}
-const sharedMedia=()=>mode==="db"&&!fbUser;
+const sharedMedia=()=>mode==="db";
 async function compress(file){
   if(!file.type.startsWith("image/")||file.type==="image/gif"||file.size<600000) return file;
   try{
@@ -672,7 +720,18 @@ async function compress(file){
     const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.82)); return b&&b.size<file.size?b:file;
   }catch{return file}
 }
+async function toSmallJpeg(file,maxSide,limit){
+  const bmp=await createImageBitmap(file); let side=maxSide, q=.8, out=null;
+  for(let i=0;i<6;i++){const k=Math.min(1,side/Math.max(bmp.width,bmp.height));const c=document.createElement("canvas");c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height); out=c.toDataURL("image/jpeg",q); if(out.length<limit) return out; q-=.1; side=Math.round(side*.85)}
+  return out;
+}
 async function putMedia(file){
+  if(FB_ON){
+    if(!(file.type||"").startsWith("image/")) throw {code:"video_link"};
+    const data=await toSmallJpeg(file,1600,700000); if(data.length>950000) throw {code:"too_big"};
+    const id=uid(); await db.collection("media").doc(id).set({data,trip:cur||"",at:Date.now()}); mediaCache["f:"+id]=data; return {ref:"f:"+id,type:"image"};
+  }
   const blob=await compress(file), type=file.type.startsWith("video/")?"video":"image";
   if(sharedMedia()){
     if(!assets) throw {code:"not_granted"};
@@ -683,11 +742,16 @@ async function putMedia(file){
   const id=uid(); await idbOp("readwrite",s=>s.put(blob,id)); return {ref:"i:"+id,type};
 }
 async function delMedia(ref){
+  if(ref.startsWith("f:")&&FB_ON){try{await db.collection("media").doc(ref.slice(2)).delete()}catch{};delete mediaCache[ref];return}
   try{ if(ref.startsWith("a:")&&assets) await assets.delete(ref.slice(2));
        if(ref.startsWith("i:")){await idbOp("readwrite",s=>s.delete(ref.slice(2)));URL.revokeObjectURL(blobUrls[ref]);delete blobUrls[ref]} }catch{}
 }
-function mediaSrc(ref){return ref.startsWith("a:")?"/_blob/"+ref.slice(2):(blobUrls[ref]||"")}
+const mediaCache={};
+function mediaSrc(ref){return ref.startsWith("a:")?"/_blob/"+ref.slice(2):ref.startsWith("f:")?(mediaCache[ref]||""):(blobUrls[ref]||"")}
 async function hydrateMedia(){
+  for(const el of document.querySelectorAll("[data-ref^='f:']")){const ref=el.dataset.ref;
+    if(!mediaCache[ref]&&FB_ON){try{const d=await db.collection("media").doc(ref.slice(2)).get();if(d.exists) mediaCache[ref]=d.data().data}catch{}}
+    if(mediaCache[ref]){if(el.getAttribute("src")!==mediaCache[ref]) el.src=mediaCache[ref]} else el.closest(".tile,.lbm")?.classList.add("gone")}
   for(const el of document.querySelectorAll("[data-ref^='i:']")){
     const ref=el.dataset.ref;
     if(!blobUrls[ref]){try{const b=await idbOp("readonly",s=>s.get(ref.slice(2)));if(b) blobUrls[ref]=URL.createObjectURL(b)}catch{}}
@@ -702,7 +766,7 @@ async function addFiles(files){
   for(let i=0;i<files.length;i++){
     uploading=`Đang tải ${i+1}/${files.length}…`; const u=$("#upst"); if(u) u.textContent=uploading;
     try{const r=await putMedia(files[i]); t.photos.push({...r,caption:"",day,by:localUser?((window.LOCAL_NAMES||{})[localUser]||localUser):"",at:Date.now()}); ok++}
-    catch(e){fail.push(e?.code==="too_big"?"file quá lớn":e?.code==="unsupported_type"?"định dạng chưa hỗ trợ":e?.code==="quota_exceeded"?"hết dung lượng":"lỗi tải lên")}
+    catch(e){fail.push(e?.code==="video_link"?"video hãy dán link YouTube/Drive":e?.code==="too_big"?"file quá lớn":e?.code==="unsupported_type"?"định dạng chưa hỗ trợ":e?.code==="quota_exceeded"?"hết dung lượng":"lỗi tải lên")}
   }
   uploading=""; save(cur,true); render();
   toast(ok?`Đã thêm ${ok} ảnh/video`+(fail.length?`, ${fail.length} lỗi (${fail[0]})`:""):`Không tải được: ${fail[0]||""}`);
@@ -724,9 +788,9 @@ function albumHTML(t){
   return `<section class="glass album">
     <div class="album-h"><h3>Album</h3>
       <select class="f" id="albumDay" aria-label="Lọc theo ngày"><option value="all">Tất cả (${t.photos.length})</option>${t.days.map((d,i)=>`<option value="${i}" ${String(albumDay)===String(i)?"selected":""}>Ngày ${i+1}${d.title?" · "+esc(d.title):""}</option>`).join("")}<option value="none" ${albumDay==="none"?"selected":""}>Chưa xếp ngày</option></select>
-      ${up?`<label class="btn primary upbtn">+ Thêm ảnh / video<input type="file" id="upfile" accept="image/*,video/*" multiple></label>`:""}
+      ${up?`<label class="btn primary upbtn">+ Thêm ảnh / video<input type="file" id="upfile" accept="${FB_ON?"image/*":"image/*,video/*"}" multiple></label>`:""}
     </div>
-    ${uploading?`<div class="sub" id="upst">${uploading}</div>`:`<div class="sub" id="upst">${up?(sharedMedia()?"Ảnh được nén tự động, cả nhóm cùng xem. Video tối đa 20MB, video dài nên dán link YouTube/Drive.":"Ảnh được nén tự động và lưu trên máy này. Video dài nên dán link YouTube/Drive."):(sharedMedia()?"Bạn cần quyền chỉnh sửa trang để đăng ảnh.":"")}</div>`}
+    ${uploading?`<div class="sub" id="upst">${uploading}</div>`:`<div class="sub" id="upst">${up?(FB_ON?"Ảnh được nén tự động và đồng bộ cho cả nhóm. Video hãy up YouTube/Drive rồi dán link bên dưới.":sharedMedia()?"Ảnh được nén tự động, cả nhóm cùng xem. Video tối đa 20MB, video dài nên dán link YouTube/Drive.":"Ảnh được nén tự động và lưu trên máy này. Video dài nên dán link YouTube/Drive."):(sharedMedia()?"Bạn cần quyền chỉnh sửa trang để đăng ảnh.":"")}</div>`}
     ${canWrite?`<div class="linkrow"><input class="f" id="linkIn" placeholder="Dán link video YouTube, album Google Photos…" inputmode="url"><button class="btn" data-act="addLink">Thêm link</button></div>`:""}
     ${list.length?`<div class="grid">${list.map(([x,k])=>tileHTML(x,k)).join("")}</div>`:`<div class="empty-day">${t.photos.length?"Ngày này chưa có ảnh.":"Chưa có ảnh nào. Bấm “Thêm ảnh / video” để chọn từ thư viện hoặc chụp bằng điện thoại."}</div>`}
   </section>`;
@@ -896,7 +960,7 @@ const SK={
  "đóng khung bằng cửa sổ, vòm cây":'<rect x="8" y="6" width="104" height="68" rx="6" style="stroke-width:7;opacity:.35"/><path class="thin" d="M20 60L44 34L62 50L82 28L100 60"/>'+man(60,64,{h:.4}),
  "biển mây lúc bình minh":'<circle class="af" cx="86" cy="30" r="9" style="opacity:.7"/><path class="thin" d="M6 50q10-8 20 0t20 0t20 0t20 0t20 0t20 0M6 60q10-8 20 0t20 0t20 0t20 0t20 0"/><path d="M10 72L34 54L48 72"/>'+man(34,54,{h:.45}),
  "cả nhóm cùng nhảy":gnd+man(30,62,{jump:1,up:1})+man(50,60,{jump:1,up:1})+man(70,63,{jump:1,up:1})+man(90,61,{jump:1,up:1})+cam(60,76)+'<text x="6" y="12">1 · 2 · 3!</text>',
- "giờ vàng":'<circle class="af" cx="60" cy="44" r="12" style="opacity:.75"/><path class="a" d="M60 24v-6M60 64v6M40 44h-6M80 44h6M46 30l-4-4M74 30l4-4"/><path d="M6 60H114"/><text x="10" y="76">6–7h sáng · 16h30–17h30</text>',
+ "giờ vàng":'<circle class="af" cx="60" cy="44" r="12" style="opacity:.75"/><path class="a" d="M60 24v-6M40 44h-6M80 44h6M46 30l-4-4M74 30l4-4"/><path d="M6 60H114"/><text x="10" y="76">6–7h sáng · 16h30–17h30</text>',
  "toàn cảnh thành phố về đêm":'<path d="M6 60V44h10v-8h10v14h8V30h12v30h10V40h14v20h10V36h12v24h12"/><path class="a" d="M14 50h0M22 46h0M40 40h0M42 50h0M58 52h0M74 48h0M86 44h0M96 50h0" style="stroke-width:3"/><path d="M40 72h40"/><rect class="f" x="54" y="62" width="12" height="10" rx="2"/>'
 };
 function poseSketch(name){const f=SK[(name||"").trim().toLowerCase()];return f?`<svg class="psk" viewBox="0 0 120 80" role="img" aria-label="Hình minh hoạ: ${esc(name)}">${f}</svg>`:""}
@@ -1075,10 +1139,10 @@ document.addEventListener("click",e=>{
   if(b.dataset.color){trips[cur].color=b.dataset.color;save(cur);render();return}
   const a=b.dataset.act; if(!a) return;
   if(a==="new"){openNew();return}
-  if(a==="signin"){signIn();return}
   if(a==="signout"){signOut();return}
   if(a==="account"){openAccount();return}
-  if(a==="avDel"){try{localStorage.removeItem("sotay-avatar-"+localUser)}catch{};openAccount();render();return}
+  if(a==="avDel"){if(FB_ON){db.collection("users").doc(localUser).set({avatar:""},{merge:true});fbAvatars[localUser]=""}else{try{localStorage.removeItem("sotay-avatar-"+localUser)}catch{}};openAccount();render();return}
+  if(a==="migrate"){migrateLocal();return}
   if(a==="copyHash"){navigator.clipboard?.writeText(b.dataset.h).then(()=>toast("Đã sao chép")).catch(()=>toast("Hãy bôi đen dòng trên để sao chép"));return}
   if(a==="sample"){fetch("data/da-lat-3n2d.json").then(r=>r.json()).then(t=>{t.updatedAt=Date.now();trips.tdalat3n2d=t;cur="tdalat3n2d";route();save(cur,true);render()}).catch(()=>toast("Không tải được chuyến mẫu"));return}
   const t=trips[cur]; const i=+b.dataset.i, j=+b.dataset.j;
