@@ -735,6 +735,10 @@ body.landing .hero2{padding-top:3vh}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.landing .photo-bg .veil{background:linear-gradient(180deg,rgba(10,12,18,.32),rgba(10,12,18,.08) 45%,rgba(10,12,18,.28))}}
 .card2{border-width:1px;box-shadow:0 30px 80px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.4)}
 @media (max-width:760px){.lnav2{margin-top:10px;padding:7px 8px 7px 12px;border-radius:16px}}
+
+.lerr{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:600;color:#fff;background:#E5484D;box-shadow:0 6px 18px rgba(229,72,77,.35)}
+.lerr::before{content:"!";flex:none;width:20px;height:20px;border-radius:50%;background:#fff;color:#E5484D;display:grid;place-items:center;font-weight:800;font-size:13px}
+.lerr[hidden]{display:none}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -928,7 +932,9 @@ async function localLogin(u,p){
 }
 document.addEventListener("submit",async e=>{
   if(e.target.id!=="loginForm") return; e.preventDefault();
-  if(FB_ON){const btn=e.target.querySelector("button.primary");btn.disabled=true;btn.textContent="Đang đăng nhập…";
+  $("#lg-err").hidden=true;
+  if(FB_ON){const btn=e.target.querySelector("button:not([type=button])");btn.disabled=true;btn.textContent="Đang đăng nhập…";
+    if(!$("#lg-pass").value){btn.disabled=false;btn.textContent="Đăng nhập";$("#lg-err").textContent="Nhập mật khẩu trước đã.";$("#lg-err").hidden=false;return}
     const err=await fbLogin($("#lg-user").value,$("#lg-pass").value);
     if(err&&$("#lg-err")){$("#lg-err").textContent=err;$("#lg-err").hidden=false;const fm=$("#loginForm");fm.classList.remove("shakeX");void fm.offsetWidth;fm.classList.add("shakeX");btn.disabled=false;btn.textContent="Đăng nhập";$("#lg-pass").select()}
     return}
@@ -1215,7 +1221,7 @@ function loginHTML(){
     <div class="head">${logoSVG(56)}<h2>Chào mừng trở lại</h2><p class="sub">Đăng nhập để mở sổ tay của nhóm</p></div>
     <label class="lbl">Tài khoản<input class="f" id="lg-user" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="vd: tri" required></label>
     <label class="lbl">Mật khẩu<span class="pwrap"><input class="f" id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••" required><button type="button" data-act="togglePw">Hiện</button></span></label>
-    <div class="badge over" id="lg-err" hidden>Sai tài khoản hoặc mật khẩu.</div>
+    <div class="lerr" id="lg-err" role="alert" hidden>Sai tài khoản hoặc mật khẩu.</div>
     <button class="pillcta wide">Đăng nhập</button>
     <button type="button" class="back" data-act="goLanding">← Về trang chủ</button>
   </form></div></div>`;
