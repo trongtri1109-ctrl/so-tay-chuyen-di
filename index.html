@@ -85,7 +85,9 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .chip b{font-weight:700}
 
 .seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--field);border-radius:11px;padding:3px;align-self:flex-start}
-.seg button{border:0;background:transparent;border-radius:8px;padding:6px 22px;font-weight:600;font-size:14px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:6px 22px;font-weight:600;font-size:14px;white-space:nowrap}
+.seg{max-width:100%;overflow-x:auto}
+@media (max-width:520px){.seg button{padding:6px 12px;font-size:13px}}
 .seg button[aria-selected="true"]{background:var(--glass-strong);box-shadow:0 2px 6px rgba(0,0,0,.1)}
 
 .day{padding:20px 20px 10px}
@@ -126,6 +128,32 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .task .tx:focus,.task .who:focus{background:var(--field)}
 .task .who{font-size:13px;padding:6px 8px}
 .task-ro{font-size:15px}
+/* album */
+.album{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px}
+.album-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.album-h h3{font-size:20px;flex:1;min-width:120px}
+.album-h select.f{width:auto}
+.upbtn{position:relative;overflow:hidden}
+.upbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.linkrow{display:flex;gap:8px}
+.linkrow .f{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{position:relative;border:0;padding:0;border-radius:var(--r-md);overflow:hidden;background:var(--field);aspect-ratio:1/1;max-width:100%;display:block;width:100%}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block}
+.tile .cap{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 6px;font-size:12px;color:#fff;text-align:left;background:linear-gradient(transparent,rgba(0,0,0,.55));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .badge2{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;border-radius:999px;font-size:11px;padding:2px 8px;font-weight:600}
+.tile .play{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.tile .play i{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center}
+.tile .play i::after{content:"";border-left:13px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}
+.tile.link{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;color:var(--ink);text-decoration:none;padding:10px;text-align:center;font-size:13px}
+.tile.link b{font-size:24px}
+.tile .miss{display:grid;place-items:center;height:100%;font-size:12px;color:var(--ink3);padding:8px;text-align:center}
+.lb{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb img,.lb video{max-width:100%;max-height:68vh;border-radius:12px;background:#000}
+.lb .panel{width:min(560px,100%);display:flex;flex-direction:column;gap:8px;padding:14px;background:var(--glass-strong)}
+.lb .row3{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lb .row3 .f{flex:1;min-width:140px}
+.lb .x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);background:rgba(255,255,255,.2);color:#fff}
 .who-ro{font-size:13px;color:var(--ink2);text-align:right}
 @media (max-width:520px){.task{grid-template-columns:28px 1fr 32px}.task .who,.task .who-ro{grid-column:2/3;grid-row:2}}
 
@@ -213,6 +241,7 @@ td input.n{text-align:right}
   <main id="main"><div class="glass empty"><h2>Đang tải chuyến đi…</h2></div></main>
 </div>
 <div id="modal"></div>
+<div id="lightbox"></div>
 <div class="toast glass" id="toast" hidden></div>
 
 <script>
@@ -318,6 +347,7 @@ async function init(){
   }
   let user=null;
   try{[db,user]=await Promise.all([window.claude?.use?.("db"),window.claude?.use?.("user")])}catch{db=null}
+  if(db){try{assets=await window.claude.use("assets")}catch{assets=null}}
   if(!db){mode="local";trips=localLoad();setStatus("Chuyến đi được lưu trên trình duyệt này");
     if(!Object.keys(trips).length){try{const r=await fetch("data/da-lat-3n2d.json");if(r.ok){trips.tdalat3n2d=await r.json();localSave()}}catch{}}
     pick();render();return}
@@ -393,7 +423,9 @@ function render(){
     return;
   }
   if(!Array.isArray(t.tasks)) t.tasks=defaultTasks();
-  m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):costHTML(t));
+  if(!Array.isArray(t.photos)) t.photos=[];
+  m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):costHTML(t));
+  if(tab==="album") hydrateMedia();
 }
 function renderList(){
   const ids=Object.keys(trips).sort(byRecent);
@@ -430,6 +462,7 @@ function heroHTML(t){
     <div class="seg" role="tablist">
       <button role="tab" aria-selected="${tab==="plan"}" data-tab="plan">Lịch trình</button>
       <button role="tab" aria-selected="${tab==="todo"}" data-tab="todo">Việc cần làm${t.tasks?.length?` · ${t.tasks.filter(x=>x.done).length}/${t.tasks.length}`:""}</button>
+      <button role="tab" aria-selected="${tab==="album"}" data-tab="album">Album${t.photos?.length?` · ${t.photos.length}`:""}</button>
       <button role="tab" aria-selected="${tab==="cost"}" data-tab="cost">Chi phí</button>
     </div></section>`;
 }
@@ -473,6 +506,100 @@ function planHTML(t){
     </section>`;
   }).join("")+(editing?`<div><button class="btn primary" data-act="dayAdd">+ Thêm ngày</button></div>`:"");
 }
+/* ---------- media storage ----------
+   claude.ai: shared artifact assets (ref "a:<id>", shown from /_blob/<id>)
+   elsewhere: this browser's IndexedDB (ref "i:<id>") */
+let assets=null, albumDay="all", uploading="";
+const blobUrls={};
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("sotay-media",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbOp(mode,fn){const d=await idb();return new Promise((res,rej)=>{const tx=d.transaction("files",mode);const q=fn(tx.objectStore("files"));tx.oncomplete=()=>res(q?.result);tx.onerror=()=>rej(tx.error)})}
+const sharedMedia=()=>mode==="db"&&!fbUser;
+async function compress(file){
+  if(!file.type.startsWith("image/")||file.type==="image/gif"||file.size<600000) return file;
+  try{
+    const bmp=await createImageBitmap(file); const k=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    const c=document.createElement("canvas"); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+    c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.82)); return b&&b.size<file.size?b:file;
+  }catch{return file}
+}
+async function putMedia(file){
+  const blob=await compress(file), type=file.type.startsWith("video/")?"video":"image";
+  if(sharedMedia()){
+    if(!assets) throw {code:"not_granted"};
+    if(blob.size>20*1024*1024) throw {code:"too_big"};
+    const r=await assets.upload(blob,blob.type?undefined:{type:"image/jpeg"}); return {ref:"a:"+r.id,type};
+  }
+  if(blob.size>200*1024*1024) throw {code:"too_big"};
+  const id=uid(); await idbOp("readwrite",s=>s.put(blob,id)); return {ref:"i:"+id,type};
+}
+async function delMedia(ref){
+  try{ if(ref.startsWith("a:")&&assets) await assets.delete(ref.slice(2));
+       if(ref.startsWith("i:")){await idbOp("readwrite",s=>s.delete(ref.slice(2)));URL.revokeObjectURL(blobUrls[ref]);delete blobUrls[ref]} }catch{}
+}
+function mediaSrc(ref){return ref.startsWith("a:")?"/_blob/"+ref.slice(2):(blobUrls[ref]||"")}
+async function hydrateMedia(){
+  for(const el of document.querySelectorAll("[data-ref^='i:']")){
+    const ref=el.dataset.ref;
+    if(!blobUrls[ref]){try{const b=await idbOp("readonly",s=>s.get(ref.slice(2)));if(b) blobUrls[ref]=URL.createObjectURL(b)}catch{}}
+    if(blobUrls[ref]){if(el.getAttribute("src")!==blobUrls[ref]) el.src=blobUrls[ref]}
+    else el.closest(".tile,.lbm")?.classList.add("gone");
+  }
+  document.querySelectorAll(".gone").forEach(x=>{x.classList.remove("gone");x.innerHTML='<div class="miss">Ảnh chỉ lưu trên máy của người đăng</div>'});
+}
+async function addFiles(files){
+  const t=trips[cur]; if(!t||!files.length) return;
+  const day=albumDay==="all"||albumDay==="none"?"":+albumDay; let ok=0, fail=[];
+  for(let i=0;i<files.length;i++){
+    uploading=`Đang tải ${i+1}/${files.length}…`; const u=$("#upst"); if(u) u.textContent=uploading;
+    try{const r=await putMedia(files[i]); t.photos.push({...r,caption:"",day,by:localUser?((window.LOCAL_NAMES||{})[localUser]||localUser):"",at:Date.now()}); ok++}
+    catch(e){fail.push(e?.code==="too_big"?"file quá lớn":e?.code==="unsupported_type"?"định dạng chưa hỗ trợ":e?.code==="quota_exceeded"?"hết dung lượng":"lỗi tải lên")}
+  }
+  uploading=""; save(cur,true); render();
+  toast(ok?`Đã thêm ${ok} ảnh/video`+(fail.length?`, ${fail.length} lỗi (${fail[0]})`:""):`Không tải được: ${fail[0]||""}`);
+}
+function canUpload(){return canWrite&&(!sharedMedia()||!!assets)}
+function tileHTML(x,k){
+  const cap=x.caption?`<span class="cap">${esc(x.caption)}</span>`:"";
+  const day=x.day!==""&&x.day!=null?`<span class="badge2">Ngày ${+x.day+1}</span>`:"";
+  if(x.type==="link"){let host="";try{host=new URL(x.url).hostname.replace(/^www\./,"")}catch{}
+    return `<a class="tile link" href="${esc(x.url)}" target="_blank" rel="noopener">${day}<b>↗</b><span>${esc(x.caption||host||"Link")}</span><small style="color:var(--ink3)">${esc(host)}</small></a>`}
+  const src=mediaSrc(x.ref);
+  const media=x.type==="video"?`<video data-ref="${esc(x.ref)}" ${src?`src="${src}#t=0.1"`:""} muted playsinline preload="metadata"></video><span class="play"><i></i></span>`
+    :`<img data-ref="${esc(x.ref)}" ${src?`src="${src}"`:""} alt="${esc(x.caption||"Ảnh chuyến đi")}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=miss>Không tải được ảnh</div>'">`;
+  return `<button class="tile" data-act="open" data-k2="${k}" aria-label="Xem ${esc(x.caption||"ảnh")}">${media}${day}${cap}</button>`;
+}
+function albumHTML(t){
+  const list=t.photos.map((x,k)=>[x,k]).filter(([x])=>albumDay==="all"||(albumDay==="none"?(x.day===""||x.day==null):String(x.day)===String(albumDay)));
+  const up=canUpload();
+  return `<section class="glass album">
+    <div class="album-h"><h3>Album</h3>
+      <select class="f" id="albumDay" aria-label="Lọc theo ngày"><option value="all">Tất cả (${t.photos.length})</option>${t.days.map((d,i)=>`<option value="${i}" ${String(albumDay)===String(i)?"selected":""}>Ngày ${i+1}${d.title?" · "+esc(d.title):""}</option>`).join("")}<option value="none" ${albumDay==="none"?"selected":""}>Chưa xếp ngày</option></select>
+      ${up?`<label class="btn primary upbtn">+ Thêm ảnh / video<input type="file" id="upfile" accept="image/*,video/*" multiple></label>`:""}
+    </div>
+    ${uploading?`<div class="sub" id="upst">${uploading}</div>`:`<div class="sub" id="upst">${up?(sharedMedia()?"Ảnh được nén tự động, cả nhóm cùng xem. Video tối đa 20MB, video dài nên dán link YouTube/Drive.":"Ảnh được nén tự động và lưu trên máy này. Video dài nên dán link YouTube/Drive."):(sharedMedia()?"Bạn cần quyền chỉnh sửa trang để đăng ảnh.":"")}</div>`}
+    ${canWrite?`<div class="linkrow"><input class="f" id="linkIn" placeholder="Dán link video YouTube, album Google Photos…" inputmode="url"><button class="btn" data-act="addLink">Thêm link</button></div>`:""}
+    ${list.length?`<div class="grid">${list.map(([x,k])=>tileHTML(x,k)).join("")}</div>`:`<div class="empty-day">${t.photos.length?"Ngày này chưa có ảnh.":"Chưa có ảnh nào. Bấm “Thêm ảnh / video” để chọn từ thư viện hoặc chụp bằng điện thoại."}</div>`}
+  </section>`;
+}
+function openLB(k){
+  const t=trips[cur], x=t.photos[k]; if(!x) return; const src=mediaSrc(x.ref);
+  const media=x.type==="video"?`<video class="lbm" data-ref="${esc(x.ref)}" ${src?`src="${src}"`:""} controls playsinline autoplay></video>`:`<img class="lbm" data-ref="${esc(x.ref)}" ${src?`src="${src}"`:""} alt="${esc(x.caption||"Ảnh")}">`;
+  $("#lightbox").innerHTML=`<div class="lb" data-lb>
+    <button class="btn icon x" data-act="lbClose" aria-label="Đóng">✕</button>${media}
+    <div class="glass panel">
+      ${canWrite?`<input class="f" data-k="photos.${k}.caption" value="${esc(x.caption)}" placeholder="Chú thích ảnh">
+      <div class="row3"><select class="f" data-k="photos.${k}.day" data-day aria-label="Thuộc ngày"><option value="">Chưa xếp ngày</option>${t.days.map((d,i)=>`<option value="${i}" ${String(x.day)===String(i)?"selected":""}>Ngày ${i+1}</option>`).join("")}</select>
+        <button class="btn danger" data-act="photoDel" data-k2="${k}">Xoá</button></div>`:`<div>${esc(x.caption||"")}</div>`}
+      <div class="sub">${x.by?esc(x.by)+" · ":""}${new Date(x.at||Date.now()).toLocaleDateString("vi-VN")}</div>
+    </div></div>`;
+  hydrateMedia();
+}
+function closeLB(){$("#lightbox").innerHTML="";if(tab==="album")render()}
+document.addEventListener("change",e=>{
+  if(e.target.id==="upfile"){addFiles([...e.target.files]);e.target.value=""}
+  if(e.target.id==="albumDay"){albumDay=e.target.value;render()}
+});
 function todoHTML(t){
   const n=t.tasks.length, d=t.tasks.filter(x=>x.done).length, ro=!canWrite;
   return `<section class="glass todo">
@@ -518,6 +645,7 @@ function sumHTML(t){
 document.addEventListener("input",e=>{
   const el=e.target, k=el.dataset?.k; if(!k||!cur) return; const t=trips[cur];
   let v=el.type==="checkbox"?el.checked:el.value;
+  if("day" in el.dataset) v=v===""?"":+v;
   if("money" in el.dataset){const raw=v.replace(/\D/g,"");v=raw?parseInt(raw,10):0;el.value=raw?v.toLocaleString("vi-VN"):""}
   else if("num" in el.dataset){v=Math.max(0,parseInt(v,10)||0)}
   setPath(t,k,v); save(cur);
@@ -553,6 +681,14 @@ document.addEventListener("click",e=>{
     case "taskAdd": t.tasks.push({text:"",done:false,who:""}); mut(); setTimeout(()=>{const l=document.querySelectorAll(".task .tx");l[l.length-1]?.focus()},0); break;
     case "taskDel": t.tasks.splice(+b.dataset.k2,1); mut(); break;
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
+    case "open": openLB(+b.dataset.k2); break;
+    case "lbClose": closeLB(); break;
+    case "photoDel": {
+      if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Bấm lần nữa để xoá";return}
+      const [x]=t.photos.splice(+b.dataset.k2,1); if(x?.ref) delMedia(x.ref); save(cur,true); closeLB(); toast("Đã xoá"); break}
+    case "addLink": {
+      const v=($("#linkIn")?.value||"").trim(); if(!/^https?:\/\//i.test(v)){toast("Hãy dán link bắt đầu bằng https://");return}
+      t.photos.push({type:"link",url:v,caption:"",day:albumDay==="all"||albumDay==="none"?"":+albumDay,by:localUser?((window.LOCAL_NAMES||{})[localUser]||localUser):"",at:Date.now()}); mut(); break}
   }
 });
 
@@ -589,7 +725,8 @@ function openDel(){
   $("#confirmDel").onclick=()=>{closeModal();removeTrip(cur)};
 }
 $("#modal").addEventListener("click",e=>{if(e.target.matches("[data-scrim]")||e.target.closest("[data-close]"))closeModal()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();if($("#lightbox").innerHTML)closeLB()}});
+$("#lightbox").addEventListener("click",e=>{if(e.target.matches("[data-lb]"))closeLB()});
 $("#newBtn").addEventListener("click",()=>openNew());
 
 init();
