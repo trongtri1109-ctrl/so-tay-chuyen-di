@@ -16,5 +16,14 @@ window.LOCAL_NAMES = {
   "tandat": "Tấn Đạt"
 };
 
-// Để trống apiKey: chưa dùng Firebase.
-window.FIREBASE_CONFIG = { apiKey: "" };
+// Firebase: dữ liệu chung cho cả nhóm (gói miễn phí Spark). Đây là cấu hình công khai của web app, không phải mật khẩu.
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDc3KWh1jkd7JxKMhaCHxK30nSSVzCKS1w",
+  authDomain: "so-tay-chuyen-di.firebaseapp.com",
+  projectId: "so-tay-chuyen-di",
+  storageBucket: "so-tay-chuyen-di.firebasestorage.app",
+  messagingSenderId: "923503178739",
+  appId: "1:923503178739:web:e2feddbdfbcf89b5fc5886"
+};
+// Tài khoản Firebase = tên đăng nhập + "@" + tên miền này (phải khớp với firestore.rules)
+window.FB_EMAIL_DOMAIN = "sotay-chuyen-di.app";
