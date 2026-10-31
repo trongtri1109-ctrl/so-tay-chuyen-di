@@ -121,7 +121,8 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .prog .tr{flex:1;height:6px;border-radius:3px;background:var(--field);overflow:hidden}
 .prog .tr i{display:block;height:100%;background:var(--good);border-radius:3px;transition:width .3s}
 .tasks{list-style:none;margin:10px 0 0;padding:0}
-.task{display:grid;grid-template-columns:28px 1fr 150px 32px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hair)}
+.task{display:grid;grid-template-columns:28px 1fr 32px;gap:6px 10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hair)}
+.task .whos{grid-column:2/3;grid-row:2}
 .task:last-child{border-bottom:0}
 .task>*{min-width:0}
 .ck{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink3);margin:0;cursor:pointer;display:grid;place-items:center;background:transparent}
@@ -256,7 +257,7 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .lb .row3 .f{flex:1;min-width:140px}
 .lb .x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);background:rgba(255,255,255,.2);color:#fff}
 .who-ro{font-size:13px;color:var(--ink2);text-align:right}
-@media (max-width:520px){.task{grid-template-columns:28px 1fr 32px}.task .who,.task .who-ro{grid-column:2/3;grid-row:2}}
+
 
 /* edit fields */
 .f{width:100%;border:0;border-radius:var(--r-sm);background:var(--field);padding:8px 10px;min-width:0}
@@ -328,6 +329,72 @@ td input.n{text-align:right}
   .edit-stop .row2{grid-template-columns:1fr}
   .stop{grid-template-columns:46px 1fr;gap:10px}
 }
+/* person picker */
+.pp-grid{display:flex;flex-wrap:wrap;gap:6px}
+.pp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);background:var(--glass-strong);border-radius:999px;padding:3px 10px 3px 3px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;min-height:30px}
+.pp .av{width:22px;height:22px;font-size:10px}
+.pp.fund{padding-left:10px}
+.pp[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pp[aria-pressed="true"] .av{box-shadow:0 0 0 2px #fff}
+.pp:disabled{cursor:default;opacity:.9}
+.segk{display:inline-grid;grid-auto-flow:column;background:var(--field);border-radius:10px;padding:3px}
+.segk button{border:0;background:transparent;border-radius:8px;padding:6px 14px;font-weight:600;font-size:13px;color:var(--ink)}
+.segk button[aria-pressed="true"]{background:var(--glass-strong);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.lform .full{grid-column:1/-1}
+.task .whos{grid-column:2/-1}
+.custom{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+.custom .f{min-width:0}
+/* tab bar (mobile) */
+.tabbar{display:none}
+@media (max-width:760px){
+  body{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 74px)}
+  .app{gap:12px;padding-block:10px 24px}
+  .side{border-radius:18px;padding:10px 12px;gap:8px}
+  .side-h h2{font-size:18px}
+  .status{display:none}
+  .acct{order:-1;padding:0}
+  .hero{padding:16px;gap:10px;border-radius:20px}
+  .hero h1{font-size:26px}
+  .hero .dest{font-size:14px}
+  .hero-top .actions .btn{padding:6px 12px;font-size:13px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none}
+  .hero .seg{display:none}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:15;
+    padding:6px max(6px,env(safe-area-inset-left,0px)) calc(env(safe-area-inset-bottom,0px) + 6px) max(6px,env(safe-area-inset-right,0px));
+    background:var(--glass-strong);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid var(--hair)}
+  .tabbar button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--ink3);padding:4px 0;min-width:0}
+  .tabbar button svg{width:22px;height:22px}
+  .tabbar button[aria-selected="true"]{color:var(--accent)}
+  .tabbar .badge3{font-size:9px;color:inherit;opacity:.8}
+  .glass{border-radius:18px}
+  .day,.todo,.album,.route,.gsec,.items{padding:14px}
+  .gitems{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(3,1fr);gap:6px}
+  .custom{grid-template-columns:1fr}
+  .toast{bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+  /* thu chi: bảng thành thẻ */
+  .ltable{min-width:0!important}
+  .ltable thead{display:none}
+  .ltable tr{display:grid;grid-template-columns:1fr auto;gap:6px 8px;padding:10px 0;border-bottom:1px solid var(--hair)}
+  .ltable td{display:block;border:0;padding:0;width:auto!important;min-width:0!important}
+  .ltable td.c-desc{grid-column:1/2}.ltable td.c-amt{grid-column:2/3;grid-row:1}
+  .ltable td.c-date{grid-column:1/2}.ltable td.c-cat{grid-column:2/3}
+  .ltable td.c-by{grid-column:1/2}.ltable td.c-del{grid-column:2/3;justify-self:end}
+  .ltable td.c-amt .f{width:120px}
+  .lform{grid-template-columns:1fr 1fr}
+  .lform .span2{grid-column:1/-1}
+  /* dự toán: thẻ */
+  .ctable{min-width:0!important}
+  .ctable thead{display:none}
+  .ctable tr{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;padding:10px 0;border-bottom:1px solid var(--hair)}
+  .ctable td{display:block;border:0;padding:0;width:auto!important}
+  .ctable td:first-child{grid-column:1/-1}
+  .rlist{max-height:none}
+  #routeMap{height:240px}
+  .sheet{border-radius:20px}
+}
 @media (prefers-reduced-motion:reduce){.wash i{transition:none}}
 </style>
 
@@ -344,6 +411,7 @@ td input.n{text-align:right}
 <div id="modal"></div>
 <div id="lightbox"></div>
 <div class="toast glass" id="toast" hidden></div>
+<nav class="tabbar" id="tabbar" aria-label="Các mục của chuyến đi"></nav>
 
 <script>
 const COLORS=["#0A84FF","#30B0C7","#34C759","#FF9F0A","#FF375F","#5E5CE6","#AC8E68"];
@@ -620,7 +688,23 @@ function render(){
   if(!Array.isArray(t.members)) t.members=defaultMembers(t);
   m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):tab==="guide"?guideHTML(t):tab==="ledger"?ledgerHTML(t):costHTML(t));
   if(tab==="album"||tab==="guide") hydrateMedia();
+  renderTabbar(t);
   if(tab==="guide"&&!editing) drawRouteMap(t);
+}
+
+const TAB_ICONS={
+ plan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ guide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+ todo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>',
+ album:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>',
+ ledger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>',
+ cost:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
+function renderTabbar(t){
+  const el=$("#tabbar"); if(!el) return;
+  if(!t||mode==="login-local"||mode==="denied"){el.innerHTML="";el.hidden=true;return} el.hidden=false;
+  const done=(t.tasks||[]).filter(x=>x.done).length, n=(t.tasks||[]).length;
+  const T=[["plan","Lịch trình"],["guide","Gợi ý"],["todo",n?`Việc ${done}/${n}`:"Việc"],["album","Album"],["ledger","Thu chi"],["cost","Dự toán"]];
+  el.innerHTML=T.map(([k,l])=>`<button data-tab="${k}" aria-selected="${tab===k}">${TAB_ICONS[k]}<span>${l}</span></button>`).join("");
 }
 function renderList(){
   const ids=Object.keys(trips).sort(byRecent);
@@ -872,6 +956,21 @@ async function pickItem(t,i,j){
     if(c){Object.assign(stop,c);x.lat=c.lat;x.lng=c.lng;sortRoute(t);save(cur);render()}
     else toast("Chưa tìm được vị trí, bấm “Đặt vị trí” rồi chạm lên bản đồ")}
 }
+
+async function addCustomPlace(t){
+  const name=($("#cp-name")?.value||"").trim(), addr=($("#cp-addr")?.value||"").trim(); if(!name){toast("Nhập tên địa điểm");return}
+  const stop={name,addr,note:"",src:"Địa điểm tự chọn",kind:"custom"};
+  // lưu vào danh sách "Địa điểm tự chọn" để lần sau chọn lại nhanh
+  let sec=t.guide.find(g=>g.kind==="custom"); if(!sec){sec={title:"Địa điểm tự chọn",kind:"custom",items:[]};t.guide.unshift(sec)}
+  let item=sec.items.find(x=>rkey(x)===rkey(stop)); if(!item){item={name,addr,note:"",time:""};sec.items.push(item)}
+  if(routeIndex(t,stop)<0){routeOf(t).push(stop)}
+  sortRoute(t); save(cur); render(); toast("Đang tìm vị trí…");
+  const c=await geocode(stop,t.destination);
+  const s2=routeOf(t).find(x=>rkey(x)===rkey(stop));
+  if(c&&s2){Object.assign(s2,c);item.lat=c.lat;item.lng=c.lng;sortRoute(t);save(cur);render();toast(`Đã thêm “${name}” vào lộ trình`)}
+  else{setLocIdx=routeOf(t).findIndex(x=>rkey(x)===rkey(stop));render();toast("Chưa tìm được vị trí, chạm lên bản đồ để đặt")}
+}
+document.addEventListener("submit",e=>{if(e.target.id==="customForm"){e.preventDefault();addCustomPlace(trips[cur])}});
 function routeHTML(t){
   const r=routeOf(t), km=routeKm(r);
   let prev=null;
@@ -889,7 +988,8 @@ function routeHTML(t){
       <div class="rfoot"><span class="sub">${r.length} điểm · khoảng ${(km*1.3).toFixed(1)} km đường đi (ước tính từ khoảng cách thẳng × 1,3)${setLocIdx>=0?` · <b>Chạm lên bản đồ để đặt vị trí “${esc(r[setLocIdx]?.name||"")}”</b>`:""}</span>
         <a class="btn" href="${gmapsDir(t,r)}" target="_blank" rel="noopener">Mở trên Google Maps</a>
         ${canWrite?`<button class="btn primary" data-act="rToPlan">Đưa vào Lịch trình Ngày ${routeDay+1}</button>`:""}</div>`
-    :`<p class="sub" style="margin:0">Bấm “+ Chọn vào lộ trình” ở các quán, địa điểm bên dưới. Trang tự sắp xếp theo đường đi gần nhất, đánh số 1-2-3 và vẽ bản đồ.</p>`}
+    :`<p class="sub" style="margin:0">Bấm “+ Chọn vào lộ trình” ở các quán, địa điểm bên dưới, hoặc gõ địa điểm bất kỳ vào ô dưới đây. Trang tự sắp xếp theo đường đi gần nhất, đánh số 1-2-3 và vẽ bản đồ.</p>`}
+    ${canWrite?`<form class="custom" id="customForm"><input class="f" id="cp-name" placeholder="Thêm địa điểm tự chọn: homestay, quán bạn biết…" required aria-label="Tên địa điểm"><input class="f" id="cp-addr" placeholder="Địa chỉ (nếu có)" aria-label="Địa chỉ"><button class="btn primary">+ Thêm vào Ngày ${routeDay+1}</button></form>`:""}
   </section>`;
 }
 function loadLeaflet(){
@@ -1022,7 +1122,13 @@ function ledgerCalc(t){
     if(debt[i].net<1)i++; if(cred[j].net<1)j++;}
   return {thu,chi,share,bal,fund,moves};
 }
+let lfKind="chi", lfBy="Quỹ";
+
+let _lfDraft=null;
+function keepLedgerDraft(){_lfDraft={d:$("#lf-date")?.value,s:$("#lf-desc")?.value,a:$("#lf-amt")?.value}}
+function restoreLedgerDraft(){if(!_lfDraft)return;if($("#lf-date"))$("#lf-date").value=_lfDraft.d||"";if($("#lf-desc"))$("#lf-desc").value=_lfDraft.s||"";if($("#lf-amt"))$("#lf-amt").value=_lfDraft.a||"";_lfDraft=null}
 function ledgerHTML(t){
+  if(lfKind==="thu"&&lfBy==="Quỹ") lfBy=memberList(t)[0]||"";
   const L=ledgerCalc(t), est=calc(t), ro=!canWrite;
   const opts=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
   const today=new Date().toISOString().slice(0,10);
@@ -1033,17 +1139,17 @@ function ledgerHTML(t){
       <label class="lbl">Ngày<input class="f" type="date" id="lf-date" value="${today}"></label>
       <label class="lbl span2">Nội dung<input class="f" id="lf-desc" placeholder="VD: Lẩu gà lá é" required></label>
       <label class="lbl">Số tiền<input class="f n" id="lf-amt" inputmode="numeric" placeholder="0" required></label>
-      <label class="lbl">Loại<select class="f" id="lf-kind"><option value="chi">Chi</option><option value="thu">Góp quỹ</option></select></label>
-      <label class="lbl">Ai trả / góp<select class="f" id="lf-by"><option>Quỹ</option>${opts(t.members)}</select></label>
-      <button class="btn primary">Thêm</button></form>`}
-    <div class="tbl"><table style="min-width:760px"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Danh mục</th><th>Ai</th><th class="num">Số tiền</th><th></th></tr></thead><tbody>
+      <div class="lbl">Loại<input type="hidden" id="lf-kind" value="${lfKind}"><div class="segk"><button type="button" data-act="lfKind" data-v="chi" aria-pressed="${lfKind==="chi"}">Chi</button><button type="button" data-act="lfKind" data-v="thu" aria-pressed="${lfKind==="thu"}">Góp quỹ</button></div></div>
+      <div class="lbl full">${lfKind==="thu"?"Ai góp":"Ai trả"}<input type="hidden" id="lf-by" value="${esc(lfBy)}">${peoplePick(t,{val:lfBy,fund:lfKind!=="thu",act:"lfBy"})}</div>
+      <button class="btn primary full">Thêm khoản</button></form>`}
+    <div class="tbl"><table class="ltable" style="min-width:820px"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Danh mục</th><th>Ai</th><th class="num">Số tiền</th><th></th></tr></thead><tbody>
     ${rows.length?rows.map(r=>`<tr>
-      <td style="width:120px">${ro?esc(r.date||""):`<input class="f" type="date" data-k="ledger.${r.k}.date" value="${esc(r.date||"")}" aria-label="Ngày">`}</td>
-      <td style="min-width:200px">${ro?esc(r.desc):`<input class="f" data-k="ledger.${r.k}.desc" value="${esc(r.desc)}" aria-label="Nội dung">`}</td>
-      <td style="width:130px">${r.kind==="thu"?`<span class="kind-thu">Góp quỹ</span>`:ro?esc(r.cat||""):`<select class="f" data-k="ledger.${r.k}.cat" aria-label="Danh mục">${opts(CATS,r.cat||"Khác")}</select>`}</td>
-      <td style="width:120px">${ro?esc(r.by||""):`<select class="f" data-k="ledger.${r.k}.by" data-relc aria-label="Ai trả">${r.kind==="thu"?"":"<option>Quỹ</option>"}${opts(t.members,r.by)}</select>`}</td>
-      <td class="num ${r.kind==="thu"?"kind-thu":"kind-chi"}" style="width:130px">${ro?(r.kind==="thu"?"+":"")+vnd(r.amount):`<input class="f n" inputmode="numeric" data-k="ledger.${r.k}.amount" data-money data-relc value="${(+r.amount||0).toLocaleString("vi-VN")}" aria-label="Số tiền">`}</td>
-      <td style="width:40px">${ro?"":`<button class="btn icon danger" data-act="lDel" data-k2="${r.k}" aria-label="Xoá dòng">✕</button>`}</td></tr>`).join("")
+      <td class="c-date" style="width:120px">${ro?esc(r.date||""):`<input class="f" type="date" data-k="ledger.${r.k}.date" value="${esc(r.date||"")}" aria-label="Ngày">`}</td>
+      <td class="c-desc" style="min-width:180px">${ro?esc(r.desc):`<input class="f" data-k="ledger.${r.k}.desc" value="${esc(r.desc)}" aria-label="Nội dung">`}</td>
+      <td class="c-cat" style="width:120px">${r.kind==="thu"?`<span class="kind-thu">Góp quỹ</span>`:ro?esc(r.cat||""):`<select class="f" data-k="ledger.${r.k}.cat" aria-label="Danh mục">${opts(CATS,r.cat||"Khác")}</select>`}</td>
+      <td class="c-by" style="width:230px">${peoplePick(t,{k:`ledger.${r.k}.by`,val:r.by,fund:r.kind!=="thu",ro})}</td>
+      <td class="num c-amt ${r.kind==="thu"?"kind-thu":"kind-chi"}" style="width:130px">${ro?(r.kind==="thu"?"+":"")+vnd(r.amount):`<input class="f n" inputmode="numeric" data-k="ledger.${r.k}.amount" data-money data-relc value="${(+r.amount||0).toLocaleString("vi-VN")}" aria-label="Số tiền">`}</td>
+      <td class="c-del" style="width:40px">${ro?"":`<button class="btn icon danger" data-act="lDel" data-k2="${r.k}" aria-label="Xoá dòng">✕</button>`}</td></tr>`).join("")
       :`<tr><td colspan="6" class="sub" style="padding:14px 6px">Chưa có khoản nào. Ghi lại mỗi lần góp quỹ hoặc chi tiêu để cuối chuyến tự chia tiền.</td></tr>`}
     </tbody></table></div>
     <div class="lbl" style="margin-top:12px">Thành viên chia tiền
@@ -1064,7 +1170,7 @@ function ledgerHTML(t){
 document.addEventListener("submit",e=>{
   if(e.target.id!=="ledgerForm") return; e.preventDefault();
   const t=trips[cur]; const amt=parseInt(($("#lf-amt").value||"").replace(/\D/g,""),10)||0; if(!amt){toast("Nhập số tiền");return}
-  const kind=$("#lf-kind").value; let by=$("#lf-by").value; if(kind==="thu"&&by==="Quỹ") by=t.members[0]||"";
+  const kind=lfKind; let by=lfBy; if(kind==="thu"&&by==="Quỹ") by=t.members[0]||"";
   t.ledger.push({date:$("#lf-date").value,desc:$("#lf-desc").value.trim(),amount:amt,kind,by,cat:kind==="thu"?"":guessCat($("#lf-desc").value)});
   save(cur,true); render(); toast("Đã ghi");
 });
@@ -1079,6 +1185,16 @@ function guessCat(s){s=s.toLowerCase();
 document.addEventListener("input",e=>{if(e.target.id==="lf-amt"){const r=e.target.value.replace(/\D/g,"");e.target.value=r?(+r).toLocaleString("vi-VN"):""}});
 document.addEventListener("change",e=>{if(e.target.matches("[data-relc]")&&tab==="ledger")render()});
 
+
+/* ---------- Chọn người bằng thanh lưới ---------- */
+function memberList(t){const m=(t.members&&t.members.length)?t.members:defaultMembers(t);return m}
+function userOfName(n){const L=window.LOCAL_NAMES||{};return Object.keys(L).find(u=>L[u]===n)||""}
+function ppAv(n){const u=userOfName(n), a=u?avatarOf(u):"";return a?`<img class="av" src="${a}" alt="">`:`<span class="av" aria-hidden="true">${esc((n||"?").trim().split(/\s+/).pop().charAt(0).toUpperCase())}</span>`}
+function peoplePick(t,{k,val,fund,ro,act="pp",multi}){
+  const sel=multi?String(val||"").split(",").map(x=>x.trim()).filter(Boolean):[val];
+  const btn=(n,isFund)=>`<button type="button" class="pp ${isFund?"fund":""}" data-act="${act}" ${k?`data-k="${k}"`:""} data-v="${esc(n)}" ${multi?"data-multi":""} aria-pressed="${sel.includes(n)}" ${ro?"disabled":""}>${isFund?"":ppAv(n)}${esc(n)}</button>`;
+  return `<div class="pp-grid" role="group">${fund?btn("Quỹ",true):""}${memberList(t).map(n=>btn(n)).join("")}</div>`;
+}
 function todoHTML(t){
   const n=t.tasks.length, d=t.tasks.filter(x=>x.done).length, ro=!canWrite;
   return `<section class="glass todo">
@@ -1088,7 +1204,7 @@ function todoHTML(t){
       <input type="checkbox" class="ck" data-k="tasks.${k}.done" ${x.done?"checked":""} ${ro?"disabled":""} aria-label="Đánh dấu đã xong">
       ${ro?`<span class="tx task-ro">${esc(x.text)}</span><span class="who-ro">${esc(x.who||"")}</span><span></span>`:`
       <input class="f tx" data-k="tasks.${k}.text" value="${esc(x.text)}" aria-label="Tên việc">
-      <input class="f who" data-k="tasks.${k}.who" value="${esc(x.who||"")}" placeholder="Ai lo?" aria-label="Người phụ trách">
+      <div class="whos">${peoplePick(t,{k:`tasks.${k}.who`,val:x.who,multi:true})}</div>
       <button class="btn icon danger" data-act="taskDel" data-k2="${k}" aria-label="Xoá việc">✕</button>`}
     </li>`).join("")}</ul>`:`<div class="empty-day">Chưa có việc nào.</div>`}
     ${ro?"":`<div class="add-row"><button class="btn sm" data-act="taskAdd">+ Thêm việc</button>${d?`<button class="btn sm" data-act="taskClear">Xoá việc đã xong</button>`:""}</div>`}
@@ -1099,7 +1215,7 @@ function costHTML(t){
   return `<div class="costs">
     <section class="glass items">
       <div class="items-h"><h3>Các khoản chi</h3>${canWrite?`<button class="btn sm" data-act="itemAdd">+ Thêm khoản</button>`:""}</div>
-      <div class="tbl"><table><thead><tr><th>Khoản</th><th class="num">Đơn giá</th><th class="num">SL</th><th>Tính theo</th><th class="num">Thành tiền</th><th></th></tr></thead><tbody>
+      <div class="tbl"><table class="ctable"><thead><tr><th>Khoản</th><th class="num">Đơn giá</th><th class="num">SL</th><th>Tính theo</th><th class="num">Thành tiền</th><th></th></tr></thead><tbody>
       ${c.rows.map((r,k)=>`<tr>
         <td><input class="f" data-k="items.${k}.label" value="${esc(r.label)}" ${ro} aria-label="Tên khoản"></td>
         <td style="width:130px"><input class="f n" inputmode="numeric" data-k="items.${k}.amount" data-money value="${(+r.amount||0).toLocaleString("vi-VN")}" ${ro} aria-label="Đơn giá"></td>
@@ -1135,7 +1251,7 @@ document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(k&&(/\.uni
 document.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   if(b.dataset.trip){cur=b.dataset.trip;editing=false;route();render();window.scrollTo({top:0});return}
-  if(b.dataset.tab){tab=b.dataset.tab;render();return}
+  if(b.dataset.tab){tab=b.dataset.tab;render();if(b.closest("#tabbar"))window.scrollTo({top:0});return}
   if(b.dataset.color){trips[cur].color=b.dataset.color;save(cur);render();return}
   const a=b.dataset.act; if(!a) return;
   if(a==="new"){openNew();return}
@@ -1165,6 +1281,13 @@ document.addEventListener("click",e=>{
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
     case "pick": pickItem(t,i,j); break;
+    case "pp": {const k=b.dataset.k,v=b.dataset.v; if(!k)break;
+      if("multi" in b.dataset){const cur0=String(getPath(t,k)||"").split(",").map(x=>x.trim()).filter(Boolean);const nx=cur0.includes(v)?cur0.filter(x=>x!==v):[...cur0,v];setPath(t,k,nx.join(", "))}
+      else setPath(t,k,v);
+      mut(); break}
+    case "lfKind": lfKind=b.dataset.v; lfBy=lfKind==="thu"?(memberList(t)[0]||""):"Quỹ"; keepLedgerDraft(); render(); restoreLedgerDraft(); break;
+    case "lfBy": lfBy=b.dataset.v; keepLedgerDraft(); render(); restoreLedgerDraft(); break;
+    case "customAdd": addCustomPlace(t); break;
     case "gImgDel": {const x=t.guide[i].items[j]; if(x.img) delMedia(x.img); delete x.img; mut(); break}
     case "rSort": sortRoute(t); mut(); break;
     case "rDel": routeOf(t).splice(+b.dataset.k2,1); setLocIdx=-1; sortRoute(t); mut(); break;
