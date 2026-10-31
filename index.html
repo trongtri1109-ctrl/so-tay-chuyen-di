@@ -748,7 +748,7 @@ body.landing .hero2{padding-top:3vh}
   .dayswitch .dpill{min-width:150px}
 }
 @media (min-width:2200px){
-  body:not(.landing) .app{max-width:min(2000px,90vw);zoom:1.18}
+  body:not(.landing) .app{max-width:min(2000px,88vw);zoom:1.18}
   .slist{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (min-width:2200px){body.landing .app{zoom:1.25}}
@@ -1322,14 +1322,38 @@ function heroHTML(t){
 const pin='<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
 
 /* ---------- Ảnh địa điểm tự động (ảnh minh hoạ từ Wikipedia, giấy phép mở) ---------- */
-const WIMG_KEY="sotay-wimg-v1"; let wimg={}; try{wimg=JSON.parse(localStorage.getItem(WIMG_KEY)||"{}")}catch{}
+const WIMG_KEY="sotay-wimg-v2"; let wimg={}; try{localStorage.removeItem("sotay-wimg-v1");wimg=JSON.parse(localStorage.getItem(WIMG_KEY)||"{}")}catch{}
 let wimgBusy=false;
 function wkey(name,dest){return (String(name||"")+"|"+(dest||"")).toLowerCase().trim()}
-function cleanQ(n){return String(n||"").replace(/^(ăn sáng|ăn trưa|ăn tối|uống|ghé|dạo|đi|tham quan|chụp|săn mây|về|gửi đồ ở|trả phòng,?)\s+/i,"").replace(/\(.*?\)/g,"").split(/,| hoặc | và |·|→/)[0].trim()}
-async function wikiThumb(q,lang){
-  const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&gsrsearch=${encodeURIComponent(q)}&prop=pageimages&piprop=thumbnail&pithumbsize=480`;
-  const r=await fetch(u).then(r=>r.json()); const pg=r?.query?.pages&&Object.values(r.query.pages)[0];
-  return pg?.thumbnail?.source||"";
+function cleanQ(n){return String(n||"").replace(/^(ăn sáng|ăn trưa|ăn tối|ăn vặt|uống|ghé|dạo|đi|tham quan|chụp|săn mây|về|gửi đồ ở|trả phòng,?)\s+/i,"").replace(/\(.*?\)/g,"").split(/,| hoặc | và |·|→/)[0].trim()}
+function noTone(s){return String(s||"").toLowerCase().replace(/đ/g,"d").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
+/* Món ăn: lấy ảnh của chính món đó (trang Wikipedia đúng tên món), không đoán theo tên quán */
+const DISHES=[
+ ["banh canh",["vi:Bánh canh","en:Bánh canh"]],["banh can",["vi:Bánh căn","en:Bánh căn"]],["banh mi",["vi:Bánh mì Việt Nam","en:Bánh mì"]],
+ ["bun bo",["vi:Bún bò Huế","en:Bún bò Huế"]],["pho",["vi:Phở","en:Phở"]],["banh xeo",["vi:Bánh xèo","en:Bánh xèo"]],
+ ["banh trang nuong",["vi:Bánh tráng nướng","en:Bánh tráng"]],["banh trang",["vi:Bánh tráng","en:Bánh tráng"]],["nem nuong",["vi:Nem nướng","en:Nem nướng"]],
+ ["com tam",["vi:Cơm tấm","en:Cơm tấm"]],["hu tieu",["vi:Hủ tiếu","en:Hủ tiếu"]],["banh beo",["vi:Bánh bèo","en:Bánh bèo"]],
+ ["banh cuon",["vi:Bánh cuốn","en:Bánh cuốn"]],["banh uot",["vi:Bánh cuốn","en:Bánh cuốn"]],["mi quang",["vi:Mì Quảng","en:Mì Quảng"]],
+ ["xiu mai",["vi:Xíu mại","en:Siu mai"]],["sua dau",["vi:Sữa đậu nành","en:Soy milk"]],["lau",["vi:Lẩu","en:Hot pot"]],
+ ["oc",["vi:Ốc (thực phẩm)","en:Escargot"]],["che",["vi:Chè","en:Chè"]],["kem",["vi:Kem","en:Ice cream"]],["banh flan",["vi:Bánh flan","en:Crème caramel"]],
+ ["bun rieu",["vi:Bún riêu","en:Bún riêu"]],["bun cha",["vi:Bún chả","en:Bún chả"]],["banh bao",["vi:Bánh bao","en:Baozi"]],["ga nuong",["vi:Gà nướng","en:Grilled chicken"]],
+ ["tra sua",["vi:Trà sữa trân châu","en:Bubble tea"]],["dau tay",["vi:Dâu tây","en:Strawberry"]],["atiso",["vi:Atisô","en:Artichoke"]],
+ ["ca phe",["en:Vietnamese iced coffee","vi:Cà phê"]],["cafe",["en:Vietnamese iced coffee","vi:Cà phê"]],["coffee",["en:Vietnamese iced coffee","vi:Cà phê"]]];
+function dishOf(q){const n=" "+noTone(q)+" ";for(const [k,t] of DISHES){if(n.includes(" "+k+" "))return t}return null}
+async function wikiApi(lang,params){const u=`https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=480&${params}`;
+  const r=await fetch(u).then(r=>r.json()); return r?.query?.pages?Object.values(r.query.pages):[]}
+async function wikiTitle(spec){const [lang,title]=spec.split(":");const pg=(await wikiApi(lang,"titles="+encodeURIComponent(title)))[0];return pg&&!("missing" in pg)?(pg.thumbnail?.source||""):""}
+/* Địa danh: chỉ nhận trang có tên khớp (mọi chữ trong tên trang đều có trong tên địa điểm) để tránh ảnh sai */
+async function wikiPlace(q,city){
+  const qs=new Set(noTone(q+" "+city).split(" ")), qo=new Set(noTone(q).split(" "));
+  for(const lang of ["vi","en"]){
+    const exact=await wikiTitle(lang+":"+q); if(exact) return exact;
+    const pages=await wikiApi(lang,"generator=search&gsrlimit=5&gsrsearch="+encodeURIComponent(q+(city?" "+city:"")));
+    pages.sort((a,b)=>(a.index||0)-(b.index||0));
+    for(const pg of pages){const tt=noTone(String(pg.title).replace(/\(.*?\)/g,"")).split(" ").filter(Boolean);
+      if(tt.length>=2&&tt.every(w=>qs.has(w))&&tt.filter(w=>qo.has(w)).length>=2&&pg.thumbnail?.source) return pg.thumbnail.source}
+  }
+  return "";
 }
 function paintWiki(k){const u=wimg[k];if(!u)return;
   document.querySelectorAll("[data-wq]").forEach(x=>{if(x.dataset.wq===k&&!x.querySelector("img")){x.insertAdjacentHTML("afterbegin",`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.parentNode.querySelector('.cr')?.remove();this.remove()"><span class="cr">Wikipedia</span>`)}})}
@@ -1341,8 +1365,11 @@ async function hydrateWikiImgs(){
     for(const k of keys){
       const i=k.lastIndexOf("|"), name=k.slice(0,i), dest=k.slice(i+1), q=cleanQ(name), city=(dest||"").split(",")[0].trim();
       let url="";
-      try{url=await wikiThumb(q+(city?" "+city:""),"vi")||await wikiThumb(q,"vi")||await wikiThumb(q+(city?" "+city:""),"en")}catch{url=null}
-      if(url===null) break; // không gọi được (bị chặn) thì dừng, giữ biểu tượng
+      try{const d=dishOf(q);
+        if(d){for(const sp of d){url=await wikiTitle(sp);if(url)break}}
+        else url=await wikiPlace(q,city);
+      }catch{url=null}
+      if(url===null) break;
       wimg[k]=url; try{localStorage.setItem(WIMG_KEY,JSON.stringify(wimg))}catch{}
       paintWiki(k);
     }
