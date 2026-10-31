@@ -128,6 +128,45 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .task .tx:focus,.task .who:focus{background:var(--field)}
 .task .who{font-size:13px;padding:6px 8px}
 .task-ro{font-size:15px}
+/* guide */
+.guide{display:flex;flex-direction:column;gap:16px}
+.gsec{padding:18px 20px 12px}
+.gsec-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid var(--hair)}
+.gsec-h h3{font-size:19px;flex:1;min-width:0}
+.gcount{font-size:12px;color:var(--ink3);font-weight:600}
+.gitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+.gitem{background:var(--glass-strong);border:1px solid var(--hair);border-radius:var(--r-md);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.gitem b{font-size:15px;font-weight:600}
+.gitem p{margin:0;color:var(--ink2);font-size:13.5px}
+.gitem .gm{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12.5px;color:var(--ink3);align-items:center;margin-top:2px}
+.gedit{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 0;border-bottom:1px solid var(--hair)}
+.gedit .full{grid-column:1/-1}
+.gedit .tools{flex-direction:row;justify-content:flex-end;grid-column:1/-1}
+/* ledger */
+.ledger{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.ledger>*{min-width:0}
+.lform{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;margin-bottom:6px}
+.lform>*{min-width:0}
+.lform .span2{grid-column:span 2}
+.lform .lbl{font-size:11px}
+.kind-thu{color:var(--good);font-weight:600}
+.kind-chi{color:var(--ink)}
+.bal{display:flex;flex-direction:column;gap:8px;padding-top:8px;border-top:1px solid var(--hair)}
+.balrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.balrow small{grid-column:1/-1;color:var(--ink3);font-size:11.5px}
+.pos{color:var(--good);font-weight:600}.neg{color:var(--warn);font-weight:600}
+.settle{font-size:13px;display:flex;flex-direction:column;gap:4px}
+.members{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.members .chip{display:inline-flex;gap:6px;align-items:center}
+.members .chip button{border:0;background:transparent;color:var(--ink3);padding:0;cursor:pointer}
+@media (max-width:860px){.ledger{grid-template-columns:1fr}}
+@media (max-width:520px){.lform{grid-template-columns:1fr 1fr}.lform .span2{grid-column:1/-1}}
+/* account */
+.av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex:none;background:var(--accent);color:#fff;display:inline-grid;place-items:center;font-weight:700;font-size:12px}
+.av.big{width:84px;height:84px;font-size:30px}
+.acct .who{display:flex;align-items:center;gap:8px;min-width:0;border:0;background:transparent;padding:0;cursor:pointer;color:inherit;font:inherit}
+.acct .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avrow{display:flex;gap:14px;align-items:center}
 /* album */
 .album{padding:18px 20px 20px;display:flex;flex-direction:column;gap:14px}
 .album-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -326,9 +365,53 @@ function signOut(){if(localUser){try{localStorage.removeItem("sotay-session")}ca
 let localUser=null;
 async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 function sessionGet(){try{return JSON.parse(localStorage.getItem("sotay-session")||"null")}catch{return null}}
+function userHash(u){try{return localStorage.getItem("sotay-pw-"+u)||window.LOCAL_USERS[u]}catch{return window.LOCAL_USERS[u]}}
+function avatarOf(u){try{return localStorage.getItem("sotay-avatar-"+u)||""}catch{return ""}}
+function nameOf(u){return (window.LOCAL_NAMES||{})[u]||u}
+function avHTML(u,big){const a=avatarOf(u);return a?`<img class="av${big?" big":""}" src="${a}" alt="">`:`<span class="av${big?" big":""}" aria-hidden="true">${esc(nameOf(u).trim().split(/\s+/).pop().charAt(0).toUpperCase())}</span>`}
+function openAccount(){
+  const u=localUser;
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><div class="glass sheet" role="dialog" aria-modal="true">
+    <h2>Tài khoản</h2>
+    <div class="avrow">${avHTML(u,true)}<div style="display:flex;flex-direction:column;gap:6px">
+      <b>${esc(nameOf(u))}</b><span class="sub">Tên đăng nhập: ${esc(u)}</span>
+      <div class="actions"><label class="btn sm upbtn">Đổi ảnh đại diện<input type="file" id="avfile" accept="image/*"></label>${avatarOf(u)?`<button class="btn sm" data-act="avDel">Xoá ảnh</button>`:""}</div></div></div>
+    <form id="pwForm" style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--hair);padding-top:12px">
+      <b>Đổi mật khẩu</b>
+      <label class="lbl">Mật khẩu hiện tại<input class="f" type="password" id="pw-old" autocomplete="current-password" required></label>
+      <label class="lbl">Mật khẩu mới<input class="f" type="password" id="pw-new" autocomplete="new-password" minlength="6" required></label>
+      <label class="lbl">Nhập lại mật khẩu mới<input class="f" type="password" id="pw-new2" autocomplete="new-password" required></label>
+      <div class="badge over" id="pw-msg" hidden></div>
+      <div class="foot"><button type="button" class="btn" data-close>Đóng</button><button class="btn primary">Lưu mật khẩu</button></div>
+    </form><div id="pw-done"></div></div></div>`;
+}
+document.addEventListener("submit",async e=>{
+  if(e.target.id!=="pwForm") return; e.preventDefault();
+  const u=localUser, msg=$("#pw-msg"); msg.hidden=true;
+  const old=await sha("so-tay-v1:"+u+":"+$("#pw-old").value);
+  if(old!==userHash(u)){msg.textContent="Mật khẩu hiện tại chưa đúng.";msg.hidden=false;return}
+  const a=$("#pw-new").value,b=$("#pw-new2").value;
+  if(a.length<6){msg.textContent="Mật khẩu mới cần ít nhất 6 ký tự.";msg.hidden=false;return}
+  if(a!==b){msg.textContent="Hai lần nhập mật khẩu mới không khớp.";msg.hidden=false;return}
+  const h=await sha("so-tay-v1:"+u+":"+a);
+  try{localStorage.setItem("sotay-pw-"+u,h);localStorage.setItem("sotay-session",JSON.stringify({u,h}))}catch{}
+  e.target.reset();
+  $("#pw-done").innerHTML=`<div class="badge ok">Đã đổi mật khẩu trên trình duyệt này.</div>
+    <p class="sub">Để mật khẩu mới dùng được trên mọi máy, gửi dòng dưới cho Trí cập nhật vào file config.js:</p>
+    <code style="display:block;overflow-x:auto;background:var(--field);padding:8px;border-radius:8px;font-size:12px;user-select:all">"${esc(u)}": "${h}",</code>
+    <button class="btn sm" data-act="copyHash" data-h='"${esc(u)}": "${h}",'>Sao chép</button>`;
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id!=="avfile"||!e.target.files[0]) return;
+  try{const bmp=await createImageBitmap(e.target.files[0]);const S=160,k=Math.max(S/bmp.width,S/bmp.height);
+    const c=document.createElement("canvas");c.width=c.height=S;const w=bmp.width*k,h=bmp.height*k;
+    c.getContext("2d").drawImage(bmp,(S-w)/2,(S-h)/2,w,h);
+    localStorage.setItem("sotay-avatar-"+localUser,c.toDataURL("image/jpeg",.85));toast("Đã cập nhật ảnh đại diện");openAccount();render()}
+  catch{toast("Không đọc được ảnh này")}
+});
 async function localLogin(u,p){
   u=u.trim().toLowerCase(); const h=await sha("so-tay-v1:"+u+":"+p);
-  if(window.LOCAL_USERS[u]!==h) return false;
+  if(!window.LOCAL_USERS[u]||userHash(u)!==h) return false;
   try{localStorage.setItem("sotay-session",JSON.stringify({u,h}))}catch{}
   location.reload(); return true;
 }
@@ -342,7 +425,7 @@ async function init(){
   if(window.firebase&&window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey){initFirebase();return}
   if(window.LOCAL_USERS&&Object.keys(window.LOCAL_USERS).length){
     const s=sessionGet();
-    if(!(s&&window.LOCAL_USERS[s.u]&&window.LOCAL_USERS[s.u]===s.h)){mode="login-local";canWrite=false;setStatus("Chưa đăng nhập");render();$("#lg-user")?.focus();return}
+    if(!(s&&window.LOCAL_USERS[s.u]&&userHash(s.u)===s.h)){mode="login-local";canWrite=false;setStatus("Chưa đăng nhập");render();$("#lg-user")?.focus();return}
     localUser=s.u;
   }
   let user=null;
@@ -400,7 +483,8 @@ function render(){
   renderList();
   const m=$("#main");
   const who=fbUser?.email||(localUser&&((window.LOCAL_NAMES||{})[localUser]||localUser));
-  $("#acct").innerHTML=who?`<span>${esc(who)}</span><button class="btn sm" data-act="signout">Đăng xuất</button>`:"";
+  $("#acct").innerHTML=localUser?`<button class="who" data-act="account" title="Tài khoản">${avHTML(localUser)}<span>${esc(who)}</span></button><button class="btn sm" data-act="signout">Đăng xuất</button>`
+    :who?`<span>${esc(who)}</span><button class="btn sm" data-act="signout">Đăng xuất</button>`:"";
   if(mode==="login-local"){
     m.innerHTML=`<form class="glass sheet" id="loginForm" style="margin:40px auto">
       <h2>Đăng nhập Sổ Tay Chuyến Đi</h2>
@@ -424,7 +508,10 @@ function render(){
   }
   if(!Array.isArray(t.tasks)) t.tasks=defaultTasks();
   if(!Array.isArray(t.photos)) t.photos=[];
-  m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):costHTML(t));
+  if(!Array.isArray(t.guide)) t.guide=defaultGuide(t);
+  if(!Array.isArray(t.ledger)) t.ledger=[];
+  if(!Array.isArray(t.members)) t.members=defaultMembers(t);
+  m.innerHTML=heroHTML(t)+(tab==="plan"?planHTML(t):tab==="todo"?todoHTML(t):tab==="album"?albumHTML(t):tab==="guide"?guideHTML(t):tab==="ledger"?ledgerHTML(t):costHTML(t));
   if(tab==="album") hydrateMedia();
 }
 function renderList(){
@@ -461,9 +548,11 @@ function heroHTML(t){
       <span class="chip">≈ <b>${vnd(c.pp)}</b> / người</span></div>`}
     <div class="seg" role="tablist">
       <button role="tab" aria-selected="${tab==="plan"}" data-tab="plan">Lịch trình</button>
+      <button role="tab" aria-selected="${tab==="guide"}" data-tab="guide">Gợi ý</button>
       <button role="tab" aria-selected="${tab==="todo"}" data-tab="todo">Việc cần làm${t.tasks?.length?` · ${t.tasks.filter(x=>x.done).length}/${t.tasks.length}`:""}</button>
       <button role="tab" aria-selected="${tab==="album"}" data-tab="album">Album${t.photos?.length?` · ${t.photos.length}`:""}</button>
-      <button role="tab" aria-selected="${tab==="cost"}" data-tab="cost">Chi phí</button>
+      <button role="tab" aria-selected="${tab==="ledger"}" data-tab="ledger">Thu chi</button>
+      <button role="tab" aria-selected="${tab==="cost"}" data-tab="cost">Dự toán</button>
     </div></section>`;
 }
 const pin='<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
@@ -600,6 +689,121 @@ document.addEventListener("change",e=>{
   if(e.target.id==="upfile"){addFiles([...e.target.files]);e.target.value=""}
   if(e.target.id==="albumDay"){albumDay=e.target.value;render()}
 });
+
+/* ---------- Gợi ý ---------- */
+const POSE_DEFAULT=[{"title": "Dáng pose chụp đơn", "kind": "pose", "items": [{"name": "Đi bộ rồi ngoảnh lại", "note": "Người chụp đứng phía trước, chụp liên tục khi bạn bước tới và quay đầu cười.", "addr": "", "time": ""}, {"name": "Tựa lan can nhìn xa", "note": "Đứng nghiêng 45°, một tay vịn lan can, mắt nhìn về thung lũng, chụp ngang tầm ngực.", "addr": "", "time": ""}, {"name": "Ngồi bậc thang ôm gối", "note": "Chọn bậc gỗ hoặc bậc đá, ngồi lệch một bên khung hình, để khoảng trống phía nhìn.", "addr": "", "time": ""}, {"name": "Ly cà phê che nửa mặt", "note": "Hai tay cầm ly ấm, đưa lên ngang môi, mắt nhìn ống kính. Hợp quán gỗ ánh vàng.", "addr": "", "time": ""}, {"name": "Góc nghiêng bên cửa sổ", "note": "Ngồi sát cửa sổ cho ánh sáng tự nhiên rọi một bên mặt, nhìn ra ngoài.", "addr": "", "time": ""}, {"name": "Chụp từ dưới lên rừng thông", "note": "Người chụp ngồi thấp, chĩa máy lên để chân dài và thấy ngọn thông, trời xanh.", "addr": "", "time": ""}, {"name": "Khoác áo, tay đút túi", "note": "Áo khoác dáng dài, đứng giữa đường thông hoặc hẻm dốc, bước nhẹ về phía máy.", "addr": "", "time": ""}]}, {"title": "Dáng pose chụp đôi", "kind": "pose", "items": [{"name": "Nắm tay kéo đi trước", "note": "Một người đi trước ngoảnh lại, tay kéo người kia, máy chụp từ phía sau người bị kéo.", "addr": "", "time": ""}, {"name": "Tựa vai ngắm thung lũng", "note": "Chụp từ phía sau lưng hai người, khung cảnh đồi núi chiếm 2/3 ảnh.", "addr": "", "time": ""}, {"name": "Cụng ly cà phê", "note": "Chụp cận tay và hai ly, nền mờ là view quán.", "addr": "", "time": ""}, {"name": "Bóng đen hoàng hôn", "note": "Đứng ngược sáng lúc mặt trời sắp lặn, giảm sáng trên điện thoại để chỉ còn dáng người.", "addr": "", "time": ""}, {"name": "Chung một áo khoác", "note": "Một người khoác áo rộng, choàng qua người kia, cười nhìn nhau.", "addr": "", "time": ""}, {"name": "Đi giữa đường đồi chè", "note": "Hai người nhỏ giữa luống chè, chụp từ xa bằng zoom 2x–3x cho hậu cảnh nén lại.", "addr": "", "time": ""}]}, {"title": "Chụp phong cảnh và nhóm", "kind": "pose", "items": [{"name": "Người nhỏ giữa khung cảnh lớn", "note": "Đặt người ở 1/3 khung hình, để đồi chè, mây hoặc hồ chiếm phần lớn ảnh.", "addr": "", "time": ""}, {"name": "Đóng khung bằng cửa sổ, vòm cây", "note": "Dùng khung cửa, vòm lá thông làm viền tự nhiên cho cảnh phía xa.", "addr": "", "time": ""}, {"name": "Biển mây lúc bình minh", "note": "Đến trước 5h30, chụp ngược sáng, khoá phơi sáng vào vùng trời.", "addr": "", "time": ""}, {"name": "Cả nhóm cùng nhảy", "note": "Chế độ chụp liên tục, đếm 1-2-3, chụp từ thấp lên cho nhảy cao hơn.", "addr": "", "time": ""}, {"name": "Giờ vàng", "note": "Ánh sáng đẹp nhất khoảng 6h–7h sáng và 16h30–17h30 chiều.", "addr": "", "time": ""}, {"name": "Toàn cảnh thành phố về đêm", "note": "Tựa điện thoại lên lan can cho chắc tay, bật chế độ chụp đêm.", "addr": "", "time": ""}]}];
+const DALAT_GUIDE=[{"title": "Ăn sáng", "kind": "food", "items": [{"name": "Bánh căn Lệ", "note": "Bánh căn trứng, xíu mại, chấm nước mắm mỡ hành.", "addr": "27/44 Yersin, P. Xuân Hương", "time": "7:00–11:00"}, {"name": "Bánh mì xíu mại Hồng", "note": "Bánh mì chấm chén xíu mại nóng.", "addr": "72 Yersin, P. Xuân Hương", "time": "6:00–12:00"}, {"name": "Bún bò Bà Sồi", "note": "Bún bò quen của người địa phương.", "addr": "51/6 Phan Đình Phùng", "time": "6:00–11:00"}, {"name": "Phở Uyên", "note": "Phở bò, đi sớm đỡ đợi.", "addr": "167 Xô Viết Nghệ Tĩnh", "time": "6:00–11:00"}, {"name": "Bánh canh cá lóc An", "note": "Bánh canh cá lóc, nước dùng ngọt.", "addr": "21/9 Trần Phú", "time": "6:30–19:00"}]}, {"title": "Cà phê buổi sáng, săn mây", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Bình Minh Ơi", "note": "Mở từ rất sớm để ngắm bình minh, mây.", "addr": "89 Hoàng Hoa Thám, P. Xuân Hương", "time": "Từ 4:30"}, {"name": "Cầu Đất Panorama", "note": "Săn mây trên đồi chè, cách trung tâm khoảng 25 km, đường đèo sáng sớm nhiều sương.", "addr": "QL20, khu đồi chè Trạm Hành", "time": "4:30–18:00"}, {"name": "Cheo Veooo", "note": "Bình minh sương dày, nhìn xuống thung lũng và thành phố.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": "24/7"}, {"name": "Thuỷ Tạ", "note": "Quán nằm trên mặt hồ Xuân Hương, đẹp lúc bình minh.", "addr": "Hồ Xuân Hương, trung tâm", "time": ""}, {"name": "Cà phê Tùng", "note": "Quán xưa từ thập niên 60, không gian hoài cổ.", "addr": "6 khu Hoà Bình", "time": ""}]}, {"title": "Ăn trưa", "kind": "food", "items": [{"name": "Lẩu gà lá é Tao Ngộ", "note": "Món nên thử nhất, gọi nồi lớn cho nhóm.", "addr": "", "time": ""}, {"name": "Bò tay cầm Kim Gia", "note": "Bò tay cầm, bò nướng, bò nhúng ớt.", "addr": "65 Quang Trung", "time": "8:30–21:30"}, {"name": "Mì trộn A Sỹ", "note": "Mì trộn trứng lòng đào.", "addr": "66 KQH Nguyễn Lương Bằng", "time": "7:00–19:30"}, {"name": "Bánh ướt lòng gà Hằng", "note": "Bánh ướt, lòng gà, gà xé.", "addr": "39 Đồng Tâm", "time": "12:30–19:00"}, {"name": "Cơm niêu Fresh", "note": "Cơm niêu, hợp nhóm đông.", "addr": "90 Vạn Thành", "time": "7:00–17:00"}, {"name": "Lẩu Mà La", "note": "Hơn 10 loại nước lẩu.", "addr": "24 Nguyễn Văn Cừ", "time": "10:00–22:00"}]}, {"title": "Cà phê chiều, chụp hoàng hôn", "kind": "cafe", "items": [{"name": "Tiệm Cà Phê Góc của Tùng", "note": "Ngoại ô phía nam, đồi thông, nổi tiếng ngắm hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo", "note": "Hoàng hôn rồi đèn thành phố lên. Mang áo khoác, trời lạnh nhanh.", "addr": "116 Hùng Vương, hẻm Dã Chiến", "time": ""}, {"name": "In The Forest", "note": "Thung lũng thông dốc, đẹp nhất ngay trước hoàng hôn.", "addr": "", "time": ""}, {"name": "Tiệm Cà Phê Hoàng Hôn Chiều", "note": "Ngắm hoàng hôn vùng Trại Mát.", "addr": "Dốc số 9, Trại Mát", "time": "5:00–20:00"}, {"name": "Túi Mơ To", "note": "Thung lũng nhà kính, lúc lên đèn buổi tối rất lạ mắt.", "addr": "Phía đông trung tâm", "time": ""}, {"name": "Lưng Chừng", "note": "Lưng đồi dưới đèo Prenn, nhìn thung lũng xanh.", "addr": "Gần đèo Prenn", "time": ""}]}, {"title": "Quán, điểm hot gần đây", "kind": "hot", "items": [{"name": "Hoa Điền Sơn Trang", "note": "Đồi dã quỳ (đúng mùa tháng 11), điểm “bàn tay” khổng lồ.", "addr": "Tiểu khu 159, P.5", "time": ""}, {"name": "Lò Sấy Coffee Store", "note": "Trên sườn đồi, ngắm đèn thành phố và sao ban đêm.", "addr": "", "time": ""}, {"name": "Kong Coffee", "note": "Sân thượng nhìn thung lũng nhà kính và núi xa.", "addr": "Rìa phía đông thành phố", "time": ""}, {"name": "Tuyệt Tình Cốc", "note": "Hồ nước xanh ngọc giữa vách đá.", "addr": "Xã Lát, Lạc Dương", "time": ""}, {"name": "Ngôi nhà lá phong", "note": "Nhà nhiều mái, hàng nghìn cây phong.", "addr": "", "time": ""}]}, {"title": "Địa điểm chụp ảnh đẹp", "kind": "photo", "items": [{"name": "Bức tường vàng Cối Xay Gió", "note": "Phông vàng vintage, ngay đối diện Cà phê Tùng.", "addr": "Khu Hoà Bình", "time": ""}, {"name": "Ga Đà Lạt", "note": "Nhà ga kiến trúc Pháp, toa tàu cũ.", "addr": "1 Quang Trung", "time": ""}, {"name": "Đồi chè Cầu Đất", "note": "Luống chè xếp tầng, săn mây sáng sớm.", "addr": "Cầu Đất", "time": ""}, {"name": "Phim trường Secret Garden", "note": "Nhà gỗ dưới rừng thông, cầu gỗ, bè trên hồ Tuyền Lâm.", "addr": "Gần làng Đất Sét", "time": ""}, {"name": "Chùa Linh Phước", "note": "Rồng khảm mảnh chai, tháp chuông cao.", "addr": "Trại Mát", "time": ""}, {"name": "Hồ Xuân Hương lúc bình minh", "note": "Sương trên mặt hồ, ít người.", "addr": "Trung tâm", "time": ""}]}, {"title": "Góc chụp đẹp ở quán", "kind": "photo", "items": [{"name": "Cà phê Tùng: bàn gỗ cũ trong góc", "note": "Bàn ghế cũ mang dấu thời gian, tranh bạc màu trên tường, hợp ảnh hoài cổ.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: cận cảnh phin nhỏ giọt", "note": "Chụp macro phin và ly trên bàn gỗ. Quán đèn mờ, nên ngồi gần cửa và đi ban ngày.", "addr": "", "time": ""}, {"name": "Cà phê Tùng: ra bức tường vàng đối diện", "note": "Ngay trước tiệm bánh Cối Xay Gió, phông vàng sáng, bù cho trong quán tối.", "addr": "", "time": ""}, {"name": "Cheo Veooo: mỏm đá chìa ra", "note": "Bộ bàn ghế đặt sẵn trên mỏm đá, góc ảnh và video được săn nhiều nhất.", "addr": "", "time": ""}, {"name": "Cheo Veooo: hiên ngoài và tầng 2", "note": "Nhìn rộng ra đồi núi và hồ Xuân Hương, đẹp lúc bình minh và hoàng hôn.", "addr": "", "time": ""}, {"name": "Cheo Veooo: cửa sổ, chậu hoa, kệ sách", "note": "Góc trong nhà gỗ, hợp trang phục vintage. Quán nhỏ, nên đến sớm.", "addr": "", "time": ""}]}];
+function defaultGuide(t){
+  const base=/đà\s*lạt|da\s*lat/i.test((t.destination||"")+" "+(t.name||""))?DALAT_GUIDE
+    :["Ăn sáng","Cà phê buổi sáng","Ăn trưa","Cà phê chiều, ngắm hoàng hôn","Quán, điểm hot gần đây","Địa điểm chụp ảnh đẹp"].map(title=>({title,items:[]}));
+  return structuredClone([...base,...POSE_DEFAULT]);
+}
+function guideHTML(t){
+  const dest=t.destination||"";
+  return `<div class="guide">${t.guide.map((g,i)=>{
+    if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span></div>
+      ${g.items.length?`<div class="gitems">${g.items.map(x=>`<div class="gitem"><b>${esc(x.name)}</b>${x.note?`<p>${esc(x.note)}</p>`:""}
+        ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
+        ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${mapUrl(x.addr?x.name+", "+x.addr:x.name,dest)}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}</div>`).join("")}</div>`
+      :`<div class="empty-day">Chưa có mục nào${canWrite?". Bấm Sửa để thêm.":""}</div>`}</section>`;
+    return `<section class="glass gsec"><div class="gsec-h">
+        <input class="f title" style="flex:1" data-k="guide.${i}.title" value="${esc(g.title)}" aria-label="Tên danh sách">
+        <button class="btn icon danger" data-act="gsecDel" data-i="${i}" aria-label="Xoá danh sách">✕</button></div>
+      ${g.items.map((x,j)=>`<div class="gedit">
+        <input class="f" style="font-weight:600" data-k="guide.${i}.items.${j}.name" value="${esc(x.name)}" placeholder="Tên quán, địa điểm, dáng pose">
+        <input class="f" data-k="guide.${i}.items.${j}.time" value="${esc(x.time||"")}" placeholder="Giờ mở cửa">
+        <textarea class="f full" rows="1" data-k="guide.${i}.items.${j}.note" placeholder="Ghi chú: món ngon, góc chụp, mẹo…">${esc(x.note||"")}</textarea>
+        <input class="f full" data-k="guide.${i}.items.${j}.addr" value="${esc(x.addr||"")}" placeholder="Địa chỉ">
+        <div class="tools"><button class="btn icon" data-act="gUp" data-i="${i}" data-j="${j}" ${j===0?"disabled":""} aria-label="Lên">↑</button>
+          <button class="btn icon danger" data-act="gDel" data-i="${i}" data-j="${j}" aria-label="Xoá mục">✕</button></div></div>`).join("")}
+      <div class="add-row"><button class="btn sm" data-act="gAdd" data-i="${i}">+ Thêm mục</button></div></section>`;
+  }).join("")}${editing?`<div><button class="btn primary" data-act="gsecAdd">+ Thêm danh sách</button></div>`:""}
+  <p class="sub" style="margin:0">Giờ mở cửa và địa chỉ là thông tin tham khảo, nên kiểm tra lại trên Google Maps trước khi đi.</p></div>`;
+}
+
+/* ---------- Thu chi ---------- */
+const CATS=["Ăn uống","Lưu trú","Di chuyển","Vé tham quan","Cà phê","Mua sắm","Khác"];
+function defaultMembers(t){
+  const names=Object.values(window.LOCAL_NAMES||{});
+  if(names.length) return names.slice(0,Math.max(names.length,0));
+  return Array.from({length:Math.max(1,+t.people||1)},(_,i)=>"Người "+(i+1));
+}
+function ledgerCalc(t){
+  const mem=t.members, n=Math.max(1,mem.length);
+  let thu=0, chi=0; const paid={}, put={}; mem.forEach(m=>{paid[m]=0;put[m]=0});
+  t.ledger.forEach(r=>{const a=+r.amount||0;
+    if(r.kind==="thu"){thu+=a; if(r.by in put) put[r.by]+=a}
+    else{chi+=a; if(r.by&&r.by!=="Quỹ"&&r.by in paid) paid[r.by]+=a}});
+  const share=chi/n;
+  const bal=mem.map(m=>({m,put:put[m],paid:paid[m],net:put[m]+paid[m]-share}));
+  // quỹ còn dư (tiền góp chưa chi) chia đều lại theo tỷ lệ là phần của mỗi người đã được tính trong net
+  const cred=bal.filter(b=>b.net>0.5).map(b=>({...b})).sort((a,b)=>b.net-a.net);
+  const debt=bal.filter(b=>b.net<-0.5).map(b=>({...b,net:-b.net})).sort((a,b)=>b.net-a.net);
+  const fund=thu-t.ledger.filter(r=>r.kind!=="thu"&&(r.by==="Quỹ"||!r.by)).reduce((a,r)=>a+(+r.amount||0),0);
+  if(fund>0.5) debt.unshift({m:"Quỹ chung",net:fund}); else if(fund<-0.5) cred.unshift({m:"Quỹ chung",net:-fund});
+  const moves=[]; let i=0,j=0;
+  while(i<debt.length&&j<cred.length){const x=Math.min(debt[i].net,cred[j].net);
+    moves.push(`${debt[i].m} → ${cred[j].m}: ${vnd(x)}`); debt[i].net-=x; cred[j].net-=x;
+    if(debt[i].net<1)i++; if(cred[j].net<1)j++;}
+  return {thu,chi,share,bal,fund,moves};
+}
+function ledgerHTML(t){
+  const L=ledgerCalc(t), est=calc(t), ro=!canWrite;
+  const opts=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
+  const today=new Date().toISOString().slice(0,10);
+  const rows=t.ledger.map((r,k)=>({...r,k})).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||b.k-a.k);
+  return `<div class="ledger"><section class="glass items">
+    <div class="items-h"><h3>Thu chi thực tế</h3></div>
+    ${ro?"":`<form class="lform" id="ledgerForm">
+      <label class="lbl">Ngày<input class="f" type="date" id="lf-date" value="${today}"></label>
+      <label class="lbl span2">Nội dung<input class="f" id="lf-desc" placeholder="VD: Lẩu gà lá é" required></label>
+      <label class="lbl">Số tiền<input class="f n" id="lf-amt" inputmode="numeric" placeholder="0" required></label>
+      <label class="lbl">Loại<select class="f" id="lf-kind"><option value="chi">Chi</option><option value="thu">Góp quỹ</option></select></label>
+      <label class="lbl">Ai trả / góp<select class="f" id="lf-by"><option>Quỹ</option>${opts(t.members)}</select></label>
+      <button class="btn primary">Thêm</button></form>`}
+    <div class="tbl"><table style="min-width:760px"><thead><tr><th>Ngày</th><th>Nội dung</th><th>Danh mục</th><th>Ai</th><th class="num">Số tiền</th><th></th></tr></thead><tbody>
+    ${rows.length?rows.map(r=>`<tr>
+      <td style="width:120px">${ro?esc(r.date||""):`<input class="f" type="date" data-k="ledger.${r.k}.date" value="${esc(r.date||"")}" aria-label="Ngày">`}</td>
+      <td style="min-width:200px">${ro?esc(r.desc):`<input class="f" data-k="ledger.${r.k}.desc" value="${esc(r.desc)}" aria-label="Nội dung">`}</td>
+      <td style="width:130px">${r.kind==="thu"?`<span class="kind-thu">Góp quỹ</span>`:ro?esc(r.cat||""):`<select class="f" data-k="ledger.${r.k}.cat" aria-label="Danh mục">${opts(CATS,r.cat||"Khác")}</select>`}</td>
+      <td style="width:120px">${ro?esc(r.by||""):`<select class="f" data-k="ledger.${r.k}.by" data-relc aria-label="Ai trả">${r.kind==="thu"?"":"<option>Quỹ</option>"}${opts(t.members,r.by)}</select>`}</td>
+      <td class="num ${r.kind==="thu"?"kind-thu":"kind-chi"}" style="width:130px">${ro?(r.kind==="thu"?"+":"")+vnd(r.amount):`<input class="f n" inputmode="numeric" data-k="ledger.${r.k}.amount" data-money data-relc value="${(+r.amount||0).toLocaleString("vi-VN")}" aria-label="Số tiền">`}</td>
+      <td style="width:40px">${ro?"":`<button class="btn icon danger" data-act="lDel" data-k2="${r.k}" aria-label="Xoá dòng">✕</button>`}</td></tr>`).join("")
+      :`<tr><td colspan="6" class="sub" style="padding:14px 6px">Chưa có khoản nào. Ghi lại mỗi lần góp quỹ hoặc chi tiêu để cuối chuyến tự chia tiền.</td></tr>`}
+    </tbody></table></div>
+    <div class="lbl" style="margin-top:12px">Thành viên chia tiền
+      <div class="members">${t.members.map((m,i)=>`<span class="chip">${esc(m)}${ro?"":`<button data-act="memDel" data-i="${i}" aria-label="Bỏ ${esc(m)}">✕</button>`}</span>`).join("")}
+      ${ro?"":`<input class="f" id="memIn" style="width:140px" placeholder="Thêm người"><button class="btn sm" data-act="memAdd">Thêm</button>`}</div></div>
+  </section>
+  <aside class="glass sum">
+    <div class="lbl2">Đã chi</div><div class="big">${vnd(L.chi)}</div>
+    <div class="sub">Góp quỹ ${vnd(L.thu)} · Quỹ còn ${vnd(L.fund)}</div>
+    <div class="sub">Mỗi người ${vnd(L.share)} (${t.members.length} người)</div>
+    ${est.total?`<div class="badge ${L.chi<=est.total?"ok":"over"}">${L.chi<=est.total?`Đã dùng ${Math.round(L.chi/est.total*100)}% dự toán (${vnd(est.total)})`:`Vượt dự toán ${vnd(L.chi-est.total)}`}</div>`:""}
+    <div class="bal">${L.bal.map(b=>`<div class="balrow"><span>${esc(b.m)}</span><span class="${b.net>=0?"pos":"neg"}">${b.net>=0?"+":"−"}${vnd(Math.abs(b.net))}</span>
+      <small>góp ${vnd(b.put)} · trả hộ ${vnd(b.paid)}</small></div>`).join("")}</div>
+    <div class="settle"><div class="lbl2">Cần chuyển để cân bằng</div>${L.moves.length?L.moves.map(x=>`<div>${esc(x)}</div>`).join(""):`<div class="sub">Đã cân bằng.</div>`}</div>
+    <p class="sub" style="margin:0">Số dương là được nhận lại, số âm là cần đưa thêm. Khoản chi ghi “Quỹ” được trừ vào tiền góp chung.</p>
+  </aside></div>`;
+}
+document.addEventListener("submit",e=>{
+  if(e.target.id!=="ledgerForm") return; e.preventDefault();
+  const t=trips[cur]; const amt=parseInt(($("#lf-amt").value||"").replace(/\D/g,""),10)||0; if(!amt){toast("Nhập số tiền");return}
+  const kind=$("#lf-kind").value; let by=$("#lf-by").value; if(kind==="thu"&&by==="Quỹ") by=t.members[0]||"";
+  t.ledger.push({date:$("#lf-date").value,desc:$("#lf-desc").value.trim(),amount:amt,kind,by,cat:kind==="thu"?"":guessCat($("#lf-desc").value)});
+  save(cur,true); render(); toast("Đã ghi");
+});
+function guessCat(s){s=s.toLowerCase();
+  if(/cà phê|cafe|cf|trà sữa/.test(s))return "Cà phê";
+  if(/phòng|homestay|khách sạn|ks\b/.test(s))return "Lưu trú";
+  if(/xe|xăng|grab|taxi|vé xe|máy bay|bus/.test(s))return "Di chuyển";
+  if(/vé|tour|cáp treo|tham quan/.test(s))return "Vé tham quan";
+  if(/quà|mua|đặc sản|chợ/.test(s))return "Mua sắm";
+  if(/ăn|lẩu|bánh|bún|phở|cơm|nướng|nhậu|bia/.test(s))return "Ăn uống";
+  return "Khác"}
+document.addEventListener("input",e=>{if(e.target.id==="lf-amt"){const r=e.target.value.replace(/\D/g,"");e.target.value=r?(+r).toLocaleString("vi-VN"):""}});
+document.addEventListener("change",e=>{if(e.target.matches("[data-relc]")&&tab==="ledger")render()});
+
 function todoHTML(t){
   const n=t.tasks.length, d=t.tasks.filter(x=>x.done).length, ro=!canWrite;
   return `<section class="glass todo">
@@ -662,6 +866,9 @@ document.addEventListener("click",e=>{
   if(a==="new"){openNew();return}
   if(a==="signin"){signIn();return}
   if(a==="signout"){signOut();return}
+  if(a==="account"){openAccount();return}
+  if(a==="avDel"){try{localStorage.removeItem("sotay-avatar-"+localUser)}catch{};openAccount();render();return}
+  if(a==="copyHash"){navigator.clipboard?.writeText(b.dataset.h).then(()=>toast("Đã sao chép")).catch(()=>toast("Hãy bôi đen dòng trên để sao chép"));return}
   if(a==="sample"){fetch("data/da-lat-3n2d.json").then(r=>r.json()).then(t=>{t.updatedAt=Date.now();trips.tdalat3n2d=t;cur="tdalat3n2d";route();save(cur,true);render()}).catch(()=>toast("Không tải được chuyến mẫu"));return}
   const t=trips[cur]; const i=+b.dataset.i, j=+b.dataset.j;
   const mut=()=>{save(cur);render()};
@@ -682,6 +889,14 @@ document.addEventListener("click",e=>{
     case "taskDel": t.tasks.splice(+b.dataset.k2,1); mut(); break;
     case "taskClear": t.tasks=t.tasks.filter(x=>!x.done); mut(); break;
     case "open": openLB(+b.dataset.k2); break;
+    case "gAdd": t.guide[i].items.push({name:"",note:"",addr:"",time:""}); mut(); break;
+    case "gDel": t.guide[i].items.splice(j,1); mut(); break;
+    case "gUp": {const a=t.guide[i].items;[a[j-1],a[j]]=[a[j],a[j-1]];mut();break}
+    case "gsecAdd": t.guide.push({title:"Danh sách mới",items:[]}); mut(); break;
+    case "gsecDel": t.guide.splice(i,1); mut(); break;
+    case "lDel": t.ledger.splice(+b.dataset.k2,1); mut(); break;
+    case "memAdd": {const v=($("#memIn")?.value||"").trim(); if(v&&!t.members.includes(v)){t.members.push(v);mut()} break}
+    case "memDel": t.members.splice(i,1); mut(); break;
     case "lbClose": closeLB(); break;
     case "photoDel": {
       if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Bấm lần nữa để xoá";return}
