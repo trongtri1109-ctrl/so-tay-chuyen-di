@@ -739,6 +739,19 @@ body.landing .hero2{padding-top:3vh}
 .lerr{display:flex;gap:8px;align-items:center;padding:10px 12px;border-radius:12px;font-size:14px;font-weight:600;color:#fff;background:#E5484D;box-shadow:0 6px 18px rgba(229,72,77,.35)}
 .lerr::before{content:"!";flex:none;width:20px;height:20px;border-radius:50%;background:#fff;color:#E5484D;display:grid;place-items:center;font-weight:800;font-size:13px}
 .lerr[hidden]{display:none}
+
+/* v28: màn hình rộng / ultrawide dùng hết bề ngang */
+@media (min-width:1500px){
+  body:not(.landing) .app{max-width:min(1760px,94vw);grid-template-columns:300px 1fr;gap:24px}
+  .slist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .srow:not(:last-child)::after{display:none}
+  .dayswitch .dpill{min-width:150px}
+}
+@media (min-width:2200px){
+  body:not(.landing) .app{max-width:min(2000px,90vw);zoom:1.18}
+  .slist{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:2200px){body.landing .app{zoom:1.25}}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
