@@ -885,6 +885,10 @@ body.landing .hero2{padding-top:3vh}
 .dist{align-self:flex-start;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--field);color:var(--ink2);font-variant-numeric:tabular-nums}
 .dist.near{background:var(--good-bg);color:var(--good)}.dist.far{background:var(--warn-bg);color:var(--warn)}.dist.none{opacity:.7;font-weight:500}
 @media (max-width:760px){.stay{grid-template-columns:auto 1fr}.stay .sact{grid-column:1/-1;justify-content:flex-start}.sform{grid-template-columns:1fr}}
+
+.spick{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.sp-h{display:flex;justify-content:space-between;align-items:center;gap:10px}.sp-h .pen{margin:0}
+#stayMap{height:340px;border-radius:14px;overflow:hidden;cursor:crosshair}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1221,7 +1225,7 @@ function render(){
   if(tab==="album"||tab==="guide"||tab==="plan") hydrateMedia();
   if(tab==="plan"||tab==="guide") setTimeout(hydrateWikiImgs,50);
   renderTabbar(t);
-  if(tab==="guide"&&!editing){drawRouteMap(t); if(stayOf(t)) setTimeout(()=>geoQueue(t),800)}
+  if(tab==="guide"&&!editing){drawRouteMap(t); if(stayPick) drawStayMap(t); if(stayOf(t)) setTimeout(()=>geoQueue(t),800)}
   if((editing&&(tab==="plan"||tab==="guide"))||editInfo) m.insertAdjacentHTML("beforeend",`<div class="donebar" role="status"><span>Đang chỉnh sửa</span><button class="btn primary sm" data-act="editDone">Xong</button></div>`);
   if(editFocus){const [f,i]=editFocus;editFocus=null;const el=m.querySelectorAll(f==="day"?"section.day":"section.gsec")[i];
     if(el){requestAnimationFrame(()=>{el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.add("edit-flash")})}}
@@ -1841,21 +1845,38 @@ function distBadge(t,x){const d=stayDist(t,x);if(d==null)return stayOf(t)&&x.nam
   return `<span class="dist ${cls}" title="Ước tính từ nơi ở">${fmtKm(d)} · ~${min} phút xe máy</span>`}
 function guideOrder(t,g){const idx=g.items.map((_,j)=>j);if(!t.staySort||!stayOf(t)||g.kind==="pose")return idx;
   return idx.sort((a,b)=>{const da=stayDist(t,g.items[a]),db=stayDist(t,g.items[b]);return (da==null?1e9:da)-(db==null?1e9:db)})}
-function parseLatLng(s){const m=String(s||"").match(/@?(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);return m?{lat:+(+m[1]).toFixed(5),lng:+(+m[2]).toFixed(5)}:null}
+function parseLatLng(s){s=decodeURIComponent(String(s||""));
+  const pats=[/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/[?&](?:q|query|ll|center|destination|daddr)=(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/,/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/,/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/];
+  for(const re of pats){const m=s.match(re);if(m){const lat=+m[1],lng=+m[2];if(Math.abs(lat)<=90&&Math.abs(lng)<=180)return {lat:+lat.toFixed(5),lng:+lng.toFixed(5)}}}
+  return null}
+const isShortMaps=s=>/maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs/i.test(s||"");
 function stayHTML(t){
   const st=t.stay;
   if(st&&!stayEdit) return `<section class="glass stay"><span class="sic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-5h6v5M8 9h.01M12 9h.01M16 9h.01M8 13h.01M16 13h.01"/></svg></span>
-    <div class="stx"><small>Nơi ở cố định</small><b>${esc(st.name)}</b>${st.addr?`<span>${esc(st.addr)}</span>`:""}${hasGeo(st)?"":`<span class="warn-t">Chưa tìm được vị trí. Bấm Sửa và dán link Google Maps của chỗ ở.</span>`}</div>
+    <div class="stx"><small>Nơi ở cố định</small><b>${esc(st.name)}</b>${st.addr?`<span>${esc(st.addr)}</span>`:""}${hasGeo(st)?"":`<span class="warn-t">Chưa có vị trí chính xác. Bấm <b>Chọn trên bản đồ</b> rồi chạm vào chỗ ở.</span>`}</div>
     <div class="sact">${hasGeo(st)?`<label class="tgl"><input type="checkbox" id="staySort" ${t.staySort?"checked":""}> Xếp gần → xa</label>`:""}
-      ${canWrite?`<button class="pen" data-act="stayEdit">Sửa</button>`:""}${hasGeo(st)?`<a class="pen" href="${mapUrl(st.name+(st.addr?", "+st.addr:""),t.destination)}" target="_blank" rel="noopener">Bản đồ</a>`:""}</div></section>`;
+      ${canWrite?`<button class="pen" data-act="stayPick">${hasGeo(st)?"Chỉnh vị trí":"Chọn trên bản đồ"}</button><button class="pen" data-act="stayEdit">Sửa</button>`:""}${hasGeo(st)?`<a class="pen" href="${mapUrl(st.name+(st.addr?", "+st.addr:""),t.destination)}" target="_blank" rel="noopener">Bản đồ</a>`:""}</div></section>`;
   if(!canWrite) return "";
   return `<form class="glass stay edit" id="stayForm"><span class="sic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-5h6v5M8 9h.01M12 9h.01M16 9h.01M8 13h.01M16 13h.01"/></svg></span>
     <div class="stx"><b>Bạn ở khách sạn / homestay nào?</b><small>Nhập vào, mỗi gợi ý bên dưới sẽ hiện cách chỗ ở bao nhiêu km để dễ chọn.</small>
       <div class="sform"><input class="f" id="st-name" placeholder="Tên chỗ ở, VD: Homestay Đồi Thông" value="${esc(st?.name||"")}" required>
-      <input class="f" id="st-addr" placeholder="Địa chỉ, hoặc dán link Google Maps" value="${esc(st?.addr||"")}">
+      <input class="f" id="st-addr" placeholder="Địa chỉ, link Google Maps, hoặc toạ độ 11.94, 108.44" value="${esc(st?.addr||"")}">
       <button class="btn primary">Lưu</button>${st?`<button type="button" class="btn" data-act="stayCancel">Huỷ</button><button type="button" class="btn danger" data-act="stayDel">Bỏ nơi ở</button>`:""}</div></div></form>`;
 }
-let stayEdit=false, geoQueueBusy=false;
+let stayEdit=false, geoQueueBusy=false, stayPick=false, _smap=null;
+function stayPickHTML(){return stayPick?`<section class="glass spick"><div class="sp-h"><b>Chạm vào bản đồ đúng chỗ bạn ở</b><button class="pen" data-act="stayPickOff">Xong</button></div><input class="f" id="sp-q" placeholder="Tìm nhanh: gõ tên đường / khu vực rồi Enter"><div id="stayMap"></div></section>`:""}
+async function drawStayMap(t){const el=document.getElementById("stayMap");if(!el)return;
+  try{await loadLeaflet()}catch{el.innerHTML='<div class="miss">Không tải được bản đồ</div>';return}
+  if(_smap){try{_smap.remove()}catch{}_smap=null}
+  const st=t.stay||{}; const c=hasGeo(st)?[st.lat,st.lng]:[11.9404,108.4583];
+  _smap=L.map(el,{zoomAnimation:false,fadeAnimation:false}).setView(c,hasGeo(st)?16:13);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/"+(isDark()?"dark_all":"light_all")+"/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap © CARTO"}).addTo(_smap);
+  let mk=hasGeo(st)?L.marker(c,{icon:L.divIcon({className:"",html:'<div class="pinnum start">⌂</div>',iconSize:[0,0]})}).addTo(_smap):null;
+  _smap.on("click",e=>{t.stay=t.stay||{name:"Nơi ở"};t.stay.lat=+e.latlng.lat.toFixed(5);t.stay.lng=+e.latlng.lng.toFixed(5);
+    if(mk)mk.setLatLng(e.latlng);else mk=L.marker(e.latlng,{icon:L.divIcon({className:"",html:'<div class="pinnum start">⌂</div>',iconSize:[0,0]})}).addTo(_smap);
+    t.guide.forEach(g=>g.items.forEach(x=>delete x.geoTried)); save(cur,true); toast("Đã đặt vị trí chỗ ở. Bấm Xong khi vừa ý")});
+  const q=document.getElementById("sp-q"); if(q) q.onkeydown=async ev=>{if(ev.key!=="Enter")return;ev.preventDefault();const r=await geocode({name:q.value},t.destination);if(r)_smap.setView([r.lat,r.lng],17);else toast("Không tìm thấy, hãy kéo bản đồ và chạm trực tiếp")};
+}
 async function geoQueue(t){ // tìm vị trí cho các gợi ý chưa có toạ độ (chậm rãi, 1 lượt/giây)
   if(geoQueueBusy||!stayOf(t)) return; geoQueueBusy=true; let n=0;
   try{for(const g of t.guide){if(g.kind==="pose")continue;for(const x of g.items){if(hasGeo(x)||!x.name||x.geoTried)continue;
@@ -1867,7 +1888,10 @@ document.addEventListener("submit",async e=>{
   const t=trips[cur], name=$("#st-name").value.trim(), addrRaw=$("#st-addr").value.trim(); if(!name) return;
   const ll=parseLatLng(addrRaw), addr=/^https?:/i.test(addrRaw)?"":addrRaw;
   t.stay={name,addr}; if(ll) Object.assign(t.stay,ll); stayEdit=false; save(cur,true); render();
-  if(!ll){toast("Đang tìm vị trí chỗ ở…"); const c=await geocode(t.stay,t.destination); if(c){Object.assign(t.stay,c);save(cur,true);render();toast("Đã có vị trí chỗ ở")} else toast("Chưa tìm được, hãy dán link Google Maps có toạ độ")}
+  if(!ll){ if(isShortMaps(addrRaw)) toast("Link rút gọn không chứa toạ độ. Đang thử tìm theo tên…"); else toast("Đang tìm vị trí chỗ ở…");
+    const c=await geocode(t.stay,t.destination);
+    if(c){Object.assign(t.stay,c);save(cur,true);render();toast("Đã có vị trí chỗ ở, kiểm tra lại bằng nút Chỉnh vị trí")}
+    else{stayPick=true;render();toast("Chưa tìm được tự động, chạm vào bản đồ để chọn chỗ ở")}}
   geoQueue(t);
 });
 document.addEventListener("change",e=>{if(e.target.id==="staySort"){const t=trips[cur];t.staySort=e.target.checked;save(cur);render()}});
@@ -2001,7 +2025,7 @@ document.addEventListener("change",e=>{if(e.target.matches("[data-gimg]")&&e.tar
 
 function guideHTML(t){
   const dest=t.destination||"";
-  return `<div class="guide">${editing?"":stayHTML(t)+routeHTML(t)}${t.guide.map((g,i)=>{
+  return `<div class="guide">${editing?"":stayHTML(t)+stayPickHTML()+routeHTML(t)}${t.guide.map((g,i)=>{
     if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span>${canWrite?`<button class="pen" data-act="editAt" data-f="gsec" data-i="${i}" aria-label="Sửa danh sách ${esc(g.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}</div>
       ${g.items.length?`<div class="gitems">${guideOrder(t,g).map(j=>{const x=g.items[j];const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${!x.img&&g.kind!=="pose"&&x.name?`<div class="gthumb" data-wq="${esc(wkey(x.name,t.destination))}"></div>`:""}${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${g.kind!=="pose"?distBadge(t,x):""}${x.note?`<p>${esc(x.note)}</p>`:""}
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr?`<span>${esc(x.addr)}</span>`:""}
@@ -2265,6 +2289,8 @@ document.addEventListener("click",e=>{
     case "rSort": sortRoute(t); mut(); break;
     case "rDel": routeOf(t).splice(+b.dataset.k2,1); setLocIdx=-1; sortRoute(t); mut(); break;
     case "stayEdit": stayEdit=true; render(); break;
+    case "stayPick": stayPick=true; render(); break;
+    case "stayPickOff": stayPick=false; render(); geoQueue(t); break;
     case "stayCancel": stayEdit=false; render(); break;
     case "stayDel": delete t.stay; stayEdit=false; mut(); break;
     case "rFromStay": {const st=stayOf(t); if(!st) break; const r=routeOf(t); const k=r.findIndex(x=>x.stay); if(k>=0) r.splice(k,1);
