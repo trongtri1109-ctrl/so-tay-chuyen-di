@@ -558,6 +558,8 @@ body.landing .lhero h1,body.landing .sectitle{text-shadow:0 1px 18px color-mix(i
 .rlist2{list-style:none;margin:0;padding:0;flex-basis:100%;font-size:12px;color:var(--ink2);display:flex;flex-direction:column;gap:2px}
 .gitem .rlist2 b,.rlist2 b{display:inline;font-size:12px;font-weight:600;color:var(--ink)}.gitem .ravg b{display:inline;font-size:14px}
 .rnote{flex-basis:100%;height:32px;font-size:13px;padding:6px 10px}
+.impl{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow:auto}
+.impl b{display:block;font-size:14px}.impl small{display:block;color:var(--ink2);font-size:12px;line-height:1.45}
 .acnone.linkhelp{line-height:1.5;font-size:13px}.acnone.linkhelp .btn{margin-top:6px;display:inline-flex}
 .rstop{grid-template-columns:18px 28px 1fr auto}
 .rstop .grip{cursor:grab;touch-action:none;color:var(--ink3);font-size:16px;line-height:1;user-select:none;display:flex;align-items:center;justify-content:center;height:28px;border-radius:6px}
@@ -984,6 +986,9 @@ const uid=()=>"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let db=null, mode="loading", canWrite=true;
 let trips={}, cur=null, editing=false, editInfo=false, editFocus=null, tab="plan";
+let pendingImport=(()=>{try{const h=location.hash;if(!h.startsWith("#plan="))return null;
+  const b=h.slice(6).replace(/-/g,"+").replace(/_/g,"/");const j=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))));
+  return j&&j.trip&&Array.isArray(j.days)?j:null}catch{return null}})();
 const pending={}; let deferRender=false;
 
 /* ---------- storage ---------- */
@@ -1278,6 +1283,7 @@ function render(){
     m.innerHTML=`<div class="glass empty"><h2>Tài khoản chưa được cấp quyền</h2><p>${esc(fbUser?.email||"")} không nằm trong danh sách thành viên. Hãy đăng nhập bằng tài khoản khác hoặc nhờ chủ sổ tay thêm email của bạn.</p><button class="btn primary" data-act="signout">Đăng nhập tài khoản khác</button></div>`;
     return;
   }
+  if(pendingImport&&canWrite&&trips[pendingImport.trip]&&!pendingImport.shown){pendingImport.shown=1;setTimeout(showImport,60)}
   if(homeView&&Object.keys(trips).length){ document.documentElement.style.setProperty("--accent",COLORS[0]); m.innerHTML=homeHTML(); return }
   if(!t){
     m.innerHTML=`<div class="glass empty"><h2>Chưa có chuyến đi nào</h2><p>Tạo chuyến đầu tiên: nhập điểm đến, số đêm và số người, rồi thêm lịch trình từng ngày và các khoản chi phí.</p>${canWrite?`<div class="actions" style="justify-content:center"><button class="btn primary" data-act="new">+ Tạo chuyến mới</button>${fbUser?`<button class="btn" data-act="sample">Nạp chuyến mẫu Đà Lạt</button>${Object.keys(localLoad()).length?`<button class="btn" data-act="migrate">Đưa dữ liệu trên máy này lên</button>`:""}`:""}</div>`:""}</div>`;
@@ -2489,6 +2495,8 @@ document.addEventListener("click",e=>{
     case "open": openLB(+b.dataset.k2); break;
     case "albumDay": albumDay=b.dataset.v; if(albumDay!=="all"&&albumDay!=="none") upDay=+albumDay; render(); break;
     case "pick": pickItem(t,i,j); break;
+    case "impYes": applyImport(); break;
+    case "impNo": pendingImport=null; history.replaceState(null,"",location.pathname+location.search); closeModal(); break;
     case "rate": {const x=t.guide[i]?.items[j];if(!x||!localUser)break;const n=+b.dataset.s;x.rates=x.rates||{};
       const r=x.rates[localUser];if(r&&r.s===n){if(r.c)r.s=0;else delete x.rates[localUser]}else x.rates[localUser]={...(r||{}),s:n,at:Date.now()};
       mut();if(x.rates[localUser]?.s)toast(`Bạn chấm ${n} sao`);break}
@@ -2544,6 +2552,29 @@ document.addEventListener("click",e=>{
 
 /* ---------- sheets ---------- */
 function closeModal(){$("#modal").innerHTML=""}
+/* ---------- Nhập lịch trình qua link (#plan=...) ---------- */
+
+function showImport(){const P=pendingImport,t=trips[P.trip];if(!t)return;
+  const n=P.days.reduce((a,d)=>a+(d.stops||[]).length,0);
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><div class="glass sheet" role="dialog" aria-modal="true" style="max-width:520px">
+    <h2>Cập nhật lịch trình “${esc(t.name)}”?</h2>
+    <p class="sub">Lịch trình mới có ${P.days.length} ngày, ${n} điểm. ${P.mode==="append"?"Các điểm sẽ được thêm vào cuối mỗi ngày.":"Các điểm hiện có ở những ngày này sẽ được thay bằng bản mới."}</p>
+    <ol class="impl">${P.days.map((d,i)=>`<li><b>Ngày ${i+1}: ${esc(d.title||"")}</b><small>${(d.stops||[]).map(x=>esc((x.time?x.time+" ":"")+x.title)).join(" · ")}</small></li>`).join("")}</ol>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" data-act="impNo">Để sau</button><button class="btn primary" data-act="impYes">Cập nhật lịch trình</button></div></div></div>`}
+async function applyImport(){const P=pendingImport,t=trips[P.trip];if(!t)return;pendingImport=null;history.replaceState(null,"",location.pathname+location.search+"#"+P.trip);
+  try{localStorage.setItem("sotay-days-backup-"+P.trip,JSON.stringify({at:Date.now(),days:t.days}))}catch{}
+  const st=stayOf(t);
+  P.days.forEach((d,i)=>{while(t.days.length<=i)t.days.push({title:"",note:"",stops:[]});const day=t.days[i];
+    const stops=(d.stops||[]).map(x=>{const s={time:x.time||"",title:x.title||"",place:x.place||"",type:TYPES.includes(x.type)?x.type:"Khác",cost:x.cost||"",note:x.note||""};
+      if(s.place==="@stay"){s.place=st?.name||t.stay?.name||"";if(st){s.lat=st.lat;s.lng=st.lng}}
+      else{const g=s.place&&stopGeo(t,s);if(g&&g!==s){s.lat=g.lat;s.lng=g.lng}}return s});
+    if(P.mode==="append")day.stops.push(...stops);else day.stops=stops;
+    if(d.title)day.title=d.title; if(d.note!=null)day.note=d.note});
+  cur=P.trip;homeView=false;tab="plan";planDay=0;closeModal();save(cur,true);render();toast("Đã cập nhật lịch trình, đang tìm vị trí các điểm…");
+  let k=0;for(const d of t.days)for(const s of d.stops){if(hasGeo(s)||!s.place)continue;
+    try{const rs=await placeSearch(s.place,tripCenter(t));const p=rs.find(r=>!tripCenter(t)||hav(tripCenter(t),r)<40);if(p){s.lat=p.lat;s.lng=p.lng;k++}}catch{}
+    await new Promise(r=>setTimeout(r,700))}
+  if(k){save(cur);render()} toast(`Xong. Đã ghim ${k} điểm lên bản đồ`)}
 function openNew(dup){
   const src=dup&&trips[cur];
   $("#modal").innerHTML=`<div class="scrim modal-open" data-scrim><form class="glass sheet" id="newForm">
