@@ -915,6 +915,9 @@ body.landing .hero2{padding-top:3vh}
 .custom{grid-template-columns:1fr 1fr auto auto}
 .custom>input{min-width:0}
 @media (max-width:760px){.custom{grid-template-columns:1fr 1fr}.custom>input{grid-column:1/-1}}
+.pinmini{display:block;font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}.pinmini.ok{color:var(--good)}
+.sedit .sq{display:flex;gap:8px;margin-top:4px}.sedit .sq .f{flex:1;min-width:0}
+.srow .mini .dist{margin-left:2px}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1202,6 +1205,9 @@ function dayDate(t,i){
   d.setDate(d.getDate()+i); return WD[d.getDay()]+", "+String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
 }
 function range(t){const a=dayDate(t,0),b=dayDate(t,Math.max(0,t.days.length-1));return a?(t.days.length>1?a+" – "+b:a):"Chưa chọn ngày"}
+function stopGeo(t,s){if(hasGeo(s))return s;const nm=(s.place||s.title||"").trim().toLowerCase();if(!nm)return null;
+  for(const g of t.guide||[])for(const x of g.items)if(hasGeo(x)&&(x.name||"").trim().toLowerCase()===nm)return x;return null}
+function geoUrl(x){return "https://www.google.com/maps/search/?api=1&query="+x.lat+","+x.lng}
 function mapUrl(q,dest){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([q,dest].filter(Boolean).join(", "))}
 function calc(t){
   const p=Math.max(1,+t.people||1), n=+t.nights||0, d=t.days.length||1;
@@ -1251,6 +1257,7 @@ function render(){
   if(tab==="album"||tab==="guide"||tab==="plan") hydrateMedia();
   if(tab==="plan"||tab==="guide") setTimeout(hydrateWikiImgs,50);
   renderTabbar(t);
+  if(editing&&(tab==="plan"||tab==="guide")) wireEditAC(t);
   if(tab==="guide"&&!editing){wireAC(t); drawRouteMap(t); if(staySetup(t)) drawStayMap(t); if(stayOf(t)) setTimeout(()=>geoQueue(t),800)}
   if((editing&&(tab==="plan"||tab==="guide"))||editInfo) m.insertAdjacentHTML("beforeend",`<div class="donebar" role="status"><span>Đang chỉnh sửa</span><button class="btn primary sm" data-act="editDone">Xong</button></div>`);
   if(editFocus){const [f,i]=editFocus;editFocus=null;const el=m.querySelectorAll(f==="day"?"section.day":"section.gsec")[i];
@@ -1597,8 +1604,8 @@ function planView(t){
       :`<div class="th" ${nm&&s.type!=="Nghỉ"?`data-wq="${esc(wkey(nm,t.destination))}"`:""}>${TYPE_ICON[s.type]||ICON_DEFAULT}</div>`;
     return `<li class="srow">${thumb}
       <div class="tx"><div class="tm">${esc(s.time||"—")}</div><h4>${esc(s.title||"Chưa đặt tên")}</h4>${s.note?`<p>${esc(s.note)}</p>`:""}
-        <div class="mini"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>${s.cost?`<span>${esc(s.cost)}</span>`:""}</div></div>
-      <div class="acts">${nm&&s.type!=="Nghỉ"?`<a class="go" href="${mapUrl(nm,t.destination)}" target="_blank" rel="noopener" aria-label="Chỉ đường tới ${esc(s.title)}">${pin.replace('width="12" height="12"','width="18" height="18"')}</a>`:""}${canWrite?`<button class="go ed" data-act="stopEdit" data-i="${planDay}" data-j="${k}" aria-label="Sửa ${esc(s.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>`:""}</div></li>`}).join("");
+        <div class="mini"><span class="pill ${EAT.has(s.type)?"eat":""}">${esc(s.type||"Khác")}</span>${s.cost?`<span>${esc(s.cost)}</span>`:""}${(()=>{const g=stopGeo(t,s);return g&&stayOf(t)?distBadge(t,g):""})()}</div></div>
+      <div class="acts">${nm&&s.type!=="Nghỉ"?`<a class="go" href="${stopGeo(t,s)?geoUrl(stopGeo(t,s)):mapUrl(nm,t.destination)}" target="_blank" rel="noopener" aria-label="Chỉ đường tới ${esc(s.title)}">${pin.replace('width="12" height="12"','width="18" height="18"')}</a>`:""}${canWrite?`<button class="go ed" data-act="stopEdit" data-i="${planDay}" data-j="${k}" aria-label="Sửa ${esc(s.title)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>`:""}</div></li>`}).join("");
   return `<div class="dayswitch" role="tablist">${pills}</div>
     <section class="glass day" id="dayCard">
       <div class="dayhead2"><span class="day-n">Ngày ${planDay+1}</span>${canWrite?`<button class="pen" data-act="editAt" data-f="day" data-i="${planDay}" aria-label="Sửa ngày ${planDay+1}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}<h3>${esc(d.title||"Chưa đặt tiêu đề")}</h3>${d.note?`<p>${esc(d.note)}</p>`:""}</div>
@@ -1919,6 +1926,15 @@ function wireAC(t){
     else{stayDraft.lat=x.lat;stayDraft.lng=x.lng}
     const nm=$("#st-name"); if(nm&&!nm.value.trim()){nm.value=x.name;stayDraft.name=x.name} toast("Đã ghim “"+x.name+"”, kiểm tra lại trên bản đồ")});
   attachAC($("#cp-name"),()=>tripCenter(t),x=>{ $("#cp-name").value=x.name; $("#cp-addr").value=x.addr||""; pendingPlace=x; toast("Đã chọn, bấm Thêm để đưa vào lộ trình")});
+}
+function wireEditAC(t){
+  document.querySelectorAll('input[data-k$=".place"],input[data-k^="guide."][data-k$=".name"]').forEach(inp=>{
+    const k=inp.dataset.k; const parentPath=k.slice(0,k.lastIndexOf("."));
+    if(k.startsWith("guide.")){const gi=+k.split(".")[1]; if(t.guide[gi]?.kind==="pose")return}
+    attachAC(inp,()=>tripCenter(t),x=>{const o=getPath(t,parentPath); if(!o)return; setPath(t,k,x.name); inp.value=x.name; o.lat=x.lat;o.lng=x.lng;
+      if(k.startsWith("guide.")){if(!o.addr&&x.addr){o.addr=x.addr;const a=document.querySelector(`input[data-k="${parentPath}.addr"]`);if(a)a.value=x.addr}}
+      save(cur); toast("Đã lấy vị trí “"+x.name+"”")});
+  });
 }
 function stayHTML(t){
   const st=t.stay;
@@ -2451,13 +2467,18 @@ function openStopEdit(i,j){
       <label class="lbl wide">Tên điểm<input class="f" name="title" value="${esc(s.title)}" placeholder="VD: Ăn sáng bánh căn Nhà Chung" required></label>
       <label class="lbl wide">Ghi chú<textarea class="f" name="note" rows="2">${esc(s.note)}</textarea></label>
       <label class="lbl">Chi phí<input class="f" name="cost" value="${esc(s.cost)}" placeholder="~50k/người"></label>
-      <label class="lbl">Địa chỉ cho bản đồ<input class="f" name="place" value="${esc(s.place)}" placeholder="Tên quán / địa chỉ"></label>
+      <label class="lbl wide">Vị trí trên bản đồ<span class="sq"><input class="f" name="place" value="${esc(s.place)}" placeholder="Gõ tên quán, chọn trong gợi ý…"><button type="button" class="btn" id="stHere">📍 Chỗ tôi đứng</button></span><small class="pinmini ${hasGeo(s)?"ok":""}" id="stPin">${hasGeo(s)?"✓ Đã có vị trí":"Chưa có vị trí (chọn trong gợi ý để có khoảng cách và chỉ đường chính xác)"}</small></label>
     </div>
     <div class="foot">${isNew?"":`<button type="button" class="btn" style="color:var(--danger);margin-right:auto" id="stopDelBtn">Xoá điểm</button>`}<button type="button" class="btn" data-close>Huỷ</button><button class="btn primary">Lưu</button></div>
   </form></div>`;
   const f=$("#stopForm"); setTimeout(()=>f.elements.title.focus(),50);
+  let pick=hasGeo(s)?{lat:s.lat,lng:s.lng,place:s.place}:null;
+  const okPin=m=>{const el=$("#stPin");el.textContent=m;el.classList.add("ok")};
+  attachAC(f.elements.place,()=>tripCenter(t),x=>{f.elements.place.value=x.name;pick={lat:x.lat,lng:x.lng,place:x.name};if(!f.elements.title.value.trim())f.elements.title.value=x.name;okPin("✓ Đã có vị trí: "+(x.addr||x.name))});
+  $("#stHere").onclick=()=>{toast("Đang lấy vị trí…");myLocation().then(c=>{pick={...c,place:f.elements.place.value};okPin("✓ Đã lấy vị trí hiện tại")}).catch(()=>toast("Không lấy được vị trí. Hãy cho phép trình duyệt dùng vị trí"))};
   f.onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(f));if(!v.title.trim()){f.elements.title.focus();return}
-    const n={...s,...v}; if(isNew) t.days[i].stops.push(n); else t.days[i].stops[j]=n;
+    const n={...s,...v}; if(pick&&(pick.place===v.place||!pick.place)){n.lat=pick.lat;n.lng=pick.lng}else if(v.place!==s.place){delete n.lat;delete n.lng}
+    if(isNew) t.days[i].stops.push(n); else t.days[i].stops[j]=n;
     t.days[i].stops.sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
     closeModal(); save(cur,true); render(); toast(isNew?"Đã thêm điểm":"Đã lưu")};
   const del=$("#stopDelBtn"); if(del) del.onclick=()=>{if(del.dataset.ok){t.days[i].stops.splice(j,1);closeModal();save(cur,true);render();toast("Đã xoá điểm")}else{del.dataset.ok=1;del.textContent="Bấm lần nữa để xoá"}};
@@ -2476,5 +2497,3 @@ $("#newBtn").addEventListener("click",()=>openNew());
 
 init();
 </script>
-
-</body></html>
