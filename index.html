@@ -544,6 +544,20 @@ body.landing .lhero h1,body.landing .sectitle{text-shadow:0 1px 18px color-mix(i
 .gitem .gthumb .mthumb .mt img{position:absolute;width:256px;height:256px;max-width:none;object-fit:fill}
 .mthumb .mpin{position:absolute;left:50%;top:50%;width:30px;height:30px;transform:translate(-50%,-92%);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .mthumb.dk .mt{filter:invert(.9) hue-rotate(180deg) brightness(.95) contrast(.9)}
+.rate{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 2px}
+.rate svg{width:15px;height:15px}
+.ravg{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.ravg svg{fill:#F5B301}.ravg b{font-weight:700}.ravg small{color:var(--ink3);font-size:12px}
+.ravg.none{color:var(--ink3);font-size:12px}
+.rmine{display:inline-flex;gap:1px;margin-left:auto}
+.rs{border:0;background:none;padding:2px;cursor:pointer;border-radius:6px;line-height:0}
+.rs svg{width:18px;height:18px;fill:none;stroke:var(--ink3);stroke-width:1.6;stroke-linejoin:round;transition:transform .12s}
+.rs.on svg{fill:#F5B301;stroke:#E0A100}
+.rs:hover svg{transform:scale(1.15);stroke:#E0A100}
+.rmine:hover .rs svg{fill:#F5B301;stroke:#E0A100}.rmine .rs:hover~.rs svg{fill:none;stroke:var(--ink3)}
+.rlist2{list-style:none;margin:0;padding:0;flex-basis:100%;font-size:12px;color:var(--ink2);display:flex;flex-direction:column;gap:2px}
+.gitem .rlist2 b,.rlist2 b{display:inline;font-size:12px;font-weight:600;color:var(--ink)}.gitem .ravg b{display:inline;font-size:14px}
+.rnote{flex-basis:100%;height:32px;font-size:13px;padding:6px 10px}
 .acnone.linkhelp{line-height:1.5;font-size:13px}.acnone.linkhelp .btn{margin-top:6px;display:inline-flex}
 .rstop{grid-template-columns:18px 28px 1fr auto}
 .rstop .grip{cursor:grab;touch-action:none;color:var(--ink3);font-size:16px;line-height:1;user-select:none;display:flex;align-items:center;justify-content:center;height:28px;border-radius:6px}
@@ -1943,11 +1957,12 @@ function gmInfo(s){s=String(s||"").replace(/&amp;/g,"&");const o={};
   if(!o.name){const q=s.match(/[?&](?:q|query)=([^&\s"]+)/);if(q){const v=dec(q[1]);if(v&&!/^-?\d/.test(v))o.name=v}}
   return o}
 /* Link rút gọn (maps.app.goo.gl) cần một máy chủ trung gian để mở. Có thể đặt SOTAY_LINK_RESOLVER trong config.js */
-const LINK_RESOLVERS=[...(window.SOTAY_LINK_RESOLVER?[u=>window.SOTAY_LINK_RESOLVER+encodeURIComponent(u)]:[]),u=>"https://api.allorigins.win/get?url="+encodeURIComponent(u)];
+const GAS_RESOLVER=""; // URL web app Google Apps Script (…/exec)
+const LINK_RESOLVERS=[...(GAS_RESOLVER?[u=>GAS_RESOLVER+"?url="+encodeURIComponent(u)]:[]),...(window.SOTAY_LINK_RESOLVER?[u=>window.SOTAY_LINK_RESOLVER+encodeURIComponent(u)]:[]),u=>"https://api.allorigins.win/get?url="+encodeURIComponent(u)];
 const linkCache={};
 async function resolveMapsLink(u){if(linkCache[u])return linkCache[u];
   const o=gmInfo(u); if(hasGeo(o)||!isShortMaps(u)) return linkCache[u]=o;
-  for(const mk of LINK_RESOLVERS){try{const r=await fetch(mk(u),{signal:AbortSignal.timeout?AbortSignal.timeout(9000):undefined});if(!r.ok)continue;let s=await r.text();
+  for(const mk of LINK_RESOLVERS){try{const r=await fetch(mk(u),{signal:AbortSignal.timeout?AbortSignal.timeout(15000):undefined});if(!r.ok)continue;let s=await r.text();
       try{const j=JSON.parse(s);s=[j.status&&j.status.url,j.url,j.contents].filter(Boolean).join(" ")}catch{}
       const g=gmInfo(s);if(hasGeo(g)||g.name)return linkCache[u]=Object.assign(o,g)}catch{}}
   return o}
@@ -2004,7 +2019,8 @@ function wireAC(t){
   attachAC($("#sp-q"),()=>tripCenter(t),x=>{ if(_smap){_smap.setView([x.lat,x.lng],17); window._stayPin&&window._stayPin(L.latLng(x.lat,x.lng))}
     else{stayDraft.lat=x.lat;stayDraft.lng=x.lng}
     const nm=$("#st-name"); if(nm&&!nm.value.trim()){nm.value=x.name;stayDraft.name=x.name} toast("Đã ghim “"+x.name+"”, kiểm tra lại trên bản đồ")});
-  attachAC($("#cp-name"),()=>tripCenter(t),x=>{ $("#cp-name").value=x.name; $("#cp-addr").value=x.addr||""; pendingPlace=x; toast("Đã chọn, bấm Thêm để đưa vào lộ trình")});
+  attachAC($("#cp-name"),()=>tripCenter(t),x=>{ $("#cp-name").value=x.name; $("#cp-addr").value=x.addr||""; pendingPlace=x;
+    if(x.link){addCustomPlace(t);return} toast("Đã chọn, bấm Thêm để đưa vào lộ trình")});
 }
 function wireEditAC(t){
   document.querySelectorAll('input[data-k$=".place"],input[data-k^="guide."][data-k$=".name"]').forEach(inp=>{
@@ -2204,13 +2220,26 @@ async function addGuideImg(i,j,file){
   try{const r=await putMedia(file); if(x.img) delMedia(x.img); x.img=r.ref; save(cur,true); render(); toast("Đã thêm ảnh mẫu")}
   catch(e){toast(e?.code==="too_big"?"Ảnh quá lớn":"Không tải được ảnh")}
 }
+/* ---------- Nhóm tự chấm sao ---------- */
+const STAR='<svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
+function rateAvg(x){const v=Object.values(x.rates||{}).map(r=>r.s).filter(Boolean);return v.length?{avg:v.reduce((a,b)=>a+b,0)/v.length,n:v.length}:null}
+function rateHTML(t,x,i,j){const a=rateAvg(x), mine=localUser&&x.rates?.[localUser], others=Object.entries(x.rates||{}).filter(([u,r])=>u!==localUser&&(r.c||r.s));
+  return `<div class="rate">
+    ${a?`<span class="ravg" title="Điểm trung bình của nhóm">${STAR}<b>${a.avg.toFixed(1).replace(".",",")}</b><small>${a.n} người chấm</small></span>`:`<span class="ravg none">Chưa ai chấm</span>`}
+    ${canWrite&&localUser?`<span class="rmine" role="group" aria-label="Bạn chấm">${[1,2,3,4,5].map(n=>`<button type="button" class="rs ${mine&&mine.s>=n?"on":""}" data-act="rate" data-i="${i}" data-j="${j}" data-s="${n}" aria-label="${n} sao" title="${mine&&mine.s===n?"Bỏ chấm":"Bạn chấm "+n+" sao"}">${STAR}</button>`).join("")}</span>`:""}
+    ${others.length?`<ul class="rlist2">${others.map(([u,r])=>`<li><b>${esc(nameOf(u))}</b> ${r.s?"★".repeat(r.s):""}${r.c?` · ${esc(r.c)}`:""}</li>`).join("")}</ul>`:""}
+    ${canWrite&&mine?`<input class="f rnote" data-rnote="${i},${j}" value="${esc(mine.c||"")}" placeholder="Nhận xét của bạn (tuỳ chọn)…" maxlength="120" aria-label="Nhận xét của bạn">`:""}
+  </div>`}
+document.addEventListener("change",e=>{const el=e.target.closest("[data-rnote]");if(!el)return;const [i,j]=el.dataset.rnote.split(",").map(Number);const t=trips[cur],x=t.guide[i]?.items[j];
+  if(!x||!localUser||!x.rates?.[localUser])return;x.rates[localUser].c=el.value.trim().slice(0,120);save(cur);toast("Đã lưu nhận xét")});
+document.addEventListener("keydown",e=>{if(e.target.matches?.("[data-rnote]")&&e.key==="Enter"){e.preventDefault();e.target.blur()}});
 document.addEventListener("change",e=>{if(e.target.matches("[data-gimg]")&&e.target.files[0]){const [i,j]=e.target.dataset.gimg.split(",").map(Number);addGuideImg(i,j,e.target.files[0]);e.target.value=""}});
 
 function guideHTML(t){
   const dest=t.destination||"";
   return `<div class="guide">${editing?"":stayHTML(t)+stayPickHTML()+routeHTML(t)}${t.guide.map((g,i)=>{
     if(!editing) return `<section class="glass gsec"><div class="gsec-h"><h3>${esc(g.title)}</h3><span class="gcount">${g.items.length} mục</span>${canWrite?`<button class="pen" data-act="editAt" data-f="gsec" data-i="${i}" aria-label="Sửa danh sách ${esc(g.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg><span>Sửa</span></button>`:""}</div>
-      ${g.items.length?`<div class="gitems">${guideOrder(t,g).map(j=>{const x=g.items[j];const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${!x.img&&g.kind!=="pose"&&x.name?(x.photo?`<div class="gthumb"><img src="${esc(x.photo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"><span class="cr">Google Maps</span></div>`:`<div class="gthumb" data-wq="${esc(wkey(x.name,t.destination))}" ${hasGeo(x)?`data-ll="${x.lat},${x.lng}"`:""}></div>`):""}${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${g.kind!=="pose"?distBadge(t,x):""}${x.note?`<p>${esc(x.note)}</p>`:""}
+      ${g.items.length?`<div class="gitems">${guideOrder(t,g).map(j=>{const x=g.items[j];const ri=routeIndex(t,x);return `<div class="gitem ${ri>=0?"sel":""}">${!x.img&&g.kind!=="pose"&&x.name?(x.photo?`<div class="gthumb"><img src="${esc(x.photo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"><span class="cr">Google Maps</span></div>`:`<div class="gthumb" data-wq="${esc(wkey(x.name,t.destination))}" ${hasGeo(x)?`data-ll="${x.lat},${x.lng}"`:""}></div>`):""}${x.img?`<div class="gimg-wrap"><img class="gimg" data-ref="${esc(x.img)}" ${mediaSrc(x.img)?`src="${mediaSrc(x.img)}"`:""} alt="Ảnh mẫu ${esc(x.name)}" loading="lazy">${canWrite?`<button class="btn icon x" data-act="gImgDel" data-i="${i}" data-j="${j}" aria-label="Xoá ảnh mẫu">✕</button>`:""}</div>`:g.kind==="pose"?poseSketch(x.name):""}<b>${esc(x.name)}</b>${g.kind!=="pose"?distBadge(t,x):""}${x.note?`<p>${esc(x.note)}</p>`:""}${g.kind!=="pose"&&g.kind!=="photo"&&x.name?rateHTML(t,x,i,j):""}
         ${(x.addr||x.time||g.kind!=="pose")?`<div class="gm">${x.time?`<span>Mở ${esc(x.time)}</span>`:""}${x.addr&&!isUrl(x.addr)?`<span>${esc(x.addr)}</span>`:""}
         ${g.kind!=="pose"&&x.name?`<a class="maplink" href="${x.link||(hasGeo(x)?geoUrl(x):mapUrl(x.addr&&!isUrl(x.addr)?x.name+", "+x.addr:x.name,dest))}" target="_blank" rel="noopener">${pin} Chỉ đường</a>`:""}</div>`:""}
         ${g.kind!=="pose"&&x.name&&canWrite?`<button class="pick ${ri>=0?"on":""}" data-act="pick" data-i="${i}" data-j="${j}">${ri>=0?`✓ Điểm ${ri+1} · Ngày ${routeDay+1}`:"+ Chọn vào lộ trình"}</button>`:""}
@@ -2460,6 +2489,9 @@ document.addEventListener("click",e=>{
     case "open": openLB(+b.dataset.k2); break;
     case "albumDay": albumDay=b.dataset.v; if(albumDay!=="all"&&albumDay!=="none") upDay=+albumDay; render(); break;
     case "pick": pickItem(t,i,j); break;
+    case "rate": {const x=t.guide[i]?.items[j];if(!x||!localUser)break;const n=+b.dataset.s;x.rates=x.rates||{};
+      const r=x.rates[localUser];if(r&&r.s===n){if(r.c)r.s=0;else delete x.rates[localUser]}else x.rates[localUser]={...(r||{}),s:n,at:Date.now()};
+      mut();if(x.rates[localUser]?.s)toast(`Bạn chấm ${n} sao`);break}
     case "pday": planDay=i; render(); document.querySelector(".dayswitch [aria-pressed=true]")?.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"}); break;
     case "pp": {const k=b.dataset.k,v=b.dataset.v; if(!k)break;
       if("multi" in b.dataset){const cur0=String(getPath(t,k)||"").split(",").map(x=>x.trim()).filter(Boolean);const nx=cur0.includes(v)?cur0.filter(x=>x!==v):[...cur0,v];setPath(t,k,nx.join(", "))}
