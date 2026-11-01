@@ -889,6 +889,7 @@ body.landing .hero2{padding-top:3vh}
 .spick{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .sp-h{display:flex;justify-content:space-between;align-items:center;gap:10px}.sp-h .pen{margin:0}
 #stayMap{height:340px;border-radius:14px;overflow:hidden;cursor:crosshair}
+.tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9)}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1864,18 +1865,18 @@ function stayHTML(t){
       <button class="btn primary">Lưu</button>${st?`<button type="button" class="btn" data-act="stayCancel">Huỷ</button><button type="button" class="btn danger" data-act="stayDel">Bỏ nơi ở</button>`:""}</div></div></form>`;
 }
 let stayEdit=false, geoQueueBusy=false, stayPick=false, _smap=null;
-function stayPickHTML(){return stayPick?`<section class="glass spick"><div class="sp-h"><b>Chạm vào bản đồ đúng chỗ bạn ở</b><button class="pen" data-act="stayPickOff">Xong</button></div><input class="f" id="sp-q" placeholder="Tìm nhanh: gõ tên đường / khu vực rồi Enter"><div id="stayMap"></div></section>`:""}
+function stayPickHTML(){return stayPick?`<section class="glass spick"><div class="sp-h"><b>Chạm vào bản đồ đúng chỗ bạn ở</b><button class="pen" data-act="stayPickOff">Xong</button></div><input class="f" id="sp-q" placeholder="Gõ tên đường, khu vực hoặc toạ độ rồi Enter"><div id="stayMap"></div></section>`:""}
 async function drawStayMap(t){const el=document.getElementById("stayMap");if(!el)return;
   try{await loadLeaflet()}catch{el.innerHTML='<div class="miss">Không tải được bản đồ</div>';return}
   if(_smap){try{_smap.remove()}catch{}_smap=null}
   const st=t.stay||{}; const c=hasGeo(st)?[st.lat,st.lng]:[11.9404,108.4583];
   _smap=L.map(el,{zoomAnimation:false,fadeAnimation:false}).setView(c,hasGeo(st)?16:13);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/"+(isDark()?"dark_all":"light_all")+"/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap © CARTO"}).addTo(_smap);
+  baseTiles().addTo(_smap);
   let mk=hasGeo(st)?L.marker(c,{icon:L.divIcon({className:"",html:'<div class="pinnum start">⌂</div>',iconSize:[0,0]})}).addTo(_smap):null;
   _smap.on("click",e=>{t.stay=t.stay||{name:"Nơi ở"};t.stay.lat=+e.latlng.lat.toFixed(5);t.stay.lng=+e.latlng.lng.toFixed(5);
     if(mk)mk.setLatLng(e.latlng);else mk=L.marker(e.latlng,{icon:L.divIcon({className:"",html:'<div class="pinnum start">⌂</div>',iconSize:[0,0]})}).addTo(_smap);
     t.guide.forEach(g=>g.items.forEach(x=>delete x.geoTried)); save(cur,true); toast("Đã đặt vị trí chỗ ở. Bấm Xong khi vừa ý")});
-  const q=document.getElementById("sp-q"); if(q) q.onkeydown=async ev=>{if(ev.key!=="Enter")return;ev.preventDefault();const r=await geocode({name:q.value},t.destination);if(r)_smap.setView([r.lat,r.lng],17);else toast("Không tìm thấy, hãy kéo bản đồ và chạm trực tiếp")};
+  const q=document.getElementById("sp-q"); if(q) q.onkeydown=async ev=>{if(ev.key!=="Enter")return;ev.preventDefault();const ll=parseLatLng(q.value);if(ll){_smap.setView([ll.lat,ll.lng],17);_smap.fire("click",{latlng:L.latLng(ll.lat,ll.lng)});return}if(isShortMaps(q.value)){toast("Link rút gọn không có toạ độ. Gõ tên đường hoặc chạm thẳng lên bản đồ");return}const r=await geocode({name:q.value},t.destination);if(r)_smap.setView([r.lat,r.lng],17);else toast("Không tìm thấy, hãy kéo bản đồ và chạm trực tiếp")};
 }
 async function geoQueue(t){ // tìm vị trí cho các gợi ý chưa có toạ độ (chậm rãi, 1 lượt/giây)
   if(geoQueueBusy||!stayOf(t)) return; geoQueueBusy=true; let n=0;
@@ -1921,6 +1922,8 @@ function loadLeaflet(){
   if(loadLeaflet.p) return loadLeaflet.p;
   return loadLeaflet.p=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
 }
+function baseTiles(){ // bản đồ OpenStreetMap miễn phí, không cần khoá API; chế độ tối thì đảo màu
+  return L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,className:isDark()?"tiles-dark":"",attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'})}
 function isDark(){const th=document.documentElement.dataset.theme;return th?th==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
 async function drawRouteMap(t){
   const el=document.getElementById("routeMap"); if(!el) return;
@@ -1929,7 +1932,7 @@ async function drawRouteMap(t){
   if(_map){try{_map.remove()}catch{} _map=null}
   const r=routeOf(t), pts=r.filter(hasGeo);
   _map=L.map(el,{zoomControl:true,attributionControl:true,zoomAnimation:false,fadeAnimation:false,markerZoomAnimation:false});
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/"+(isDark()?"dark_all":"light_all")+"/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(_map);
+  baseTiles().addTo(_map);
   const accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#0A84FF";
   if(pts.length>1) L.polyline(pts.map(x=>[x.lat,x.lng]),{color:accent,weight:4,opacity:.85,dashArray:"8 8"}).addTo(_map);
   r.forEach((x,k)=>{if(!hasGeo(x))return;
