@@ -1,17 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Chỉ 3 thành viên Sổ Tay Chuyến Đi được đọc và ghi dữ liệu
-    function isMember() {
-      return request.auth != null
-        && request.auth.token.email in [
-          'tri@sotay-chuyen-di.app',
-          'honganh@sotay-chuyen-di.app',
-          'tandat@sotay-chuyen-di.app'
-        ];
+    // 3 thành viên gốc
+    function isCore() {
+      return request.auth.token.email in [
+        'tri@sotay-chuyen-di.app',
+        'honganh@sotay-chuyen-di.app',
+        'tandat@sotay-chuyen-di.app'
+      ];
     }
-    match /{document=**} {
-      allow read, write: if isMember();
+    // Quản trị viên: thêm / gỡ thành viên
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'tri@sotay-chuyen-di.app';
+    }
+    // Thành viên = 3 người gốc + người được quản trị viên thêm vào /members
+    function isMember() {
+      return request.auth != null && (isCore()
+        || exists(/databases/$(database)/documents/members/$(request.auth.token.email)));
+    }
+    // Danh sách thành viên thêm: ai trong nhóm cũng xem được, chỉ quản trị viên được sửa
+    match /members/{email} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+    // Các dữ liệu khác (chuyến đi, ảnh, tài khoản, lịch sử đăng nhập)
+    match /{col}/{rest=**} {
+      allow read, write: if isMember() && col != 'members';
     }
   }
 }

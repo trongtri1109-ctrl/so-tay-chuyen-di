@@ -999,6 +999,22 @@ img,svg,video,canvas{max-width:100%}
   .srow .th svg{width:24px;height:24px}
   .tabbar button{font-size:9.5px}
 }
+
+/* trang quản trị */
+.asheet{width:min(560px,100%);display:flex;flex-direction:column;gap:14px}
+.ahead{display:flex;align-items:center;gap:10px}.ahead h2{margin:0}
+.abadge{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:color-mix(in oklab,var(--accent) 18%,transparent);color:var(--accent)}
+.amlist{display:flex;flex-direction:column;gap:6px}
+.amem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:var(--glass-strong);border:1px solid var(--hair)}
+.amem .lm{flex:1;min-width:0;display:flex;flex-direction:column}.amem .lm small{color:var(--ink3);font-size:12px}
+.atag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--field);color:var(--ink2);white-space:nowrap}
+.atag.adm{background:#1F9D55;color:#fff}
+.aform{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--hair);padding-top:14px}
+.aform .lbl{display:flex;flex-direction:column;gap:4px}.aform .sq{display:flex;gap:8px}.aform .sq .f{flex:1;min-width:0}
+.ack{display:flex;gap:8px;align-items:center;font-size:14px}
+.ares{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:16px;background:color-mix(in oklab,#1F9D55 12%,var(--glass-strong));border:1px solid color-mix(in oklab,#1F9D55 35%,transparent)}
+.ares pre{margin:0;white-space:pre-wrap;font:600 14px/1.6 var(--font);background:var(--glass-strong);padding:10px 12px;border-radius:12px;user-select:all}
+.ares .row{display:flex;gap:8px}
 </style>
 
 <div class="photo-bg" aria-hidden="true"><div class="ph" id="phLayer"></div><div class="phc"></div><div class="sunglow"></div><div class="rays"></div><canvas id="birds"></canvas><div class="veil"></div></div>
@@ -1098,18 +1114,19 @@ function initFirebase(){
     localUser=(u.email||"").split("@")[0];
     db=firebase.firestore(); mode="db"; canWrite=true; render(); noteSessionStart();
     subscribe(()=>"Đã đồng bộ · mọi người cùng thấy");
+    watchMembers();
     unsubUsers=db.collection("users").onSnapshot(sn=>{fbAvatars={};sn.docs.forEach(d=>{fbAvatars[d.id]=d.data().avatar||""});render()},()=>{});
   });
 }
 async function fbLogin(u,p){
   u=u.trim().toLowerCase();
-  if(!(window.LOCAL_USERS||{})[u]) return "Tài khoản không có trong danh sách thành viên.";
+  if(!/^[a-z0-9._-]{2,30}$/.test(u)) return "Tên đăng nhập không hợp lệ.";
   try{markJustLogin();await firebase.auth().signInWithEmailAndPassword(emailOf(u),p);return ""}
   catch(e){
     if(e.code==="auth/too-many-requests") return "Nhập sai nhiều lần, đợi vài phút rồi thử lại.";
     if(e.code==="auth/network-request-failed") return "Không có mạng.";
     // Lần đầu: tài khoản chưa có trên Firebase, mật khẩu khớp mật khẩu ban đầu thì tự tạo
-    if(await sha("so-tay-v1:"+u+":"+p)===window.LOCAL_USERS[u]){
+    if((window.LOCAL_USERS||{})[u]&&await sha("so-tay-v1:"+u+":"+p)===window.LOCAL_USERS[u]){
       try{markJustLogin();await firebase.auth().createUserWithEmailAndPassword(emailOf(u),p);return ""}
       catch(e2){if(e2.code!=="auth/email-already-in-use") return "Chưa tạo được tài khoản: "+e2.code}
     }
@@ -1173,6 +1190,74 @@ async function openLogins(){
   };
   draw();
 }
+/* ---------- Quản trị: thêm thành viên (chỉ admin) ---------- */
+const ADMINS=()=>window.SOTAY_ADMINS||["tri"];
+const isAdmin=()=>!!localUser&&ADMINS().includes(localUser);
+const CORE_NAMES={...(window.LOCAL_NAMES||{})};
+let extraMembers={}, unsubMembers=null;
+function watchMembers(){if(unsubMembers){unsubMembers();unsubMembers=null}
+  unsubMembers=db.collection("members").onSnapshot(sn=>{extraMembers={};sn.docs.forEach(d=>{const m=d.data();if(m.user&&!m.removed)extraMembers[m.user]={...m,id:d.id}});
+    window.LOCAL_NAMES={...CORE_NAMES};Object.values(extraMembers).forEach(m=>{window.LOCAL_NAMES[m.user]=m.name||m.user});
+    if($("#modal .asheet"))drawAdmin();render()},()=>{})}
+function slugUser(n){return noTone(n||"").replace(/\s+/g,"").replace(/[^a-z0-9]/g,"").slice(0,20)}
+function randPw(){const a="abcdefghjkmnpqrstuvwxyz23456789";let s="";const r=crypto.getRandomValues(new Uint32Array(8));r.forEach(x=>s+=a[x%a.length]);return s}
+let adminResult=null;
+function openAdmin(){if(!isAdmin()){toast("Chỉ quản trị viên mới mở được trang này");return}
+  $("#modal").innerHTML=`<div class="scrim" data-scrim><div class="glass sheet asheet" role="dialog" aria-modal="true" aria-label="Quản trị"></div></div>`;drawAdmin()}
+function drawAdmin(){const el=$("#modal .asheet");if(!el)return;
+  const core=Object.keys(CORE_NAMES), extra=Object.values(extraMembers).sort((a,b)=>(a.at||0)-(b.at||0));
+  const row=(u,name,tag,rm)=>`<div class="amem">${avHTML(u)}<span class="lm"><b>${esc(name)}</b><small>Tên đăng nhập: ${esc(u)}</small></span>${tag}${rm?`<button class="btn sm danger" data-arm="${esc(rm)}" title="Gỡ quyền vào sổ tay">Gỡ</button>`:""}</div>`;
+  el.innerHTML=`<div class="ahead"><span class="abadge">Quản trị</span><h2>Thành viên</h2></div>
+    ${FB_ON?"":`<div class="badge over">Thêm thành viên chỉ dùng được ở bản GitHub (có Firebase).</div>`}
+    <div class="amlist">${core.map(u=>row(u,CORE_NAMES[u],`<span class="atag ${ADMINS().includes(u)?"adm":""}">${ADMINS().includes(u)?"Quản trị":"Thành viên gốc"}</span>`,"")).join("")}
+      ${extra.map(m=>row(m.user,m.name||m.user,`<span class="atag">Thêm ${m.at?new Date(m.at).toLocaleDateString("vi-VN"):""}</span>`,m.id)).join("")}</div>
+    ${adminResult?`<div class="ares"><b>✓ Đã tạo tài khoản cho ${esc(adminResult.name)}</b>
+      <pre id="aresText">${esc(adminResult.text)}</pre>
+      <div class="row"><button class="btn sm primary" data-acopy>Sao chép để gửi</button><button class="btn sm" data-aok>Xong</button></div>
+      <small class="sub">Mật khẩu chỉ hiện một lần này. Nhắc bạn ấy vào Tài khoản → Đổi mật khẩu sau khi đăng nhập.</small></div>`
+    :`<form id="addMem" class="aform">
+      <b>Thêm thành viên mới</b>
+      <label class="lbl">Tên hiển thị<input class="f" id="am-name" placeholder="VD: Minh Thư" required maxlength="40" autocomplete="off"></label>
+      <label class="lbl">Tên đăng nhập<input class="f" id="am-user" placeholder="VD: minhthu" required pattern="[a-z0-9._-]{2,30}" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false"><small class="sub">Chữ thường, không dấu, không khoảng trắng.</small></label>
+      <label class="lbl">Mật khẩu ban đầu<span class="sq"><input class="f" id="am-pw" required minlength="6" maxlength="40" autocomplete="new-password" autocapitalize="none" spellcheck="false"><button type="button" class="btn" data-apw>Tạo ngẫu nhiên</button></span></label>
+      <label class="ack"><input type="checkbox" id="am-trips" checked> Thêm vào các chuyến đi hiện có (chia tiền, việc cần làm…)</label>
+      <div class="badge over" id="am-msg" hidden></div>
+      <button class="btn primary" ${FB_ON?"":"disabled"}>+ Tạo tài khoản</button></form>`}
+    <div class="foot"><button class="btn" data-close>Đóng</button></div>`;
+  const f=$("#addMem");
+  if(f){const nm=$("#am-name"),us=$("#am-user");let touched=false;us.oninput=()=>{touched=true;us.value=us.value.toLowerCase().replace(/[^a-z0-9._-]/g,"")};
+    nm.oninput=()=>{if(!touched)us.value=slugUser(nm.value)};
+    el.querySelector("[data-apw]").onclick=()=>{$("#am-pw").value=randPw()};
+    f.onsubmit=e=>{e.preventDefault();addMember()}}
+  el.querySelectorAll("[data-arm]").forEach(b=>b.onclick=()=>removeMember(b.dataset.arm));
+  el.querySelector("[data-acopy]")?.addEventListener("click",()=>{navigator.clipboard?.writeText(adminResult.text).then(()=>toast("Đã sao chép, dán vào Zalo/Messenger để gửi")).catch(()=>toast("Hãy bôi đen đoạn trên để sao chép"))});
+  el.querySelector("[data-aok]")?.addEventListener("click",()=>{adminResult=null;drawAdmin()});
+}
+async function addMember(){const msg=$("#am-msg"),btn=$("#addMem button.primary");const show=t=>{msg.textContent=t;msg.hidden=!t};
+  const name=$("#am-name").value.trim(),u=$("#am-user").value.trim().toLowerCase(),pw=$("#am-pw").value;
+  if(!/^[a-z0-9._-]{2,30}$/.test(u)){show("Tên đăng nhập chỉ gồm chữ thường không dấu, số, dấu chấm/gạch.");return}
+  if(CORE_NAMES[u]||extraMembers[u]){show("Tên đăng nhập này đã có người dùng.");return}
+  if(Object.values(window.LOCAL_NAMES||{}).includes(name)){show("Tên hiển thị trùng với thành viên khác.");return}
+  if(pw.length<6){show("Mật khẩu cần ít nhất 6 ký tự.");return}
+  show("");btn.disabled=true;btn.textContent="Đang tạo…";
+  const email=emailOf(u);let app2=null;
+  try{
+    await db.collection("members").doc(email).set({user:u,name,email,role:"member",at:Date.now(),by:localUser});
+    app2=firebase.initializeApp(window.FIREBASE_CONFIG,"add-"+Date.now());
+    try{await app2.auth().createUserWithEmailAndPassword(email,pw)}
+    catch(e){if(e.code!=="auth/email-already-in-use")throw e; show("Tài khoản đăng nhập này đã tồn tại từ trước, đã cấp lại quyền. Mật khẩu vẫn là mật khẩu cũ.")}
+    try{await app2.auth().signOut()}catch{}
+    if($("#am-trips").checked){Object.entries(trips).forEach(([id,t])=>{if(t.members&&t.members.length&&!t.members.includes(name)){t.members.push(name);save(id,true)}})}
+    adminResult={name,text:`Mời ${name} vào Sổ Tay Chuyến Đi 🚗\nTrang: ${location.origin+location.pathname}\nTên đăng nhập: ${u}\nMật khẩu: ${pw}`};
+    toast("Đã thêm "+name);drawAdmin();
+  }catch(e){show("Chưa tạo được: "+(e.code==="permission-denied"?"Firebase chưa cho phép (cần cập nhật luật bảo mật).":e.code==="auth/weak-password"?"Mật khẩu quá yếu.":(e.code||e.message)));
+    try{await db.collection("members").doc(email).delete()}catch{}btn.disabled=false;btn.textContent="+ Tạo tài khoản"}
+  finally{if(app2)try{await app2.delete()}catch{}}
+}
+async function removeMember(id){const m=Object.values(extraMembers).find(x=>x.id===id);if(!m)return;
+  const el=$("#modal .asheet");const b=el.querySelector(`[data-arm="${CSS.escape(id)}"]`);
+  if(b&&b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Bấm lần nữa để gỡ";setTimeout(()=>{if(b.isConnected){b.dataset.sure="";b.textContent="Gỡ"}},4000);return}
+  try{await db.collection("members").doc(id).delete();toast("Đã gỡ quyền của "+(m.name||m.user)+". Dữ liệu cũ của bạn ấy vẫn giữ.")}catch(e){toast("Chưa gỡ được: "+(e.code||e.message))}}
 function openAccount(){
   const u=localUser;
   $("#modal").innerHTML=`<div class="scrim" data-scrim><div class="glass sheet" role="dialog" aria-modal="true">
@@ -1182,7 +1267,7 @@ function openAccount(){
       <div class="actions"><label class="btn sm upbtn">Đổi ảnh đại diện<input type="file" id="avfile" accept="image/*"></label>${avatarOf(u)?`<button class="btn sm" data-act="avDel">Xoá ảnh</button>`:""}</div></div></div>
     ${FB_ON&&Object.keys(localLoad()).length?`<div class="badge ok" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Máy này còn ${Object.keys(localLoad()).length} chuyến lưu riêng từ trước.<button class="btn sm" data-act="migrate">Đưa lên dữ liệu chung</button></div>`:""}
     <form id="pwForm" style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--hair);padding-top:12px">
-      <button type="button" class="btn" data-act="logins" style="align-self:flex-start">Lịch sử đăng nhập của nhóm</button>
+      <div class="actions"><button type="button" class="btn" data-act="logins">Lịch sử đăng nhập của nhóm</button>${isAdmin()?`<button type="button" class="btn primary" data-act="admin">⚙︎ Quản trị thành viên</button>`:""}</div>
       <b>Đổi mật khẩu</b>
       <label class="lbl">Mật khẩu hiện tại<input class="f" type="password" id="pw-old" autocomplete="current-password" required></label>
       <label class="lbl">Mật khẩu mới<input class="f" type="password" id="pw-new" autocomplete="new-password" minlength="6" required></label>
@@ -1310,7 +1395,7 @@ function render(){
   renderList();
   const m=$("#main");
   const who=fbUser?.email||(localUser&&((window.LOCAL_NAMES||{})[localUser]||localUser));
-  $("#acct").innerHTML=localUser?`<button class="who" data-act="account" title="Tài khoản">${avHTML(localUser)}<span>${esc(who)}</span></button><button class="btn sm" data-act="signout">Đăng xuất</button>`
+  $("#acct").innerHTML=localUser?`<button class="who" data-act="account" title="Tài khoản">${avHTML(localUser)}<span>${esc(who)}</span></button>${isAdmin()?`<button class="btn sm" data-act="admin" title="Quản trị thành viên">⚙︎ Quản trị</button>`:""}<button class="btn sm" data-act="signout">Đăng xuất</button>`
     :who?`<span>${esc(who)}</span><button class="btn sm" data-act="signout">Đăng xuất</button>`:"";
   document.body.classList.toggle("landing",mode==="login-local");
   renderTabbar(null);
@@ -2509,6 +2594,7 @@ document.addEventListener("click",e=>{
   if(a==="signout"){signOut();return}
   if(a==="account"){openAccount();return}
   if(a==="logins"){openLogins();return}
+  if(a==="admin"){openAdmin();return}
   if(a==="avDel"){if(FB_ON){db.collection("users").doc(localUser).set({avatar:""},{merge:true});fbAvatars[localUser]=""}else{try{localStorage.removeItem("sotay-avatar-"+localUser)}catch{}};openAccount();render();return}
   if(a==="migrate"){migrateLocal();return}
   if(a==="copyHash"){navigator.clipboard?.writeText(b.dataset.h).then(()=>toast("Đã sao chép")).catch(()=>toast("Hãy bôi đen dòng trên để sao chép"));return}
